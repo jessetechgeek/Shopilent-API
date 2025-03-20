@@ -71,7 +71,6 @@ public class User : AggregateRoot
 
 
     public Email Email { get; private set; }
-
     public FullName FullName { get; private set; }
     public string PasswordHash { get; private set; }
     public PhoneNumber Phone { get; private set; }
