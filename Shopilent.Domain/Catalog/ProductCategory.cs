@@ -1,4 +1,6 @@
+using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 
 namespace Shopilent.Domain.Catalog;
 
@@ -11,20 +13,23 @@ public class ProductCategory : Entity
 
     private ProductCategory(Product product, Category category)
     {
-        if (product == null)
-            throw new ArgumentNullException(nameof(product));
-
-        if (category == null)
-            throw new ArgumentNullException(nameof(category));
-
         ProductId = product.Id;
         CategoryId = category.Id;
     }
 
     // Add static factory method
-    public static ProductCategory Create(Product product, Category category)
+    public static Result<ProductCategory> Create(Product product, Category category)
     {
-        return new ProductCategory(product, category);
+        if (product == null)
+            return Result.Failure<ProductCategory>(ProductErrors.NotFound(Guid.Empty));
+
+        if (category == null)
+            return Result.Failure<ProductCategory>(CategoryErrors.NotFound(Guid.Empty));
+            
+        if (!category.IsActive)
+            return Result.Failure<ProductCategory>(CategoryErrors.InvalidCategoryStatus);
+
+        return Result.Success(new ProductCategory(product, category));
     }
 
     public Guid ProductId { get; private set; }

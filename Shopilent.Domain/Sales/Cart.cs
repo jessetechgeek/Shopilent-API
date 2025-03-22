@@ -1,9 +1,12 @@
 using Shopilent.Domain.Catalog;
+using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
+using Shopilent.Domain.Identity.Errors;
+using Shopilent.Domain.Sales;
+using Shopilent.Domain.Sales.Errors;
 using Shopilent.Domain.Sales.Events;
-
-namespace Shopilent.Domain.Sales;
 
 public class Cart : AggregateRoot
 {
@@ -21,22 +24,32 @@ public class Cart : AggregateRoot
         _items = new List<CartItem>();
     }
 
-    public static Cart Create(User user = null)
+    public static Result<Cart> Create(User user = null)
     {
         var cart = new Cart(user);
         cart.AddDomainEvent(new CartCreatedEvent(cart.Id));
-        return cart;
+        return Result.Success(cart);
     }
 
-    public static Cart CreateWithMetadata(User user, Dictionary<string, object> metadata)
+    public static Result<Cart> CreateWithMetadata(User user, Dictionary<string, object> metadata)
     {
-        var cart = Create(user);
+        if (user == null)
+            return Result.Failure<Cart>(UserErrors.NotFound(Guid.Empty));
+
+        if (metadata == null)
+            return Result.Failure<Cart>(CartErrors.InvalidMetadata);
+
+        var result = Create(user);
+        if (result.IsFailure)
+            return result;
+
+        var cart = result.Value;
         foreach (var item in metadata)
         {
             cart.Metadata[item.Key] = item.Value;
         }
 
-        return cart;
+        return Result.Success(cart);
     }
 
     public Guid? UserId { get; private set; }
@@ -45,22 +58,29 @@ public class Cart : AggregateRoot
     private readonly List<CartItem> _items = new();
     public IReadOnlyCollection<CartItem> Items => _items.AsReadOnly();
 
-    public void AssignToUser(User user)
+    public Result AssignToUser(User user)
     {
         if (user == null)
-            throw new ArgumentNullException(nameof(user));
+            return Result.Failure(UserErrors.NotFound(Guid.Empty));
 
         UserId = user.Id;
         AddDomainEvent(new CartAssignedToUserEvent(Id, user.Id));
+        return Result.Success();
     }
 
-    public CartItem AddItem(Product product, int quantity = 1, ProductVariant variant = null)
+    public Result<CartItem> AddItem(Product product, int quantity = 1, ProductVariant variant = null)
     {
         if (product == null)
-            throw new ArgumentNullException(nameof(product));
+            return Result.Failure<CartItem>(ProductErrors.NotFound(Guid.Empty));
 
         if (quantity <= 0)
-            throw new ArgumentException("Quantity must be positive", nameof(quantity));
+            return Result.Failure<CartItem>(CartErrors.InvalidQuantity);
+
+        if (!product.IsActive)
+            return Result.Failure<CartItem>(CartErrors.ProductUnavailable(product.Id));
+
+        if (variant != null && !variant.IsActive)
+            return Result.Failure<CartItem>(CartErrors.ProductVariantNotAvailable(variant.Id));
 
         // Check if the item already exists
         var existingItem = _items.Find(i =>
@@ -69,54 +89,68 @@ public class Cart : AggregateRoot
 
         if (existingItem != null)
         {
-            existingItem.UpdateQuantity(existingItem.Quantity + quantity);
-            return existingItem;
+            var updateResult = existingItem.UpdateQuantity(existingItem.Quantity + quantity);
+            if (updateResult.IsFailure)
+                return Result.Failure<CartItem>(updateResult.Error);
+
+            AddDomainEvent(new CartItemUpdatedEvent(Id, existingItem.Id));
+            return Result.Success(existingItem);
         }
 
-        var item = CartItem.Create(this, product, quantity, variant);
+        var itemResult = CartItem.Create(this, product, quantity, variant);
+        if (itemResult.IsFailure)
+            return itemResult;
+
+        var item = itemResult.Value;
         _items.Add(item);
 
         AddDomainEvent(new CartItemAddedEvent(Id, item.Id));
-        return item;
+        return Result.Success(item);
     }
 
-    public void UpdateItemQuantity(Guid itemId, int quantity)
+    public Result UpdateItemQuantity(Guid itemId, int quantity)
     {
         var item = _items.Find(i => i.Id == itemId);
         if (item == null)
-            throw new InvalidOperationException($"Item with ID {itemId} not found in cart.");
+            return Result.Failure(CartErrors.ItemNotFound(itemId));
 
         if (quantity <= 0)
         {
-            RemoveItem(itemId);
-            return;
+            return RemoveItem(itemId);
         }
 
-        item.UpdateQuantity(quantity);
+        var updateResult = item.UpdateQuantity(quantity);
+        if (updateResult.IsFailure)
+            return updateResult;
+
         AddDomainEvent(new CartItemUpdatedEvent(Id, itemId));
+        return Result.Success();
     }
 
-    public void RemoveItem(Guid itemId)
+    public Result RemoveItem(Guid itemId)
     {
         var item = _items.Find(i => i.Id == itemId);
-        if (item != null)
-        {
-            _items.Remove(item);
-            AddDomainEvent(new CartItemRemovedEvent(Id, itemId));
-        }
+        if (item == null)
+            return Result.Failure(CartErrors.ItemNotFound(itemId));
+
+        _items.Remove(item);
+        AddDomainEvent(new CartItemRemovedEvent(Id, itemId));
+        return Result.Success();
     }
 
-    public void Clear()
+    public Result Clear()
     {
         _items.Clear();
         AddDomainEvent(new CartClearedEvent(Id));
+        return Result.Success();
     }
 
-    public void UpdateMetadata(string key, object value)
+    public Result UpdateMetadata(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Metadata key cannot be empty", nameof(key));
+            return Result.Failure(CartErrors.InvalidMetadataKey);
 
         Metadata[key] = value;
+        return Result.Success();
     }
 }

@@ -1,10 +1,13 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity.Enums;
+using Shopilent.Domain.Identity.Errors;
 using Shopilent.Domain.Identity.Events;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Sales;
 using Shopilent.Domain.Shipping;
 using Shopilent.Domain.Shipping.Enums;
+using Shopilent.Domain.Shipping.Errors;
 using Shopilent.Domain.Shipping.ValueObjects;
 
 namespace Shopilent.Domain.Identity;
@@ -18,18 +21,6 @@ public class User : AggregateRoot
 
     private User(Email email, string passwordHash, FullName fullName, UserRole role = UserRole.Customer)
     {
-        if (email == null)
-            throw new ArgumentNullException(nameof(email));
-
-        if (string.IsNullOrWhiteSpace(passwordHash))
-            throw new ArgumentException("Password hash cannot be empty", nameof(passwordHash));
-
-        if (string.IsNullOrWhiteSpace(fullName.FirstName))
-            throw new ArgumentException("First name cannot be empty", nameof(fullName.FirstName));
-
-        if (string.IsNullOrWhiteSpace(fullName.LastName))
-            throw new ArgumentException("Last name cannot be empty", nameof(fullName.LastName));
-
         Email = email;
         PasswordHash = passwordHash;
         FullName = fullName;
@@ -43,32 +34,47 @@ public class User : AggregateRoot
         _orders = new List<Order>();
     }
 
-    public static User Create(Email email, string passwordHash, FullName fullName,
+    public static Result<User> Create(Email email, string passwordHash, FullName fullName,
         UserRole role = UserRole.Customer)
     {
+        if (email == null)
+            return Result.Failure<User>(UserErrors.EmailRequired);
+
+        if (string.IsNullOrWhiteSpace(passwordHash))
+            return Result.Failure<User>(UserErrors.PasswordRequired);
+
+        if (fullName == null || string.IsNullOrWhiteSpace(fullName.FirstName))
+            return Result.Failure<User>(UserErrors.FirstNameRequired);
+
+        if (string.IsNullOrWhiteSpace(fullName.LastName))
+            return Result.Failure<User>(UserErrors.LastNameRequired);
+
         var user = new User(email, passwordHash, fullName, role);
         user.AddDomainEvent(new UserCreatedEvent(user.Id));
-        return user;
+        return Result.Success(user);
     }
 
-    public static User CreatePreVerified(Email email, string passwordHash, FullName fullName,
+    public static Result<User> CreatePreVerified(Email email, string passwordHash, FullName fullName,
         UserRole role = UserRole.Customer)
     {
-        var user = Create(email, passwordHash, fullName, role);
+        var result = Create(email, passwordHash, fullName, role);
+        if (result.IsFailure)
+            return result;
+
+        var user = result.Value;
         user.EmailVerified = true;
-        return user;
+        return Result.Success(user);
     }
 
-    public static User CreateAdmin(Email email, string passwordHash, FullName fullName)
+    public static Result<User> CreateAdmin(Email email, string passwordHash, FullName fullName)
     {
         return Create(email, passwordHash, fullName, UserRole.Admin);
     }
 
-    public static User CreateManager(Email email, string passwordHash, FullName fullName)
+    public static Result<User> CreateManager(Email email, string passwordHash, FullName fullName)
     {
         return Create(email, passwordHash, fullName, UserRole.Manager);
     }
-
 
     public Email Email { get; private set; }
     public FullName FullName { get; private set; }
@@ -97,57 +103,62 @@ public class User : AggregateRoot
     private readonly List<Order> _orders = new();
     public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
-    public void UpdatePersonalInfo(FullName fullName, PhoneNumber phone = null)
+    public Result UpdatePersonalInfo(FullName fullName, PhoneNumber phone = null)
     {
-        if (string.IsNullOrWhiteSpace(fullName.FirstName))
-            throw new ArgumentException("First name cannot be empty", nameof(fullName.FirstName));
+        if (fullName == null || string.IsNullOrWhiteSpace(fullName.FirstName))
+            return Result.Failure(UserErrors.FirstNameRequired);
 
         if (string.IsNullOrWhiteSpace(fullName.LastName))
-            throw new ArgumentException("Last name cannot be empty", nameof(fullName.LastName));
+            return Result.Failure(UserErrors.LastNameRequired);
 
         FullName = fullName;
         Phone = phone;
 
         AddDomainEvent(new UserUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void UpdateEmail(Email email)
+    public Result UpdateEmail(Email email)
     {
         if (email == null)
-            throw new ArgumentNullException(nameof(email));
+            return Result.Failure(UserErrors.EmailRequired);
 
         Email = email;
         EmailVerified = false;
         GenerateEmailVerificationToken();
 
         AddDomainEvent(new UserEmailChangedEvent(Id, email.Value));
+        return Result.Success();
     }
 
-    public void UpdatePassword(string passwordHash)
+    public Result UpdatePassword(string passwordHash)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
-            throw new ArgumentException("Password hash cannot be empty", nameof(passwordHash));
+            return Result.Failure(UserErrors.PasswordRequired);
 
         PasswordHash = passwordHash;
         RevokeAllRefreshTokens("Password changed");
 
         AddDomainEvent(new UserPasswordChangedEvent(Id));
+        return Result.Success();
     }
 
-    public void SetRole(UserRole role)
+    public Result SetRole(UserRole role)
     {
         Role = role;
         AddDomainEvent(new UserRoleChangedEvent(Id, role));
+        return Result.Success();
     }
 
-    public void RecordLoginSuccess()
+    public Result RecordLoginSuccess()
     {
         LastLogin = DateTime.UtcNow;
         FailedLoginAttempts = 0;
         LastFailedAttempt = null;
+        return Result.Success();
     }
 
-    public void RecordLoginFailure()
+    public Result RecordLoginFailure()
     {
         FailedLoginAttempts++;
         LastFailedAttempt = DateTime.UtcNow;
@@ -156,91 +167,115 @@ public class User : AggregateRoot
         {
             IsActive = false;
             AddDomainEvent(new UserLockedOutEvent(Id));
+            return Result.Failure(UserErrors.AccountLocked);
         }
+
+        return Result.Success();
     }
 
-    public void Activate()
+    public Result Activate()
     {
         if (IsActive)
-            return;
+            return Result.Success();
 
         IsActive = true;
         FailedLoginAttempts = 0;
         LastFailedAttempt = null;
 
         AddDomainEvent(new UserStatusChangedEvent(Id, true));
+        return Result.Success();
     }
 
-    public void Deactivate()
+    public Result Deactivate()
     {
         if (!IsActive)
-            return;
+            return Result.Success();
 
         IsActive = false;
         RevokeAllRefreshTokens("User deactivated");
 
         AddDomainEvent(new UserStatusChangedEvent(Id, false));
+        return Result.Success();
     }
 
-    public void VerifyEmail()
+    public Result VerifyEmail()
     {
         EmailVerified = true;
         EmailVerificationToken = null;
         EmailVerificationExpires = null;
 
         AddDomainEvent(new UserEmailVerifiedEvent(Id));
+        return Result.Success();
     }
 
-    public void GenerateEmailVerificationToken()
+    public Result GenerateEmailVerificationToken()
     {
         EmailVerificationToken = Guid.NewGuid().ToString("N");
         EmailVerificationExpires = DateTime.UtcNow.AddDays(1);
+        return Result.Success();
     }
 
-    public void GeneratePasswordResetToken()
+    public Result GeneratePasswordResetToken()
     {
         PasswordResetToken = Guid.NewGuid().ToString("N");
         PasswordResetExpires = DateTime.UtcNow.AddHours(1);
+        return Result.Success();
     }
 
-    public void ClearPasswordResetToken()
+    public Result ClearPasswordResetToken()
     {
         PasswordResetToken = null;
         PasswordResetExpires = null;
+        return Result.Success();
     }
 
-    public RefreshToken AddRefreshToken(string token, DateTime expiresAt, string ipAddress = null,
+    public Result<RefreshToken> AddRefreshToken(string token, DateTime expiresAt, string ipAddress = null,
         string userAgent = null)
     {
+        if (string.IsNullOrWhiteSpace(token))
+            return Result.Failure<RefreshToken>(RefreshTokenErrors.EmptyToken);
+
+        if (expiresAt <= DateTime.UtcNow)
+            return Result.Failure<RefreshToken>(RefreshTokenErrors.InvalidExpiry);
+
         var refreshToken = RefreshToken.Create(this, token, expiresAt, ipAddress, userAgent);
         _refreshTokens.Add(refreshToken);
-        return refreshToken;
+        return Result.Success(refreshToken);
     }
 
-    public void RevokeRefreshToken(string token, string reason)
+    public Result RevokeRefreshToken(string token, string reason)
     {
+        if (string.IsNullOrWhiteSpace(token))
+            return Result.Failure(RefreshTokenErrors.EmptyToken);
+
         var refreshToken = _refreshTokens.Find(rt => rt.Token == token && !rt.IsRevoked);
-        if (refreshToken != null)
-        {
-            refreshToken.Revoke(reason);
-        }
+        if (refreshToken == null)
+            return Result.Failure(RefreshTokenErrors.NotFound(token));
+
+        refreshToken.Revoke(reason);
+        return Result.Success();
     }
 
-    public void RevokeAllRefreshTokens(string reason)
+    public Result RevokeAllRefreshTokens(string reason)
     {
         foreach (var token in _refreshTokens.FindAll(rt => !rt.IsRevoked))
         {
             token.Revoke(reason);
         }
+
+        return Result.Success();
     }
 
-    public Address AddAddress(
+    public Result<Address> AddAddress(
         PostalAddress postalAddress,
         AddressType addressType = AddressType.Shipping,
         PhoneNumber phone = null,
         bool isDefault = false)
     {
-        var address = Address.Create(
+        if (postalAddress == null)
+            return Result.Failure<Address>(AddressErrors.AddressLine1Required);
+
+        var result = Address.Create(
             this,
             postalAddress,
             addressType,
@@ -256,16 +291,17 @@ public class User : AggregateRoot
             }
         }
 
-        _addresses.Add(address);
-        return address;
+        _addresses.Add(result);
+        return Result.Success(result);
     }
 
-    public void RemoveAddress(Guid addressId)
+    public Result RemoveAddress(Guid addressId)
     {
         var address = _addresses.Find(a => a.Id == addressId);
-        if (address != null)
-        {
-            _addresses.Remove(address);
-        }
+        if (address == null)
+            return Result.Failure(AddressErrors.NotFound(addressId));
+
+        _addresses.Remove(address);
+        return Result.Success();
     }
 }

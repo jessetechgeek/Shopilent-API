@@ -11,12 +11,20 @@ public class UserEventTests
     public void User_WhenCreated_ShouldRaiseUserCreatedEvent()
     {
         // Act
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
 
         // Assert
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserCreatedEvent);
         var createdEvent = (UserCreatedEvent)domainEvent;
         Assert.Equal(user.Id, createdEvent.UserId);
@@ -26,14 +34,27 @@ public class UserEventTests
     public void User_WhenUpdated_ShouldRaiseUserUpdatedEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         user.ClearDomainEvents(); // Clear the creation event
 
+        var newFullNameResult = FullName.Create("John", "Doe");
+        Assert.True(newFullNameResult.IsSuccess);
+
         // Act
-        user.UpdatePersonalInfo(new FullName("John", "Doe"), new PhoneNumber("555-123-4567"));
+        var updateResult = user.UpdatePersonalInfo(newFullNameResult.Value);
+        Assert.True(updateResult.IsSuccess);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserUpdatedEvent);
@@ -45,15 +66,28 @@ public class UserEventTests
     public void User_WhenEmailChanged_ShouldRaiseUserEmailChangedEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("old@example.com"),
+        var oldEmailResult = Email.Create("old@example.com");
+        Assert.True(oldEmailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            oldEmailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         user.ClearDomainEvents(); // Clear the creation event
-        var newEmail = Email.Create("new@example.com");
+        
+        var newEmailResult = Email.Create("new@example.com");
+        Assert.True(newEmailResult.IsSuccess);
+        var newEmail = newEmailResult.Value;
 
         // Act
-        user.UpdateEmail(newEmail);
+        var updateResult = user.UpdateEmail(newEmail);
+        Assert.True(updateResult.IsSuccess);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserEmailChangedEvent);
@@ -66,14 +100,24 @@ public class UserEventTests
     public void User_WhenPasswordChanged_ShouldRaiseUserPasswordChangedEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "old_password_hash",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         user.ClearDomainEvents(); // Clear the creation event
 
         // Act
-        user.UpdatePassword("new_password_hash");
+        var updateResult = user.UpdatePassword("new_password_hash");
+        Assert.True(updateResult.IsSuccess);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserPasswordChangedEvent);
@@ -85,14 +129,24 @@ public class UserEventTests
     public void User_WhenRoleChanged_ShouldRaiseUserRoleChangedEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         user.ClearDomainEvents(); // Clear the creation event
 
         // Act
-        user.SetRole(UserRole.Manager);
+        var setRoleResult = user.SetRole(UserRole.Manager);
+        Assert.True(setRoleResult.IsSuccess);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserRoleChangedEvent);
@@ -105,17 +159,29 @@ public class UserEventTests
     public void User_WhenLockedOut_ShouldRaiseUserLockedOutEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         user.ClearDomainEvents(); // Clear the creation event
 
         // Act - record 5 failures to trigger lockout
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 4; i++)
         {
-            user.RecordLoginFailure();
+            var failResult = user.RecordLoginFailure();
+            Assert.True(failResult.IsSuccess);
         }
+        var finalFailResult = user.RecordLoginFailure();
+        Assert.True(finalFailResult.IsFailure);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserLockedOutEvent);
@@ -127,15 +193,28 @@ public class UserEventTests
     public void User_WhenActivated_ShouldRaiseUserStatusChangedEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
-        user.Deactivate(); // Deactivate first
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
+        
+        var deactivateResult = user.Deactivate(); // Deactivate first
+        Assert.True(deactivateResult.IsSuccess);
+        
         user.ClearDomainEvents(); // Clear previous events
 
         // Act
-        user.Activate();
+        var activateResult = user.Activate();
+        Assert.True(activateResult.IsSuccess);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserStatusChangedEvent);
@@ -148,14 +227,24 @@ public class UserEventTests
     public void User_WhenDeactivated_ShouldRaiseUserStatusChangedEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         user.ClearDomainEvents(); // Clear the creation event
 
         // Act
-        user.Deactivate();
+        var deactivateResult = user.Deactivate();
+        Assert.True(deactivateResult.IsSuccess);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserStatusChangedEvent);
@@ -168,15 +257,28 @@ public class UserEventTests
     public void User_WhenEmailVerified_ShouldRaiseUserEmailVerifiedEvent()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        Assert.True(emailResult.IsSuccess);
+        
+        var fullNameResult = FullName.Create("John", "Doe");
+        Assert.True(fullNameResult.IsSuccess);
+        
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
-        user.GenerateEmailVerificationToken();
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
+        
+        var tokenResult = user.GenerateEmailVerificationToken();
+        Assert.True(tokenResult.IsSuccess);
+        
         user.ClearDomainEvents(); // Clear previous events
 
         // Act
-        user.VerifyEmail();
+        var verifyResult = user.VerifyEmail();
+        Assert.True(verifyResult.IsSuccess);
 
         // Assert
         var domainEvent = Assert.Single(user.DomainEvents, e => e is UserEmailVerifiedEvent);

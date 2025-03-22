@@ -1,4 +1,6 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
+using Shopilent.Domain.Shipping.Errors;
 
 namespace Shopilent.Domain.Shipping.ValueObjects;
 
@@ -15,7 +17,23 @@ public class PostalAddress : ValueObject
     {
     }
 
-    public PostalAddress(
+    private PostalAddress(
+        string addressLine1,
+        string city,
+        string state,
+        string country,
+        string postalCode,
+        string addressLine2 = null)
+    {
+        AddressLine1 = addressLine1;
+        AddressLine2 = addressLine2;
+        City = city;
+        State = state;
+        Country = country;
+        PostalCode = postalCode;
+    }
+
+    public static Result<PostalAddress> Create(
         string addressLine1,
         string city,
         string state,
@@ -24,26 +42,21 @@ public class PostalAddress : ValueObject
         string addressLine2 = null)
     {
         if (string.IsNullOrWhiteSpace(addressLine1))
-            throw new ArgumentException("Address line 1 cannot be empty", nameof(addressLine1));
+            return Result.Failure<PostalAddress>(AddressErrors.AddressLine1Required);
 
         if (string.IsNullOrWhiteSpace(city))
-            throw new ArgumentException("City cannot be empty", nameof(city));
+            return Result.Failure<PostalAddress>(AddressErrors.CityRequired);
 
         if (string.IsNullOrWhiteSpace(state))
-            throw new ArgumentException("State cannot be empty", nameof(state));
+            return Result.Failure<PostalAddress>(AddressErrors.StateRequired);
 
         if (string.IsNullOrWhiteSpace(country))
-            throw new ArgumentException("Country cannot be empty", nameof(country));
+            return Result.Failure<PostalAddress>(AddressErrors.CountryRequired);
 
         if (string.IsNullOrWhiteSpace(postalCode))
-            throw new ArgumentException("Postal code cannot be empty", nameof(postalCode));
+            return Result.Failure<PostalAddress>(AddressErrors.PostalCodeRequired);
 
-        AddressLine1 = addressLine1;
-        AddressLine2 = addressLine2;
-        City = city;
-        State = state;
-        Country = country;
-        PostalCode = postalCode;
+        return Result.Success(new PostalAddress(addressLine1, city, state, country, postalCode, addressLine2));
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

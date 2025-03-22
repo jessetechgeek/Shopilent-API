@@ -5,94 +5,108 @@ namespace Shopilent.Domain.Tests.Identity.ValueObjects;
 public class PhoneNumberTests
 {
     [Fact]
-    public void Constructor_WithValidPhoneNumber_ShouldCreatePhoneNumber()
+    public void Create_WithValidPhoneNumber_ShouldCreatePhoneNumber()
     {
         // Arrange
         var phoneNumberStr = "+1-555-123-4567";
         var expected = "+15551234567"; // Only digits and + retained
 
         // Act
-        var phoneNumber = new PhoneNumber(phoneNumberStr);
+        var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.Equal(expected, phoneNumber.Value);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(expected, result.Value.Value);
     }
 
     [Fact]
-    public void Constructor_WithEmptyPhoneNumber_ShouldThrowArgumentException()
+    public void Create_WithEmptyPhoneNumber_ShouldReturnFailure()
     {
         // Arrange
         var phoneNumberStr = string.Empty;
 
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new PhoneNumber(phoneNumberStr));
-        Assert.Equal("Phone number cannot be empty (Parameter 'value')", exception.Message);
+        // Act
+        var result = PhoneNumber.Create(phoneNumberStr);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal("User.PhoneRequired", result.Error.Code);
     }
 
     [Fact]
-    public void Constructor_WithWhitespacePhoneNumber_ShouldThrowArgumentException()
+    public void Create_WithWhitespacePhoneNumber_ShouldReturnFailure()
     {
         // Arrange
         var phoneNumberStr = "   ";
 
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new PhoneNumber(phoneNumberStr));
-        Assert.Equal("Phone number cannot be empty (Parameter 'value')", exception.Message);
+        // Act
+        var result = PhoneNumber.Create(phoneNumberStr);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal("User.PhoneRequired", result.Error.Code);
     }
 
     [Fact]
-    public void Constructor_WithShortPhoneNumber_ShouldThrowArgumentException()
+    public void Create_WithShortPhoneNumber_ShouldReturnFailure()
     {
         // Arrange
         var phoneNumberStr = "12345"; // Less than 7 digits
 
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new PhoneNumber(phoneNumberStr));
-        Assert.Equal("Phone number is too short (Parameter 'value')", exception.Message);
+        // Act
+        var result = PhoneNumber.Create(phoneNumberStr);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal("User.InvalidPhoneFormat", result.Error.Code);
     }
 
     [Fact]
-    public void Constructor_WithSpecialCharacters_ShouldRemoveThem()
+    public void Create_WithSpecialCharacters_ShouldRemoveThem()
     {
         // Arrange
         var phoneNumberStr = "(555) 123-4567";
         var expected = "5551234567";
 
         // Act
-        var phoneNumber = new PhoneNumber(phoneNumberStr);
+        var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.Equal(expected, phoneNumber.Value);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(expected, result.Value.Value);
     }
 
     [Fact]
-    public void Constructor_WithLeadingPlus_ShouldPreserveIt()
+    public void Create_WithLeadingPlus_ShouldPreserveIt()
     {
         // Arrange
         var phoneNumberStr = "+1 555 123 4567";
         var expected = "+15551234567";
 
         // Act
-        var phoneNumber = new PhoneNumber(phoneNumberStr);
+        var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.Equal(expected, phoneNumber.Value);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(expected, result.Value.Value);
     }
 
     [Fact]
-    public void Constructor_WithLetters_ShouldRemoveThem()
+    public void Create_WithLetters_ShouldRemoveThemAndReturnFailureIfTooShort()
     {
         // Arrange
         var phoneNumberStr = "555-CALL-NOW";
-        var expected = "555"; // This would fail the length check in practice
 
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new PhoneNumber(phoneNumberStr));
-        Assert.Equal("Phone number is too short (Parameter 'value')", exception.Message);
+        // Act
+        var result = PhoneNumber.Create(phoneNumberStr);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal("User.InvalidPhoneFormat", result.Error.Code);
     }
 
     [Fact]
-    public void Constructor_WithValidFormattedNumber_ShouldNormalizeFormat()
+    public void Create_WithValidFormattedNumber_ShouldNormalizeFormat()
     {
         // Arrange
         var phoneNumberVariations = new[]
@@ -108,14 +122,16 @@ public class PhoneNumberTests
         // Act & Assert
         foreach (var number in phoneNumberVariations)
         {
-            var phoneNumber = new PhoneNumber(number);
+            var result = PhoneNumber.Create(number);
+            Assert.True(result.IsSuccess);
+            
             if (number.StartsWith("+"))
             {
-                Assert.Equal(expected, phoneNumber.Value);
+                Assert.Equal(expected, result.Value.Value);
             }
             else
             {
-                Assert.Equal(expectedWithoutPlus, phoneNumber.Value);
+                Assert.Equal(expectedWithoutPlus, result.Value.Value);
             }
         }
     }
@@ -124,8 +140,14 @@ public class PhoneNumberTests
     public void Equals_WithSameValue_ShouldReturnTrue()
     {
         // Arrange
-        var phoneNumber1 = new PhoneNumber("+1-555-123-4567");
-        var phoneNumber2 = new PhoneNumber("+1 (555) 123-4567");
+        var result1 = PhoneNumber.Create("+1-555-123-4567");
+        var result2 = PhoneNumber.Create("+1 (555) 123-4567");
+        
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        
+        var phoneNumber1 = result1.Value;
+        var phoneNumber2 = result2.Value;
 
         // Act & Assert
         Assert.True(phoneNumber1.Equals(phoneNumber2));
@@ -137,8 +159,14 @@ public class PhoneNumberTests
     public void Equals_WithDifferentValue_ShouldReturnFalse()
     {
         // Arrange
-        var phoneNumber1 = new PhoneNumber("+1-555-123-4567");
-        var phoneNumber2 = new PhoneNumber("+1-555-123-4568");
+        var result1 = PhoneNumber.Create("+1-555-123-4567");
+        var result2 = PhoneNumber.Create("+1-555-123-4568");
+        
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        
+        var phoneNumber1 = result1.Value;
+        var phoneNumber2 = result2.Value;
 
         // Act & Assert
         Assert.False(phoneNumber1.Equals(phoneNumber2));
@@ -152,12 +180,14 @@ public class PhoneNumberTests
         // Arrange
         var phoneNumberStr = "+1-555-123-4567";
         var expected = "+15551234567";
-        var phoneNumber = new PhoneNumber(phoneNumberStr);
+        var result = PhoneNumber.Create(phoneNumberStr);
+        Assert.True(result.IsSuccess);
+        var phoneNumber = result.Value;
 
         // Act
-        var result = phoneNumber.ToString();
+        var stringResult = phoneNumber.ToString();
 
         // Assert
-        Assert.Equal(expected, result);
+        Assert.Equal(expected, stringResult);
     }
 }

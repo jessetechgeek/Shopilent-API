@@ -1,4 +1,6 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
+using Shopilent.Domain.Identity.Errors;
 
 namespace Shopilent.Domain.Identity.ValueObjects;
 
@@ -10,19 +12,24 @@ public class PhoneNumber : ValueObject
     {
     }
 
-    public PhoneNumber(string value)
+    private PhoneNumber(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<PhoneNumber> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Phone number cannot be empty", nameof(value));
+            return Result.Failure<PhoneNumber>(UserErrors.PhoneRequired);
 
         var digitsOnly = value.StartsWith("+")
             ? "+" + new string(value.Substring(1).Where(char.IsDigit).ToArray())
             : new string(value.Where(char.IsDigit).ToArray());
 
         if (digitsOnly.Length < 7)
-            throw new ArgumentException("Phone number is too short", nameof(value));
+            return Result.Failure<PhoneNumber>(UserErrors.InvalidPhoneFormat);
 
-        Value = digitsOnly;
+        return Result.Success(new PhoneNumber(digitsOnly));
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

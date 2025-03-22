@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
+using Shopilent.Domain.Identity.Errors;
 
 namespace Shopilent.Domain.Identity.ValueObjects;
 
@@ -13,40 +15,31 @@ public class Email : ValueObject
 
     private Email(string value)
     {
+        Value = value.ToLowerInvariant();
+    }
+
+    public static Result<Email> Create(string value)
+    {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Email cannot be empty", nameof(value));
+            return Result.Failure<Email>(UserErrors.EmailRequired);
 
         var regex = new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
         if (!regex.IsMatch(value))
-            throw new ArgumentException("Invalid email format", nameof(value));
+            return Result.Failure<Email>(UserErrors.InvalidEmailFormat);
 
         if (value.Contains("..") || value.StartsWith(".") || value.EndsWith(".") || 
             value.Contains("@.") || value.Contains(".@") || value.StartsWith("@") ||
             value.Split('@').Length != 2 || !value.Split('@')[1].Contains("."))
         {
-            throw new ArgumentException("Invalid email format", nameof(value));
+            return Result.Failure<Email>(UserErrors.InvalidEmailFormat);
         }
 
-        Value = value.ToLowerInvariant();
+        return Result.Success(new Email(value));
     }
 
-    public static Email Create(string value)
+    public static Result<Email> TryCreate(string value)
     {
-        return new Email(value);
-    }
-
-    public static bool TryCreate(string value, out Email email)
-    {
-        try
-        {
-            email = Create(value);
-            return true;
-        }
-        catch
-        {
-            email = null;
-            return false;
-        }
+        return Create(value);
     }
 
     protected override IEnumerable<object> GetEqualityComponents()
