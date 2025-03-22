@@ -1,5 +1,3 @@
-using System;
-using Xunit;
 using Shopilent.Domain.Identity.ValueObjects;
 
 namespace Shopilent.Domain.Tests.Identity.ValueObjects;
@@ -22,15 +20,16 @@ public class EmailTests
         foreach (var validEmail in validEmails)
         {
             // Act
-            var email = Email.Create(validEmail);
+            var result = Email.Create(validEmail);
 
             // Assert
-            Assert.Equal(validEmail.ToLowerInvariant(), email.Value);
+            Assert.True(result.IsSuccess);
+            Assert.Equal(validEmail.ToLowerInvariant(), result.Value.Value);
         }
     }
 
     [Fact]
-    public void Create_WithInvalidEmail_ShouldThrowArgumentException()
+    public void Create_WithInvalidEmail_ShouldReturnFailure()
     {
         // Arrange
         var invalidEmails = new[]
@@ -49,16 +48,19 @@ public class EmailTests
 
         foreach (var invalidEmail in invalidEmails)
         {
-            // Act & Assert
+            // Act
+            var result = Email.Create(invalidEmail);
+
+            // Assert
             if (string.IsNullOrWhiteSpace(invalidEmail))
             {
-                var exception = Assert.Throws<ArgumentException>(() => Email.Create(invalidEmail));
-                Assert.Equal("Email cannot be empty (Parameter 'value')", exception.Message);
+                Assert.True(result.IsFailure);
+                Assert.Equal("User.EmailRequired", result.Error.Code);
             }
             else
             {
-                var exception = Assert.Throws<ArgumentException>(() => Email.Create(invalidEmail));
-                Assert.Equal("Invalid email format (Parameter 'value')", exception.Message);
+                Assert.True(result.IsFailure);
+                Assert.Equal("User.InvalidEmailFormat", result.Error.Code);
             }
         }
     }
@@ -71,47 +73,54 @@ public class EmailTests
         var expectedEmail = "user.name@example.com";
 
         // Act
-        var email = Email.Create(mixedCaseEmail);
+        var result = Email.Create(mixedCaseEmail);
 
         // Assert
-        Assert.Equal(expectedEmail, email.Value);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(expectedEmail, result.Value.Value);
     }
 
     [Fact]
-    public void TryCreate_WithValidEmail_ShouldReturnTrueAndEmail()
+    public void TryCreate_WithValidEmail_ShouldReturnSuccessAndEmail()
     {
         // Arrange
         var validEmail = "user@example.com";
 
         // Act
-        var result = Email.TryCreate(validEmail, out var email);
+        var result = Email.TryCreate(validEmail);
 
         // Assert
-        Assert.True(result);
-        Assert.NotNull(email);
-        Assert.Equal(validEmail, email.Value);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(validEmail, result.Value.Value);
     }
 
     [Fact]
-    public void TryCreate_WithInvalidEmail_ShouldReturnFalseAndNullEmail()
+    public void TryCreate_WithInvalidEmail_ShouldReturnFailure()
     {
         // Arrange
         var invalidEmail = "invalid@@example.com";
 
         // Act
-        var result = Email.TryCreate(invalidEmail, out var email);
+        var result = Email.TryCreate(invalidEmail);
 
         // Assert
-        Assert.False(result);
-        Assert.Null(email);
+        Assert.True(result.IsFailure);
+        Assert.Equal("User.InvalidEmailFormat", result.Error.Code);
     }
 
     [Fact]
     public void Equals_WithSameEmail_ShouldReturnTrue()
     {
         // Arrange
-        var email1 = Email.Create("user@example.com");
-        var email2 = Email.Create("user@example.com");
+        var email1Result = Email.Create("user@example.com");
+        var email2Result = Email.Create("user@example.com");
+        
+        Assert.True(email1Result.IsSuccess);
+        Assert.True(email2Result.IsSuccess);
+        
+        var email1 = email1Result.Value;
+        var email2 = email2Result.Value;
 
         // Act & Assert
         Assert.True(email1.Equals(email2));
@@ -123,8 +132,14 @@ public class EmailTests
     public void Equals_WithDifferentEmail_ShouldReturnFalse()
     {
         // Arrange
-        var email1 = Email.Create("user1@example.com");
-        var email2 = Email.Create("user2@example.com");
+        var email1Result = Email.Create("user1@example.com");
+        var email2Result = Email.Create("user2@example.com");
+        
+        Assert.True(email1Result.IsSuccess);
+        Assert.True(email2Result.IsSuccess);
+        
+        var email1 = email1Result.Value;
+        var email2 = email2Result.Value;
 
         // Act & Assert
         Assert.False(email1.Equals(email2));
@@ -137,7 +152,9 @@ public class EmailTests
     {
         // Arrange
         var emailValue = "user@example.com";
-        var email = Email.Create(emailValue);
+        var emailResult = Email.Create(emailValue);
+        Assert.True(emailResult.IsSuccess);
+        var email = emailResult.Value;
 
         // Act
         var result = email.ToString();

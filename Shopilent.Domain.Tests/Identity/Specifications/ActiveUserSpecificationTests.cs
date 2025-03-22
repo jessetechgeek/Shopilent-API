@@ -10,10 +10,15 @@ public class ActiveUserSpecificationTests
     public void IsSatisfiedBy_WithActiveUser_ShouldReturnTrue()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        var fullNameResult = FullName.Create("John", "Doe");
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         var specification = new ActiveUserSpecification();
 
         // Act
@@ -27,11 +32,18 @@ public class ActiveUserSpecificationTests
     public void IsSatisfiedBy_WithInactiveUser_ShouldReturnFalse()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("test@example.com"),
+        var emailResult = Email.Create("test@example.com");
+        var fullNameResult = FullName.Create("John", "Doe");
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
-        user.Deactivate();
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
+        var deactivateResult = user.Deactivate();
+        Assert.True(deactivateResult.IsSuccess);
+        
         var specification = new ActiveUserSpecification();
 
         // Act

@@ -10,10 +10,15 @@ public class AdminUserSpecificationTests
     public void IsSatisfiedBy_WithAdminUser_ShouldReturnTrue()
     {
         // Arrange
-        var user = User.CreateAdmin(
-            Email.Create("admin@example.com"),
+        var emailResult = Email.Create("admin@example.com");
+        var fullNameResult = FullName.Create("Admin", "User");
+        var userResult = User.CreateAdmin(
+            emailResult.Value,
             "hashed_password",
-            new FullName("Admin", "User"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         var specification = new AdminUserSpecification();
 
         // Act
@@ -27,10 +32,15 @@ public class AdminUserSpecificationTests
     public void IsSatisfiedBy_WithNonAdminUser_ShouldReturnFalse()
     {
         // Arrange
-        var user = User.Create(
-            Email.Create("user@example.com"),
+        var emailResult = Email.Create("user@example.com");
+        var fullNameResult = FullName.Create("John", "Doe");
+        var userResult = User.Create(
+            emailResult.Value,
             "hashed_password",
-            new FullName("John", "Doe"));
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         var specification = new AdminUserSpecification();
 
         // Act
@@ -44,11 +54,15 @@ public class AdminUserSpecificationTests
     public void IsSatisfiedBy_WithManagerUser_ShouldReturnFalse()
     {
         // Arrange
-        var user = User.CreateManager(
-            Email.Create("manager@example.com"),
+        var emailResult = Email.Create("manager@example.com");
+        var fullNameResult = FullName.Create("Manager", "User");
+        var userResult = User.CreateManager(
+            emailResult.Value,
             "hashed_password",
-            new FullName("Manager", "User"));
-
+            fullNameResult.Value);
+            
+        Assert.True(userResult.IsSuccess);
+        var user = userResult.Value;
         var specification = new AdminUserSpecification();
 
         // Act
