@@ -1,4 +1,6 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
+using Shopilent.Domain.Payments.Errors;
 
 namespace Shopilent.Domain.Payments.ValueObjects;
 
@@ -12,20 +14,25 @@ public class PaymentCardDetails : ValueObject
     {
     }
 
-    public PaymentCardDetails(string brand, string lastFourDigits, DateTime expiryDate)
+    private PaymentCardDetails(string brand, string lastFourDigits, DateTime expiryDate)
     {
-        if (string.IsNullOrWhiteSpace(brand))
-            throw new ArgumentException("Card brand cannot be empty", nameof(brand));
-
-        if (string.IsNullOrWhiteSpace(lastFourDigits) || lastFourDigits.Length != 4 || !lastFourDigits.All(char.IsDigit))
-            throw new ArgumentException("Last four digits must be exactly 4 digits", nameof(lastFourDigits));
-
-        if (expiryDate < DateTime.UtcNow.Date)
-            throw new ArgumentException("Expiry date cannot be in the past", nameof(expiryDate));
-
         Brand = brand;
         LastFourDigits = lastFourDigits;
         ExpiryDate = expiryDate;
+    }
+
+    public static Result<PaymentCardDetails> Create(string brand, string lastFourDigits, DateTime expiryDate)
+    {
+        if (string.IsNullOrWhiteSpace(brand))
+            return Result.Failure<PaymentCardDetails>(PaymentMethodErrors.InvalidCardDetails);
+
+        if (string.IsNullOrWhiteSpace(lastFourDigits) || lastFourDigits.Length != 4 || !lastFourDigits.All(char.IsDigit))
+            return Result.Failure<PaymentCardDetails>(PaymentMethodErrors.InvalidCardDetails);
+
+        if (expiryDate < DateTime.UtcNow.Date)
+            return Result.Failure<PaymentCardDetails>(PaymentMethodErrors.ExpiredCard);
+
+        return Result.Success(new PaymentCardDetails(brand, lastFourDigits, expiryDate));
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

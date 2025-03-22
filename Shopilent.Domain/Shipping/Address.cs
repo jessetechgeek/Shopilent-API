@@ -1,12 +1,16 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
+using Shopilent.Domain.Identity.Errors;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Shipping.Enums;
+using Shopilent.Domain.Shipping.Errors;
+using Shopilent.Domain.Shipping.Events;
 using Shopilent.Domain.Shipping.ValueObjects;
 
 namespace Shopilent.Domain.Shipping;
 
-public class Address : Entity
+public class Address : AggregateRoot
 {
     private Address()
     {
@@ -20,24 +24,6 @@ public class Address : Entity
         PhoneNumber phone = null,
         bool isDefault = false)
     {
-        if (user == null)
-            throw new ArgumentNullException(nameof(user));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.AddressLine1))
-            throw new ArgumentException("Address line 1 cannot be empty", nameof(postalAddress.AddressLine1));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.City))
-            throw new ArgumentException("City cannot be empty", nameof(postalAddress.City));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.State))
-            throw new ArgumentException("State cannot be empty", nameof(postalAddress.State));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.Country))
-            throw new ArgumentException("Country cannot be empty", nameof(postalAddress.Country));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.PostalCode))
-            throw new ArgumentException("Postal code cannot be empty", nameof(postalAddress.PostalCode));
-
         UserId = user.Id;
         PostalAddress = postalAddress;
         Phone = phone;
@@ -45,38 +31,43 @@ public class Address : Entity
         AddressType = addressType;
     }
 
-    public static Address Create(
+    public static Result<Address> Create(
         User user,
         PostalAddress postalAddress,
         AddressType addressType = AddressType.Shipping,
         PhoneNumber phone = null,
         bool isDefault = false)
     {
-        return new Address(user, postalAddress, addressType, phone,
-            isDefault);
+        if (user == null)
+            return Result.Failure<Address>(UserErrors.NotFound(Guid.Empty));
+
+        if (postalAddress == null)
+            return Result.Failure<Address>(AddressErrors.AddressLine1Required);
+
+        var address = new Address(user, postalAddress, addressType, phone, isDefault);
+        address.AddDomainEvent(new AddressCreatedEvent(address.Id, user.Id));
+        return Result.Success(address);
     }
 
-    public static Address CreateShipping(
+    public static Result<Address> CreateShipping(
         User user,
         PostalAddress postalAddress,
         PhoneNumber phone = null,
         bool isDefault = false)
     {
-        return Create(user, postalAddress, AddressType.Shipping, phone,
-            isDefault);
+        return Create(user, postalAddress, AddressType.Shipping, phone, isDefault);
     }
 
-    public static Address CreateBilling(
+    public static Result<Address> CreateBilling(
         User user,
         PostalAddress postalAddress,
         PhoneNumber phone = null,
         bool isDefault = false)
     {
-        return Create(user, postalAddress, AddressType.Billing, phone,
-            isDefault);
+        return Create(user, postalAddress, AddressType.Billing, phone, isDefault);
     }
 
-    public static Address CreateDefaultAddress(
+    public static Result<Address> CreateDefaultAddress(
         User user,
         PostalAddress postalAddress,
         AddressType addressType = AddressType.Both,
@@ -100,37 +91,42 @@ public class Address : Entity
     public bool IsDefault { get; private set; }
     public AddressType AddressType { get; private set; }
 
-    public void Update(
+    public Result Update(
         PostalAddress postalAddress,
         PhoneNumber phone = null)
     {
-        if (string.IsNullOrWhiteSpace(postalAddress.AddressLine1))
-            throw new ArgumentException("Address line 1 cannot be empty", nameof(postalAddress.AddressLine1));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.City))
-            throw new ArgumentException("City cannot be empty", nameof(postalAddress.City));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.State))
-            throw new ArgumentException("State cannot be empty", nameof(postalAddress.State));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.Country))
-            throw new ArgumentException("Country cannot be empty", nameof(postalAddress.Country));
-
-        if (string.IsNullOrWhiteSpace(postalAddress.PostalCode))
-            throw new ArgumentException("Postal code cannot be empty", nameof(postalAddress.PostalCode));
-
+        if (postalAddress == null)
+            return Result.Failure(AddressErrors.AddressLine1Required);
 
         PostalAddress = postalAddress;
         Phone = phone;
+
+        AddDomainEvent(new AddressUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void SetAddressType(AddressType addressType)
+    public Result SetAddressType(AddressType addressType)
     {
+        if (AddressType == addressType)
+            return Result.Success();
+
         AddressType = addressType;
+
+        AddDomainEvent(new AddressUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void SetDefault(bool isDefault)
+    public Result SetDefault(bool isDefault)
     {
+        if (IsDefault == isDefault)
+            return Result.Success();
+
         IsDefault = isDefault;
+
+        if (isDefault)
+            AddDomainEvent(new DefaultAddressChangedEvent(Id, UserId, AddressType));
+
+        AddDomainEvent(new AddressUpdatedEvent(Id));
+        return Result.Success();
     }
 }

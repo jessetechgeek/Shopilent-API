@@ -1,4 +1,6 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
+using Shopilent.Domain.Identity.Errors;
 
 namespace Shopilent.Domain.Identity.ValueObjects;
 
@@ -12,17 +14,22 @@ public class FullName : ValueObject
     {
     }
 
-    public FullName(string firstName, string lastName, string middleName = null)
+    private FullName(string firstName, string lastName, string middleName = null)
     {
-        if (string.IsNullOrWhiteSpace(firstName))
-            throw new ArgumentException("First name cannot be empty", nameof(firstName));
-
-        if (string.IsNullOrWhiteSpace(lastName))
-            throw new ArgumentException("Last name cannot be empty", nameof(lastName));
-
         FirstName = firstName;
         LastName = lastName;
         MiddleName = middleName;
+    }
+    
+    public static Result<FullName> Create(string firstName, string lastName, string middleName = null)
+    {
+        if (string.IsNullOrWhiteSpace(firstName))
+            return Result.Failure<FullName>(UserErrors.FirstNameRequired);
+
+        if (string.IsNullOrWhiteSpace(lastName))
+            return Result.Failure<FullName>(UserErrors.LastNameRequired);
+
+        return Result.Success(new FullName(firstName, lastName, middleName));
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

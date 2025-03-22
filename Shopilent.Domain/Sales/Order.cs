@@ -1,11 +1,15 @@
 using Shopilent.Domain.Catalog;
+using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Sales.Enums;
 using Shopilent.Domain.Sales.Events;
 using Shopilent.Domain.Sales.ValueObjects;
 using Shopilent.Domain.Shipping;
 using Shopilent.Domain.Payments.Enums;
+using Shopilent.Domain.Payments.Errors;
+using Shopilent.Domain.Sales.Errors;
 
 namespace Shopilent.Domain.Sales;
 
@@ -25,15 +29,6 @@ public class Order : AggregateRoot
         Money shippingCost,
         string shippingMethod = null)
     {
-        if (subtotal == null)
-            throw new ArgumentNullException(nameof(subtotal));
-
-        if (tax == null)
-            throw new ArgumentNullException(nameof(tax));
-
-        if (shippingCost == null)
-            throw new ArgumentNullException(nameof(shippingCost));
-
         UserId = user?.Id;
         ShippingAddressId = shippingAddress?.Id;
         BillingAddressId = billingAddress?.Id;
@@ -43,13 +38,38 @@ public class Order : AggregateRoot
         Total = subtotal.Add(tax).Add(shippingCost);
         ShippingMethod = shippingMethod;
         Status = OrderStatus.Pending;
-        PaymentStatus = PaymentStatus.Pending; // Changed to use the Payments namespace enum
+        PaymentStatus = PaymentStatus.Pending;
         Metadata = new Dictionary<string, object>();
 
         _items = new List<OrderItem>();
     }
 
-    public static Order Create(
+    // public static Result<Order> Create(
+    //     User user,
+    //     Address shippingAddress,
+    //     Address billingAddress,
+    //     Money subtotal,
+    //     Money tax,
+    //     Money shippingCost,
+    //     string shippingMethod = null)
+    // {
+    //     if (subtotal == null)
+    //         return Result.Failure<Order>(OrderErrors.NegativeAmount);
+    //
+    //     if (tax == null)
+    //         return Result.Failure<Order>(OrderErrors.NegativeAmount);
+    //
+    //     if (shippingCost == null)
+    //         return Result.Failure<Order>(OrderErrors.NegativeAmount);
+    //
+    //     if (shippingAddress == null)
+    //         return Result.Failure<Order>(OrderErrors.ShippingAddressRequired);
+    //
+    //     var order = new Order(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
+    //     order.AddDomainEvent(new OrderCreatedEvent(order.Id));
+    //     return Result.Success(order);
+    // }
+    public static Result<Order> Create(
         User user,
         Address shippingAddress,
         Address billingAddress,
@@ -58,12 +78,24 @@ public class Order : AggregateRoot
         Money shippingCost,
         string shippingMethod = null)
     {
+        if (subtotal == null)
+            return Result.Failure<Order>(PaymentErrors.NegativeAmount);
+
+        if (tax == null)
+            return Result.Failure<Order>(PaymentErrors.NegativeAmount);
+
+        if (shippingCost == null)
+            return Result.Failure<Order>(PaymentErrors.NegativeAmount);
+
+        if (shippingAddress == null)
+            return Result.Failure<Order>(OrderErrors.ShippingAddressRequired);
+
         var order = new Order(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
         order.AddDomainEvent(new OrderCreatedEvent(order.Id));
-        return order;
+        return Result.Success(order);
     }
 
-    public static Order CreateFromCart(
+    public static Result<Order> CreateFromCart(
         Cart cart,
         User user,
         Address shippingAddress,
@@ -72,16 +104,24 @@ public class Order : AggregateRoot
         Money shippingCost,
         string shippingMethod = null)
     {
-        // In real implementation, you would calculate subtotal from cart items
+        if (cart == null)
+            return Result.Failure<Order>(CartErrors.CartNotFound(Guid.Empty));
+
+        if (cart.Items.Count == 0)
+            return Result.Failure<Order>(OrderErrors.EmptyCart);
+
+        // In a real implementation, you would calculate subtotal from cart items
         var subtotal = Money.Zero("USD"); // Placeholder
-        var order = Create(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
+        var result = Create(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
 
-        // In real implementation, you would transfer cart items to order items here
+        if (result.IsFailure)
+            return result;
 
-        return order;
+        // In a real implementation, you would transfer cart items to order items here
+        return result;
     }
 
-    public static Order CreatePaidOrder(
+    public static Result<Order> CreatePaidOrder(
         User user,
         Address shippingAddress,
         Address billingAddress,
@@ -90,82 +130,91 @@ public class Order : AggregateRoot
         Money shippingCost,
         string shippingMethod = null)
     {
-        var order = Create(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
-        order.MarkAsPaid();
-        return order;
+        var result = Create(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
+        if (result.IsFailure)
+            return result;
+
+        var order = result.Value;
+        var markAsPaidResult = order.MarkAsPaid();
+        if (markAsPaidResult.IsFailure)
+            return Result.Failure<Order>(markAsPaidResult.Error);
+
+        return Result.Success(order);
     }
 
     public Guid? UserId { get; private set; }
     public Guid? BillingAddressId { get; private set; }
     public Guid? ShippingAddressId { get; private set; }
-    public Guid? PaymentMethodId { get; private set; } // Added to match DB schema
+    public Guid? PaymentMethodId { get; private set; }
     public Money Subtotal { get; private set; }
     public Money Tax { get; private set; }
     public Money ShippingCost { get; private set; }
     public Money Total { get; private set; }
     public OrderStatus Status { get; private set; }
-    public PaymentStatus PaymentStatus { get; private set; } // Changed to use the Payments namespace enum
+    public PaymentStatus PaymentStatus { get; private set; }
     public string ShippingMethod { get; private set; }
     public Dictionary<string, object> Metadata { get; private set; } = new();
 
     private readonly List<OrderItem> _items = new();
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
-    public OrderItem AddItem(Product product, int quantity, Money unitPrice, ProductVariant variant = null)
+    public Result<OrderItem> AddItem(Product product, int quantity, Money unitPrice, ProductVariant variant = null)
     {
         if (product == null)
-            throw new ArgumentNullException(nameof(product));
+            return Result.Failure<OrderItem>(ProductErrors.NotFound(Guid.Empty));
 
         if (quantity <= 0)
-            throw new ArgumentException("Quantity must be positive", nameof(quantity));
+            return Result.Failure<OrderItem>(OrderErrors.InvalidQuantity);
 
         if (unitPrice == null)
-            throw new ArgumentNullException(nameof(unitPrice));
+            return Result.Failure<OrderItem>(OrderErrors.NegativeAmount);
 
         if (Status != OrderStatus.Pending)
-            throw new InvalidOperationException("Cannot modify a non-pending order");
+            return Result.Failure<OrderItem>(OrderErrors.InvalidOrderStatus("add item"));
 
         var item = OrderItem.Create(this, product, quantity, unitPrice, variant);
         _items.Add(item);
 
         RecalculateOrderTotals();
 
-        return item;
+        return Result.Success(item);
     }
 
-    public void UpdateOrderStatus(OrderStatus status)
+    public Result UpdateOrderStatus(OrderStatus status)
     {
         if (Status == status)
-            return;
+            return Result.Success();
 
         var oldStatus = Status;
         Status = status;
 
         AddDomainEvent(new OrderStatusChangedEvent(Id, oldStatus, status));
+        return Result.Success();
     }
 
-    public void UpdatePaymentStatus(PaymentStatus status)
+    public Result UpdatePaymentStatus(PaymentStatus status)
     {
         if (PaymentStatus == status)
-            return;
+            return Result.Success();
 
         var oldStatus = PaymentStatus;
         PaymentStatus = status;
 
         AddDomainEvent(new OrderPaymentStatusChangedEvent(Id, oldStatus, status));
+        return Result.Success();
     }
 
-    public void MarkAsPaid()
+    public Result MarkAsPaid()
     {
-        if (PaymentStatus == PaymentStatus.Succeeded) // Changed from Paid to Succeeded
-            return;
+        if (PaymentStatus == PaymentStatus.Succeeded)
+            return Result.Success();
 
         // Store old status values before changing them
         var oldPaymentStatus = PaymentStatus;
         var oldStatus = Status;
 
         // Update statuses
-        PaymentStatus = PaymentStatus.Succeeded; // Changed from Paid to Succeeded
+        PaymentStatus = PaymentStatus.Succeeded;
         if (Status == OrderStatus.Pending)
             Status = OrderStatus.Processing;
 
@@ -178,15 +227,16 @@ public class Order : AggregateRoot
 
         // Add the OrderPaidEvent
         AddDomainEvent(new OrderPaidEvent(Id));
+        return Result.Success();
     }
 
-    public void MarkAsShipped(string trackingNumber = null)
+    public Result MarkAsShipped(string trackingNumber = null)
     {
         if (Status == OrderStatus.Shipped)
-            return;
+            return Result.Success();
 
-        if (PaymentStatus != PaymentStatus.Succeeded) // Changed from Paid to Succeeded
-            throw new InvalidOperationException("Cannot ship an unpaid order");
+        if (PaymentStatus != PaymentStatus.Succeeded)
+            return Result.Failure(OrderErrors.PaymentRequired);
 
         Status = OrderStatus.Shipped;
 
@@ -194,28 +244,30 @@ public class Order : AggregateRoot
             Metadata["trackingNumber"] = trackingNumber;
 
         AddDomainEvent(new OrderShippedEvent(Id));
+        return Result.Success();
     }
 
-    public void MarkAsDelivered()
+    public Result MarkAsDelivered()
     {
         if (Status == OrderStatus.Delivered)
-            return;
+            return Result.Success();
 
         if (Status != OrderStatus.Shipped)
-            throw new InvalidOperationException("Order must be shipped before it can be delivered");
+            return Result.Failure(OrderErrors.InvalidOrderStatus("mark as delivered"));
 
         Status = OrderStatus.Delivered;
 
         AddDomainEvent(new OrderDeliveredEvent(Id));
+        return Result.Success();
     }
 
-    public void Cancel(string reason = null)
+    public Result Cancel(string reason = null)
     {
         if (Status == OrderStatus.Cancelled)
-            return;
+            return Result.Success();
 
         if (Status == OrderStatus.Delivered)
-            throw new InvalidOperationException("Cannot cancel a delivered order");
+            return Result.Failure(OrderErrors.InvalidOrderStatus("cancel"));
 
         Status = OrderStatus.Cancelled;
 
@@ -223,14 +275,25 @@ public class Order : AggregateRoot
             Metadata["cancellationReason"] = reason;
 
         AddDomainEvent(new OrderCancelledEvent(Id));
+        return Result.Success();
     }
 
-    public void UpdateMetadata(string key, object value)
+    public Result UpdateMetadata(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Metadata key cannot be empty", nameof(key));
+            return Result.Failure(OrderErrors.InvalidMetadataKey);
 
         Metadata[key] = value;
+        return Result.Success();
+    }
+
+    public Result SetPaymentMethod(Guid paymentMethodId)
+    {
+        if (paymentMethodId == Guid.Empty)
+            return Result.Failure(PaymentErrors.PaymentMethodNotFound(paymentMethodId));
+
+        PaymentMethodId = paymentMethodId;
+        return Result.Success();
     }
 
     private void RecalculateOrderTotals()
@@ -245,10 +308,5 @@ public class Order : AggregateRoot
 
         Subtotal = newSubtotal;
         Total = Subtotal.Add(Tax).Add(ShippingCost);
-    }
-
-    public void SetPaymentMethod(Guid paymentMethodId)
-    {
-        PaymentMethodId = paymentMethodId;
     }
 }

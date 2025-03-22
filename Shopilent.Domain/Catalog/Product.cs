@@ -1,6 +1,8 @@
+using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Catalog.Events;
 using Shopilent.Domain.Catalog.ValueObjects;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Sales.ValueObjects;
 
 namespace Shopilent.Domain.Catalog;
@@ -14,15 +16,6 @@ public class Product : AggregateRoot
 
     private Product(string name, Slug slug, Money basePrice, string sku = null)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be empty", nameof(name));
-
-        if (string.IsNullOrWhiteSpace(slug.Value))
-            throw new ArgumentException("Slug cannot be empty", nameof(slug));
-
-        if (basePrice == null)
-            throw new ArgumentNullException(nameof(basePrice));
-
         Name = name;
         Slug = slug;
         BasePrice = basePrice;
@@ -35,27 +28,43 @@ public class Product : AggregateRoot
         _variants = new List<ProductVariant>();
     }
 
-    public static Product Create(string name, Slug slug, Money basePrice, string sku = null)
+    public static Result<Product> Create(string name, Slug slug, Money basePrice, string sku = null)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure<Product>(ProductErrors.NameRequired);
+
+        if (slug == null || string.IsNullOrWhiteSpace(slug.Value))
+            return Result.Failure<Product>(ProductErrors.SlugRequired);
+
+        if (basePrice == null)
+            return Result.Failure<Product>(ProductErrors.NegativePrice);
+
         var product = new Product(name, slug, basePrice, sku);
         product.AddDomainEvent(new ProductCreatedEvent(product.Id));
-        return product;
+        return Result.Success(product);
     }
 
-    public static Product CreateWithDescription(string name, Slug slug, Money basePrice, string description,
+    public static Result<Product> CreateWithDescription(string name, Slug slug, Money basePrice, string description,
         string sku = null)
     {
-        var product = Create(name, slug, basePrice, sku);
+        var result = Create(name, slug, basePrice, sku);
+        if (result.IsFailure)
+            return result;
+
+        var product = result.Value;
         product.Description = description;
-        return product;
+        return Result.Success(product);
     }
 
-    public static Product CreateInactive(string name, Slug slug, Money basePrice, string sku = null)
+    public static Result<Product> CreateInactive(string name, Slug slug, Money basePrice, string sku = null)
     {
-        var product = new Product(name, slug, basePrice, sku);
+        var result = Create(name, slug, basePrice, sku);
+        if (result.IsFailure)
+            return result;
+
+        var product = result.Value;
         product.IsActive = false;
-        product.AddDomainEvent(new ProductCreatedEvent(product.Id));
-        return product;
+        return Result.Success(product);
     }
 
     public string Name { get; private set; }
@@ -75,16 +84,16 @@ public class Product : AggregateRoot
     private readonly List<ProductVariant> _variants = new();
     public IReadOnlyCollection<ProductVariant> Variants => _variants.AsReadOnly();
 
-    public void Update(string name, Slug slug, Money basePrice, string description = null, string sku = null)
+    public Result Update(string name, Slug slug, Money basePrice, string description = null, string sku = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be empty", nameof(name));
+            return Result.Failure(ProductErrors.NameRequired);
 
-        if (string.IsNullOrWhiteSpace(slug.Value))
-            throw new ArgumentException("Slug cannot be empty", nameof(slug));
+        if (slug == null || string.IsNullOrWhiteSpace(slug.Value))
+            return Result.Failure(ProductErrors.SlugRequired);
 
         if (basePrice == null)
-            throw new ArgumentNullException(nameof(basePrice));
+            return Result.Failure(ProductErrors.NegativePrice);
 
         Name = name;
         Slug = slug;
@@ -93,81 +102,178 @@ public class Product : AggregateRoot
         Sku = sku;
 
         AddDomainEvent(new ProductUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void Activate()
+    public Result Activate()
     {
         if (IsActive)
-            return;
+            return Result.Success();
 
         IsActive = true;
         AddDomainEvent(new ProductStatusChangedEvent(Id, true));
+        return Result.Success();
     }
 
-    public void Deactivate()
+    public Result Deactivate()
     {
         if (!IsActive)
-            return;
+            return Result.Success();
 
         IsActive = false;
         AddDomainEvent(new ProductStatusChangedEvent(Id, false));
+        return Result.Success();
     }
 
-    public void AddCategory(Category category)
+    public Result AddCategory(Category category)
     {
         if (category == null)
-            throw new ArgumentNullException(nameof(category));
+            return Result.Failure(CategoryErrors.NotFound(Guid.Empty));
 
         if (_productCategories.Exists(pc => pc.CategoryId == category.Id))
-            return;
+            return Result.Success(); // Already added
 
         var productCategory = ProductCategory.Create(this, category);
         _productCategories.Add(productCategory);
         AddDomainEvent(new ProductCategoryAddedEvent(Id, category.Id));
+        return Result.Success();
     }
 
-    public void RemoveCategory(Category category)
+    public Result RemoveCategory(Category category)
     {
         if (category == null)
-            throw new ArgumentNullException(nameof(category));
+            return Result.Failure(CategoryErrors.NotFound(Guid.Empty));
 
         var productCategory = _productCategories.Find(pc => pc.CategoryId == category.Id);
-        if (productCategory != null)
-        {
-            _productCategories.Remove(productCategory);
-            AddDomainEvent(new ProductCategoryRemovedEvent(Id, category.Id));
-        }
+        if (productCategory == null)
+            return Result.Failure(CategoryErrors.NotFound(category.Id));
+
+        _productCategories.Remove(productCategory);
+        AddDomainEvent(new ProductCategoryRemovedEvent(Id, category.Id));
+        return Result.Success();
     }
 
-    public void AddAttribute(Attribute attribute, object value)
+    public Result AddAttribute(Attribute attribute, object value)
     {
         if (attribute == null)
-            throw new ArgumentNullException(nameof(attribute));
+            return Result.Failure(AttributeErrors.NotFound(Guid.Empty));
 
         if (_attributes.Exists(pa => pa.AttributeId == attribute.Id))
-            return;
+            return Result.Success(); // Already added
 
         var productAttribute = ProductAttribute.Create(this, attribute, value);
         _attributes.Add(productAttribute);
+        return Result.Success();
     }
 
-    public void AddVariant(ProductVariant variant)
+    public Result AddVariant(ProductVariant variant)
     {
         if (variant == null)
-            throw new ArgumentNullException(nameof(variant));
+            return Result.Failure(ProductVariantErrors.NotFound(Guid.Empty));
 
-        if (_variants.Exists(v => v.Sku == variant.Sku && !string.IsNullOrEmpty(variant.Sku)))
-            throw new InvalidOperationException($"A variant with SKU '{variant.Sku}' already exists.");
+        // Check if the SKU is already used
+        if (!string.IsNullOrEmpty(variant.Sku) && _variants.Exists(v => v.Sku == variant.Sku))
+            return Result.Failure(ProductVariantErrors.DuplicateSku(variant.Sku));
 
         _variants.Add(variant);
         AddDomainEvent(new ProductVariantAddedEvent(Id, variant.Id));
+        return Result.Success();
     }
 
-    public void UpdateMetadata(string key, object value)
+    public Result UpdateMetadata(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Metadata key cannot be empty", nameof(key));
+            return Result.Failure(ProductErrors.InvalidMetadataKey);
 
         Metadata[key] = value;
+        return Result.Success();
+    }
+
+    // Methods for operating on variants
+    public Result UpdateVariantStock(Guid variantId, int newQuantity)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.SetStockQuantity(newQuantity, this);
+    }
+
+    public Result AddVariantStock(Guid variantId, int quantity)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.AddStock(quantity, this);
+    }
+
+    public Result RemoveVariantStock(Guid variantId, int quantity)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.RemoveStock(quantity, this);
+    }
+
+    public Result ActivateVariant(Guid variantId)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.Activate(this);
+    }
+
+    public Result DeactivateVariant(Guid variantId)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.Deactivate(this);
+    }
+
+    public Result AddVariantAttribute(Guid variantId, Attribute attribute, object value)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.AddAttribute(attribute, value, this);
+    }
+
+    public Result UpdateVariantMetadata(Guid variantId, string key, object value)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.UpdateMetadata(key, value, this);
+    }
+
+    public Result UpdateVariant(Guid variantId, string sku, Money price)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure(ProductVariantErrors.NotFound(variantId));
+
+        return variant.Update(sku, price, this);
+    }
+
+    // Method to get a variant by ID
+    public Result<ProductVariant> GetVariant(Guid variantId)
+    {
+        var variant = _variants.Find(v => v.Id == variantId);
+        if (variant == null)
+            return Result.Failure<ProductVariant>(ProductVariantErrors.NotFound(variantId));
+
+        return Result.Success(variant);
+    }
+    
+    public void RaiseVariantEvent(DomainEvent domainEvent)
+    {
+        AddDomainEvent(domainEvent);
     }
 }

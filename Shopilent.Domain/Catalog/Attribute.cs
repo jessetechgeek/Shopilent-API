@@ -1,6 +1,8 @@
 using Shopilent.Domain.Catalog.Enums;
 using Shopilent.Domain.Catalog.Events;
+using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 
 namespace Shopilent.Domain.Catalog;
 
@@ -13,44 +15,56 @@ public class Attribute : AggregateRoot
 
     private Attribute(string name, string displayName, AttributeType type)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be empty", nameof(name));
-
-        if (string.IsNullOrWhiteSpace(displayName))
-            throw new ArgumentException("Display name cannot be empty", nameof(displayName));
-
         Name = name;
         DisplayName = displayName;
         Type = type;
         Configuration = new Dictionary<string, object>();
     }
 
-    public static Attribute Create(string name, string displayName, AttributeType type)
+    public static Result<Attribute> Create(string name, string displayName, AttributeType type)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure<Attribute>(AttributeErrors.NameRequired);
+
+        if (string.IsNullOrWhiteSpace(displayName))
+            return Result.Failure<Attribute>(AttributeErrors.DisplayNameRequired);
+
         var attribute = new Attribute(name, displayName, type);
         attribute.AddDomainEvent(new AttributeCreatedEvent(attribute.Id));
-        return attribute;
+        return Result.Success(attribute);
     }
 
-    public static Attribute CreateFilterable(string name, string displayName, AttributeType type)
+    public static Result<Attribute> CreateFilterable(string name, string displayName, AttributeType type)
     {
-        var attribute = Create(name, displayName, type);
+        var attributeResult = Create(name, displayName, type);
+        if (attributeResult.IsFailure)
+            return attributeResult;
+            
+        var attribute = attributeResult.Value;
         attribute.Filterable = true;
-        return attribute;
+        return Result.Success(attribute);
     }
 
-    public static Attribute CreateSearchable(string name, string displayName, AttributeType type)
+    public static Result<Attribute> CreateSearchable(string name, string displayName, AttributeType type)
     {
-        var attribute = Create(name, displayName, type);
+        var attributeResult = Create(name, displayName, type);
+        if (attributeResult.IsFailure)
+            return attributeResult;
+            
+        var attribute = attributeResult.Value;
         attribute.Searchable = true;
-        return attribute;
+        return Result.Success(attribute);
     }
 
-    public static Attribute CreateVariant(string name, string displayName, AttributeType type)
+    public static Result<Attribute> CreateVariant(string name, string displayName, AttributeType type)
     {
-        var attribute = Create(name, displayName, type);
+        var attributeResult = Create(name, displayName, type);
+        if (attributeResult.IsFailure)
+            return attributeResult;
+            
+        var attribute = attributeResult.Value;
         attribute.IsVariant = true;
-        return attribute;
+        return Result.Success(attribute);
     }
 
     public string Name { get; private set; }
@@ -61,26 +75,30 @@ public class Attribute : AggregateRoot
     public bool Searchable { get; private set; }
     public bool IsVariant { get; private set; }
 
-    public void SetFilterable(bool filterable)
+    public Result SetFilterable(bool filterable)
     {
         Filterable = filterable;
+        return Result.Success();
     }
 
-    public void SetSearchable(bool searchable)
+    public Result SetSearchable(bool searchable)
     {
         Searchable = searchable;
+        return Result.Success();
     }
 
-    public void SetIsVariant(bool isVariant)
+    public Result SetIsVariant(bool isVariant)
     {
         IsVariant = isVariant;
+        return Result.Success();
     }
 
-    public void UpdateConfiguration(string key, object value)
+    public Result UpdateConfiguration(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Configuration key cannot be empty", nameof(key));
+            return Result.Failure(AttributeErrors.InvalidConfigurationFormat);
 
         Configuration[key] = value;
+        return Result.Success();
     }
 }

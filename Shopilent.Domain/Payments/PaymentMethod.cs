@@ -1,6 +1,10 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
+using Shopilent.Domain.Identity.Errors;
 using Shopilent.Domain.Payments.Enums;
+using Shopilent.Domain.Payments.Errors;
+using Shopilent.Domain.Payments.Events;
 using Shopilent.Domain.Payments.ValueObjects;
 
 namespace Shopilent.Domain.Payments;
@@ -20,15 +24,6 @@ public class PaymentMethod : AggregateRoot
         string displayName,
         bool isDefault = false)
     {
-        if (user == null)
-            throw new ArgumentNullException(nameof(user));
-
-        if (string.IsNullOrWhiteSpace(token))
-            throw new ArgumentException("Token cannot be empty", nameof(token));
-
-        if (string.IsNullOrWhiteSpace(displayName))
-            throw new ArgumentException("Display name cannot be empty", nameof(displayName));
-
         UserId = user.Id;
         Type = type;
         Provider = provider;
@@ -58,32 +53,73 @@ public class PaymentMethod : AggregateRoot
         }
     }
 
-    public static PaymentMethod CreateCardMethod(
+    public static Result<PaymentMethod> Create(
+        User user,
+        PaymentMethodType type,
+        PaymentProvider provider,
+        string token,
+        string displayName,
+        bool isDefault = false)
+    {
+        if (user == null)
+            return Result.Failure<PaymentMethod>(UserErrors.NotFound(Guid.Empty));
+
+        if (string.IsNullOrWhiteSpace(token))
+            return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
+
+        if (string.IsNullOrWhiteSpace(displayName))
+            return Result.Failure<PaymentMethod>(PaymentMethodErrors.DisplayNameRequired);
+
+        var paymentMethod = new PaymentMethod(user, type, provider, token, displayName, isDefault);
+        paymentMethod.AddDomainEvent(new PaymentMethodCreatedEvent(paymentMethod.Id, user.Id));
+        return Result.Success(paymentMethod);
+    }
+
+    public static Result<PaymentMethod> CreateCardMethod(
         User user,
         PaymentProvider provider,
         string token,
         PaymentCardDetails cardDetails,
         bool isDefault = false)
     {
-        // Add explicit null check for cardDetails
+        if (user == null)
+            return Result.Failure<PaymentMethod>(UserErrors.NotFound(Guid.Empty));
+            
+        if (string.IsNullOrWhiteSpace(token))
+            return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
+            
         if (cardDetails == null)
-            throw new ArgumentNullException(nameof(cardDetails));
+            return Result.Failure<PaymentMethod>(PaymentMethodErrors.InvalidCardDetails);
+
+        if (cardDetails.ExpiryDate < DateTime.UtcNow)
+            return Result.Failure<PaymentMethod>(PaymentMethodErrors.ExpiredCard);
 
         string displayName = $"{cardDetails.Brand} ending in {cardDetails.LastFourDigits}";
-        return new PaymentMethod(user, PaymentMethodType.CreditCard, provider, token, displayName, cardDetails,
-            isDefault);
+        var paymentMethod = new PaymentMethod(user, PaymentMethodType.CreditCard, provider, token, displayName, cardDetails, isDefault);
+        paymentMethod.AddDomainEvent(new PaymentMethodCreatedEvent(paymentMethod.Id, user.Id));
+        return Result.Success(paymentMethod);
     }
 
-    public static PaymentMethod CreatePayPalMethod(
+    public static Result<PaymentMethod> CreatePayPalMethod(
         User user,
         string token,
         string email,
         bool isDefault = false)
     {
-        var method = new PaymentMethod(user, PaymentMethodType.PayPal, PaymentProvider.PayPal, token,
-            $"PayPal ({email})", isDefault);
-        method.UpdateMetadata("email", email);
-        return method;
+        if (user == null)
+            return Result.Failure<PaymentMethod>(UserErrors.NotFound(Guid.Empty));
+            
+        if (string.IsNullOrWhiteSpace(token))
+            return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
+            
+        if (string.IsNullOrWhiteSpace(email))
+            return Result.Failure<PaymentMethod>(UserErrors.EmailRequired);
+
+        var displayName = $"PayPal ({email})";
+        var paymentMethod = new PaymentMethod(user, PaymentMethodType.PayPal, PaymentProvider.PayPal, token, displayName, isDefault);
+        paymentMethod.UpdateMetadata("email", email);
+        paymentMethod.AddDomainEvent(new PaymentMethodCreatedEvent(paymentMethod.Id, user.Id));
+        return Result.Success(paymentMethod);
     }
 
     public Guid UserId { get; private set; }
@@ -98,56 +134,88 @@ public class PaymentMethod : AggregateRoot
     public bool IsActive { get; private set; }
     public Dictionary<string, object> Metadata { get; private set; } = new();
 
-    public void UpdateDisplayName(string displayName)
+    public Result UpdateDisplayName(string displayName)
     {
         if (string.IsNullOrWhiteSpace(displayName))
-            throw new ArgumentException("Display name cannot be empty", nameof(displayName));
+            return Result.Failure(PaymentMethodErrors.DisplayNameRequired);
 
         DisplayName = displayName;
+        AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void SetDefault(bool isDefault)
+    public Result SetDefault(bool isDefault)
     {
+        if (IsDefault == isDefault)
+            return Result.Success();
+            
         IsDefault = isDefault;
+        
+        if (isDefault)
+            AddDomainEvent(new DefaultPaymentMethodChangedEvent(Id, UserId));
+            
+        AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void Activate()
+    public Result Activate()
     {
+        if (IsActive)
+            return Result.Success();
+            
         IsActive = true;
+        AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void Deactivate()
+    public Result Deactivate()
     {
+        if (!IsActive)
+            return Result.Success();
+            
         IsActive = false;
+        AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void UpdateToken(string token)
+    public Result UpdateToken(string token)
     {
         if (string.IsNullOrWhiteSpace(token))
-            throw new ArgumentException("Token cannot be empty", nameof(token));
+            return Result.Failure(PaymentMethodErrors.TokenRequired);
 
         Token = token;
+        AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void UpdateCardDetails(PaymentCardDetails cardDetails)
+    public Result UpdateCardDetails(PaymentCardDetails cardDetails)
     {
         if (Type != PaymentMethodType.CreditCard)
-            throw new InvalidOperationException("Only credit card payment methods can have card details");
+            return Result.Failure(PaymentMethodErrors.InvalidCardDetails);
 
         if (cardDetails == null)
-            throw new ArgumentNullException(nameof(cardDetails));
+            return Result.Failure(PaymentMethodErrors.InvalidCardDetails);
+            
+        if (cardDetails.ExpiryDate < DateTime.UtcNow)
+            return Result.Failure(PaymentMethodErrors.ExpiredCard);
 
         CardBrand = cardDetails.Brand;
         LastFourDigits = cardDetails.LastFourDigits;
         ExpiryDate = cardDetails.ExpiryDate;
         DisplayName = $"{cardDetails.Brand} ending in {cardDetails.LastFourDigits}";
+        
+        AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
     }
 
-    public void UpdateMetadata(string key, object value)
+    public Result UpdateMetadata(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Metadata key cannot be empty", nameof(key));
+            return Result.Failure(PaymentMethodErrors.InvalidMetadataKey);
 
         Metadata[key] = value;
+        
+        AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
     }
 }
