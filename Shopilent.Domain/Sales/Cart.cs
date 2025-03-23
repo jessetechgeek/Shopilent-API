@@ -4,9 +4,10 @@ using Shopilent.Domain.Common;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.Errors;
-using Shopilent.Domain.Sales;
 using Shopilent.Domain.Sales.Errors;
 using Shopilent.Domain.Sales.Events;
+
+namespace Shopilent.Domain.Sales;
 
 public class Cart : AggregateRoot
 {
