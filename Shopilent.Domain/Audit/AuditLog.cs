@@ -6,7 +6,7 @@ using Shopilent.Domain.Identity;
 
 namespace Shopilent.Domain.Audit;
 
-public class AuditLog : Entity
+public class AuditLog : AggregateRoot
 {
     private AuditLog()
     {

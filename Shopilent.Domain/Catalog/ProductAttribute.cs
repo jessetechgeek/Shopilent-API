@@ -19,34 +19,49 @@ public class ProductAttribute : Entity
     }
 
     // Add static factory method
-    public static Result<ProductAttribute> Create(Product product, Attribute attribute, object value)
+    internal static ProductAttribute Create(Product product, Attribute attribute, object value)
     {
         if (product == null)
-            return Result.Failure<ProductAttribute>(ProductErrors.NotFound(Guid.Empty));
+            throw new ArgumentNullException(nameof(product));
+
+        if (attribute == null)
+            throw new ArgumentNullException(nameof(attribute));
+
+        if (value == null)
+            throw new ArgumentException("Value cannot be null", nameof(value));
+
+        return new ProductAttribute(product, attribute, value);
+    }
+
+    // For use by the Product aggregate which should validate inputs
+    internal static Result<ProductAttribute> Create(Result<Product> productResult, Attribute attribute, object value)
+    {
+        if (productResult.IsFailure)
+            return Result.Failure<ProductAttribute>(productResult.Error);
 
         if (attribute == null)
             return Result.Failure<ProductAttribute>(AttributeErrors.NotFound(Guid.Empty));
-            
+
         if (value == null)
             return Result.Failure<ProductAttribute>(AttributeErrors.InvalidConfigurationFormat);
 
-        return Result.Success(new ProductAttribute(product, attribute, value));
+        return Result.Success(new ProductAttribute(productResult.Value, attribute, value));
     }
 
     public Guid ProductId { get; private set; }
     public Guid AttributeId { get; private set; }
     public Dictionary<string, object> Values { get; private set; } = new();
 
-    public Result UpdateValue(object value)
+    internal Result UpdateValue(object value)
     {
         if (value == null)
             return Result.Failure(AttributeErrors.InvalidConfigurationFormat);
-            
+
         Values["value"] = value;
         return Result.Success();
     }
 
-    public Result AddValue(string key, object value)
+    internal Result AddValue(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key))
             return Result.Failure(AttributeErrors.InvalidConfigurationFormat);
