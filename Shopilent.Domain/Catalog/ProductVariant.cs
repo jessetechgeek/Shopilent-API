@@ -6,11 +6,13 @@ using Shopilent.Domain.Sales.ValueObjects;
 
 namespace Shopilent.Domain.Catalog;
 
-public class ProductVariant : Entity
+public class ProductVariant : AggregateRoot
 {
     private ProductVariant()
     {
         // Required by EF Core
+        _variantAttributes = new List<VariantAttribute>();
+        Metadata = new Dictionary<string, object>();
     }
 
     private ProductVariant(Product product, string sku = null, Money price = null, int stockQuantity = 0)
@@ -25,11 +27,12 @@ public class ProductVariant : Entity
         _variantAttributes = new List<VariantAttribute>();
     }
 
-    public static Result<ProductVariant> Create(Product product, string sku = null, Money price = null,
+    // Static factory method that doesn't rely on an existing Product instance
+    public static Result<ProductVariant> Create(Guid productId, string sku = null, Money price = null,
         int stockQuantity = 0)
     {
-        if (product == null)
-            return Result.Failure<ProductVariant>(ProductErrors.NotFound(Guid.Empty));
+        if (productId == Guid.Empty)
+            return Result.Failure<ProductVariant>(ProductErrors.NotFound(productId));
 
         if (stockQuantity < 0)
             return Result.Failure<ProductVariant>(ProductVariantErrors.NegativeStockQuantity);
@@ -37,25 +40,73 @@ public class ProductVariant : Entity
         if (price != null && price.Amount < 0)
             return Result.Failure<ProductVariant>(ProductVariantErrors.NegativePrice);
 
+        // Create via the private constructor and reflection
+        var variant = new ProductVariant();
+        variant.Id = Guid.NewGuid();
+        variant.ProductId = productId;
+        variant.Sku = sku;
+        variant.Price = price;
+        variant.StockQuantity = stockQuantity;
+        variant.IsActive = true;
+        variant.Metadata = new Dictionary<string, object>();
+        // Note: _variantAttributes is initialized in the default constructor
+
+        variant.AddDomainEvent(new ProductVariantCreatedEvent(productId, variant.Id));
+        return Result.Success(variant);
+    }
+
+    // Original factory method for Product aggregate use
+    public static ProductVariant Create(Product product, string sku = null, Money price = null, int stockQuantity = 0)
+    {
+        if (product == null)
+            throw new ArgumentNullException(nameof(product));
+
+        if (stockQuantity < 0)
+            throw new ArgumentException("Stock quantity cannot be negative", nameof(stockQuantity));
+
+        if (price != null && price.Amount < 0)
+            throw new ArgumentException("Price cannot be negative", nameof(price));
+
         var variant = new ProductVariant(product, sku, price, stockQuantity);
+        variant.AddDomainEvent(new ProductVariantCreatedEvent(product.Id, variant.Id));
+        return variant;
+    }
+
+    // This method defines the domain invariants and validation
+    public static Result<ProductVariant> Create(Result<Product> productResult, string sku = null, Money price = null,
+        int stockQuantity = 0)
+    {
+        if (productResult.IsFailure)
+            return Result.Failure<ProductVariant>(productResult.Error);
+
+        if (stockQuantity < 0)
+            return Result.Failure<ProductVariant>(ProductVariantErrors.NegativeStockQuantity);
+
+        if (price != null && price.Amount < 0)
+            return Result.Failure<ProductVariant>(ProductVariantErrors.NegativePrice);
+
+        var variant = new ProductVariant(productResult.Value, sku, price, stockQuantity);
+        variant.AddDomainEvent(new ProductVariantCreatedEvent(productResult.Value.Id, variant.Id));
         return Result.Success(variant);
     }
 
     public static Result<ProductVariant> CreateInactive(Product product, string sku = null, Money price = null,
         int stockQuantity = 0)
     {
-        var result = Create(product, sku, price, stockQuantity);
-        if (result.IsFailure)
-            return result;
+        if (product == null)
+            return Result.Failure<ProductVariant>(ProductErrors.NotFound(Guid.Empty));
 
-        var variant = result.Value;
+        var variant = Create(product, sku, price, stockQuantity);
         variant.IsActive = false;
+        variant.AddDomainEvent(new ProductVariantStatusChangedEvent(product.Id, variant.Id, false));
         return Result.Success(variant);
     }
 
     public static Result<ProductVariant> CreateOutOfStock(Product product, string sku = null, Money price = null)
     {
-        return Create(product, sku, price, 0);
+        var variant = Create(product, sku, price, 0);
+        variant.AddDomainEvent(new ProductVariantStockChangedEvent(product.Id, variant.Id, 0, 0));
+        return Result.Success(variant);
     }
 
     public Guid ProductId { get; private set; }
@@ -68,7 +119,8 @@ public class ProductVariant : Entity
     private readonly List<VariantAttribute> _variantAttributes = new();
     public IReadOnlyCollection<VariantAttribute> Attributes => _variantAttributes.AsReadOnly();
 
-    public Result Update(string sku, Money price, Product product = null)
+    // Self-contained update methods that raise their own domain events
+    public Result Update(string sku, Money price)
     {
         if (price != null && price.Amount < 0)
             return Result.Failure(ProductVariantErrors.NegativePrice);
@@ -76,13 +128,12 @@ public class ProductVariant : Entity
         Sku = sku;
         Price = price;
 
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantUpdatedEvent(ProductId, Id));
-
+        AddDomainEvent(new ProductVariantUpdatedEvent(ProductId, Id));
         return Result.Success();
     }
 
-    public Result SetStockQuantity(int quantity, Product product = null)
+    // Encapsulates the business logic for variant stock management
+    public Result SetStockQuantity(int quantity)
     {
         if (quantity < 0)
             return Result.Failure(ProductVariantErrors.NegativeStockQuantity);
@@ -90,13 +141,11 @@ public class ProductVariant : Entity
         var oldQuantity = StockQuantity;
         StockQuantity = quantity;
 
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantStockChangedEvent(ProductId, Id, oldQuantity, quantity));
-
+        AddDomainEvent(new ProductVariantStockChangedEvent(ProductId, Id, oldQuantity, quantity));
         return Result.Success();
     }
 
-    public Result AddStock(int quantity, Product product = null)
+    public Result AddStock(int quantity)
     {
         if (quantity <= 0)
             return Result.Failure(ProductVariantErrors.NegativeStockQuantity);
@@ -104,13 +153,11 @@ public class ProductVariant : Entity
         var oldQuantity = StockQuantity;
         StockQuantity += quantity;
 
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantStockChangedEvent(ProductId, Id, oldQuantity, StockQuantity));
-
+        AddDomainEvent(new ProductVariantStockChangedEvent(ProductId, Id, oldQuantity, StockQuantity));
         return Result.Success();
     }
 
-    public Result RemoveStock(int quantity, Product product = null)
+    public Result RemoveStock(int quantity)
     {
         if (quantity <= 0)
             return Result.Failure(ProductVariantErrors.NegativeStockQuantity);
@@ -121,36 +168,59 @@ public class ProductVariant : Entity
         var oldQuantity = StockQuantity;
         StockQuantity -= quantity;
 
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantStockChangedEvent(ProductId, Id, oldQuantity, StockQuantity));
-
+        AddDomainEvent(new ProductVariantStockChangedEvent(ProductId, Id, oldQuantity, StockQuantity));
         return Result.Success();
     }
 
-    public Result Activate(Product product = null)
+    public Result Activate()
     {
         if (IsActive)
             return Result.Success();
 
         IsActive = true;
-
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantUpdatedEvent(ProductId, Id));
-
+        AddDomainEvent(new ProductVariantStatusChangedEvent(ProductId, Id, true));
         return Result.Success();
     }
 
-    public Result Deactivate(Product product = null)
+    public Result Deactivate()
     {
         if (!IsActive)
             return Result.Success();
 
         IsActive = false;
-
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantUpdatedEvent(ProductId, Id));
-
+        AddDomainEvent(new ProductVariantStatusChangedEvent(ProductId, Id, false));
         return Result.Success();
+    }
+
+    // Backward compatibility methods - now they just call the self-contained methods
+    internal Result Update(string sku, Money price, Product product)
+    {
+        return Update(sku, price);
+    }
+
+    internal Result SetStockQuantity(int quantity, Product product)
+    {
+        return SetStockQuantity(quantity);
+    }
+
+    internal Result AddStock(int quantity, Product product)
+    {
+        return AddStock(quantity);
+    }
+
+    internal Result RemoveStock(int quantity, Product product)
+    {
+        return RemoveStock(quantity);
+    }
+
+    internal Result Activate(Product product)
+    {
+        return Activate();
+    }
+
+    internal Result Deactivate(Product product)
+    {
+        return Deactivate();
     }
 
     public Result AddAttribute(Attribute attribute, object value, Product product = null)
@@ -164,16 +234,25 @@ public class ProductVariant : Entity
         if (_variantAttributes.Exists(va => va.AttributeId == attribute.Id))
             return Result.Success(); // Already exists
 
-        var variantAttributeResult = VariantAttribute.Create(this, attribute, value);
-        if (variantAttributeResult.IsFailure)
-            return Result.Failure(variantAttributeResult.Error);
+        try
+        {
+            var variantAttribute = VariantAttribute.Create(this, attribute, value);
+            _variantAttributes.Add(variantAttribute);
 
-        _variantAttributes.Add(variantAttributeResult.Value);
-
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantUpdatedEvent(ProductId, Id));
-
-        return Result.Success();
+            AddDomainEvent(new ProductVariantAttributeAddedEvent(ProductId, Id, attribute.Id));
+            return Result.Success();
+        }
+        catch (ArgumentNullException)
+        {
+            return Result.Failure(AttributeErrors.NotFound(Guid.Empty));
+        }
+        catch (ArgumentException ex)
+        {
+            return Result.Failure(new Common.Errors.Error(
+                code: "ProductVariant.InvalidAttribute",
+                message: ex.Message
+            ));
+        }
     }
 
     public Result UpdateMetadata(string key, object value, Product product = null)
@@ -182,10 +261,7 @@ public class ProductVariant : Entity
             return Result.Failure(ProductVariantErrors.InvalidMetadataKey);
 
         Metadata[key] = value;
-
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantUpdatedEvent(ProductId, Id));
-
+        AddDomainEvent(new ProductVariantUpdatedEvent(ProductId, Id));
         return Result.Success();
     }
 
@@ -219,9 +295,7 @@ public class ProductVariant : Entity
         if (updateResult.IsFailure)
             return updateResult;
 
-        if (product != null)
-            product.RaiseVariantEvent(new ProductVariantUpdatedEvent(ProductId, Id));
-
+        AddDomainEvent(new ProductVariantAttributeUpdatedEvent(ProductId, Id, attributeId));
         return Result.Success();
     }
 }

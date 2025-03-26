@@ -38,11 +38,32 @@ public class OrderItem : Entity
         }
     }
 
-    // Add static factory method
-    public static Result<OrderItem> Create(Order order, Product product, int quantity, Money unitPrice, ProductVariant variant = null)
+    // Internal factory method for use by Order aggregate
+    internal static OrderItem Create(Order order, Product product, int quantity, Money unitPrice, ProductVariant variant = null)
     {
         if (order == null)
-            return Result.Failure<OrderItem>(OrderErrors.NotFound(Guid.Empty));
+            throw new ArgumentNullException(nameof(order));
+            
+        if (product == null)
+            throw new ArgumentNullException(nameof(product));
+            
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be positive", nameof(quantity));
+            
+        if (unitPrice == null || unitPrice.Amount < 0)
+            throw new ArgumentException("Unit price must be valid and non-negative", nameof(unitPrice));
+            
+        if (variant != null && variant.StockQuantity < quantity)
+            throw new ArgumentException($"Insufficient stock. Available: {variant.StockQuantity}, Requested: {quantity}", nameof(quantity));
+
+        return new OrderItem(order, product, quantity, unitPrice, variant);
+    }
+
+    // For use by the Order aggregate which should validate inputs
+    internal static Result<OrderItem> Create(Result<Order> orderResult, Product product, int quantity, Money unitPrice, ProductVariant variant = null)
+    {
+        if (orderResult.IsFailure)
+            return Result.Failure<OrderItem>(orderResult.Error);
             
         if (product == null)
             return Result.Failure<OrderItem>(ProductErrors.NotFound(Guid.Empty));
@@ -56,7 +77,7 @@ public class OrderItem : Entity
         if (variant != null && variant.StockQuantity < quantity)
             return Result.Failure<OrderItem>(ProductVariantErrors.InsufficientStock(quantity, variant.StockQuantity));
 
-        return Result.Success(new OrderItem(order, product, quantity, unitPrice, variant));
+        return Result.Success(new OrderItem(orderResult.Value, product, quantity, unitPrice, variant));
     }
 
     public Guid OrderId { get; private set; }
@@ -67,7 +88,8 @@ public class OrderItem : Entity
     public Money TotalPrice { get; private set; }
     public Dictionary<string, object> ProductData { get; private set; } = new();
     
-    public Result UpdateQuantity(int quantity)
+    // Internal method for Order aggregate to update quantity
+    internal Result UpdateQuantity(int quantity)
     {
         if (quantity <= 0)
             return Result.Failure(OrderErrors.InvalidQuantity);

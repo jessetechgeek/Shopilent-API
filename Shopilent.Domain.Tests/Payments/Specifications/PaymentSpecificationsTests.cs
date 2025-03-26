@@ -37,7 +37,7 @@ public class PaymentSpecificationsTests
             
         Assert.True(postalAddressResult.IsSuccess);
         
-        var addressResult = Address.Create(
+        var addressResult = Address.CreateShipping(
             user,
             postalAddressResult.Value);
             

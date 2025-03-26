@@ -1,6 +1,6 @@
 namespace Shopilent.Domain.Common;
 
-public abstract class AggregateRoot : Entity
+public abstract class AggregateRoot : AuditableEntity
 {
     private readonly List<DomainEvent> _domainEvents = new();
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();

@@ -31,10 +31,48 @@ public class Address : AggregateRoot
         AddressType = addressType;
     }
 
-    public static Result<Address> Create(
+    // Internal factory method for use by User aggregate
+    internal static Address Create(
         User user,
         PostalAddress postalAddress,
         AddressType addressType = AddressType.Shipping,
+        PhoneNumber phone = null,
+        bool isDefault = false)
+    {
+        if (user == null)
+            throw new ArgumentNullException(nameof(user));
+
+        if (postalAddress == null)
+            throw new ArgumentException("Postal address cannot be null", nameof(postalAddress));
+
+        var address = new Address(user, postalAddress, addressType, phone, isDefault);
+        address.AddDomainEvent(new AddressCreatedEvent(address.Id, user.Id));
+        return address;
+    }
+
+    // For use by the User aggregate which should validate inputs
+    internal static Result<Address> Create(
+        Result<User> userResult,
+        PostalAddress postalAddress,
+        AddressType addressType = AddressType.Shipping,
+        PhoneNumber phone = null,
+        bool isDefault = false)
+    {
+        if (userResult.IsFailure)
+            return Result.Failure<Address>(userResult.Error);
+
+        if (postalAddress == null)
+            return Result.Failure<Address>(AddressErrors.AddressLine1Required);
+
+        var address = new Address(userResult.Value, postalAddress, addressType, phone, isDefault);
+        address.AddDomainEvent(new AddressCreatedEvent(address.Id, userResult.Value.Id));
+        return Result.Success(address);
+    }
+
+    // Public factory methods that use the internal ones
+    public static Result<Address> CreateShipping(
+        User user,
+        PostalAddress postalAddress,
         PhoneNumber phone = null,
         bool isDefault = false)
     {
@@ -44,18 +82,8 @@ public class Address : AggregateRoot
         if (postalAddress == null)
             return Result.Failure<Address>(AddressErrors.AddressLine1Required);
 
-        var address = new Address(user, postalAddress, addressType, phone, isDefault);
-        address.AddDomainEvent(new AddressCreatedEvent(address.Id, user.Id));
+        var address = Create(user, postalAddress, AddressType.Shipping, phone, isDefault);
         return Result.Success(address);
-    }
-
-    public static Result<Address> CreateShipping(
-        User user,
-        PostalAddress postalAddress,
-        PhoneNumber phone = null,
-        bool isDefault = false)
-    {
-        return Create(user, postalAddress, AddressType.Shipping, phone, isDefault);
     }
 
     public static Result<Address> CreateBilling(
@@ -64,7 +92,14 @@ public class Address : AggregateRoot
         PhoneNumber phone = null,
         bool isDefault = false)
     {
-        return Create(user, postalAddress, AddressType.Billing, phone, isDefault);
+        if (user == null)
+            return Result.Failure<Address>(UserErrors.NotFound(Guid.Empty));
+
+        if (postalAddress == null)
+            return Result.Failure<Address>(AddressErrors.AddressLine1Required);
+
+        var address = Create(user, postalAddress, AddressType.Billing, phone, isDefault);
+        return Result.Success(address);
     }
 
     public static Result<Address> CreateDefaultAddress(
@@ -73,7 +108,14 @@ public class Address : AggregateRoot
         AddressType addressType = AddressType.Both,
         PhoneNumber phone = null)
     {
-        return Create(user, postalAddress, addressType, phone, true);
+        if (user == null)
+            return Result.Failure<Address>(UserErrors.NotFound(Guid.Empty));
+
+        if (postalAddress == null)
+            return Result.Failure<Address>(AddressErrors.AddressLine1Required);
+
+        var address = Create(user, postalAddress, addressType, phone, true);
+        return Result.Success(address);
     }
 
     public Guid UserId { get; private set; }

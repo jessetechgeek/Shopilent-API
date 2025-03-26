@@ -14,15 +14,15 @@ public class InStockProductSpecificationTests
         var slugResult = Slug.Create("iphone");
         Assert.True(slugResult.IsSuccess);
         var slug = slugResult.Value;
-        
+
         var priceResult = Money.FromDollars(999);
         Assert.True(priceResult.IsSuccess);
         var price = priceResult.Value;
-        
+
         var productResult = Product.Create("iPhone", slug, price);
         Assert.True(productResult.IsSuccess);
         var product = productResult.Value;
-        
+
         var specification = new InStockProductSpecification();
 
         // Act
@@ -39,19 +39,19 @@ public class InStockProductSpecificationTests
         var slugResult = Slug.Create("iphone");
         Assert.True(slugResult.IsSuccess);
         var slug = slugResult.Value;
-        
+
         var priceResult = Money.FromDollars(999);
         Assert.True(priceResult.IsSuccess);
         var price = priceResult.Value;
-        
+
         var productResult = Product.Create("iPhone", slug, price);
         Assert.True(productResult.IsSuccess);
         var product = productResult.Value;
-        
-        var variantResult = ProductVariant.Create(product, "IP-BLK-64", price, 10);
+
+        var variantResult = ProductVariant.Create(product.Id, "IP-BLK-64", price, 10);
         Assert.True(variantResult.IsSuccess);
         var variant = variantResult.Value;
-        
+
         var addVariantResult = product.AddVariant(variant);
         Assert.True(addVariantResult.IsSuccess);
 
@@ -71,19 +71,19 @@ public class InStockProductSpecificationTests
         var slugResult = Slug.Create("iphone");
         Assert.True(slugResult.IsSuccess);
         var slug = slugResult.Value;
-        
+
         var priceResult = Money.FromDollars(999);
         Assert.True(priceResult.IsSuccess);
         var price = priceResult.Value;
-        
+
         var productResult = Product.Create("iPhone", slug, price);
         Assert.True(productResult.IsSuccess);
         var product = productResult.Value;
-        
+
         var variantResult = ProductVariant.CreateOutOfStock(product, "IP-BLK-64", price);
         Assert.True(variantResult.IsSuccess);
         var variant = variantResult.Value;
-        
+
         var addVariantResult = product.AddVariant(variant);
         Assert.True(addVariantResult.IsSuccess);
 
@@ -103,20 +103,20 @@ public class InStockProductSpecificationTests
         var slugResult = Slug.Create("iphone");
         Assert.True(slugResult.IsSuccess);
         var slug = slugResult.Value;
-        
+
         var priceResult = Money.FromDollars(999);
         Assert.True(priceResult.IsSuccess);
         var price = priceResult.Value;
-        
+
         var productResult = Product.Create("iPhone", slug, price);
         Assert.True(productResult.IsSuccess);
         var product = productResult.Value;
-        
+
         var outOfStockVariantResult = ProductVariant.CreateOutOfStock(product, "IP-BLK-64", price);
         Assert.True(outOfStockVariantResult.IsSuccess);
         var outOfStockVariant = outOfStockVariantResult.Value;
-        
-        var inStockVariantResult = ProductVariant.Create(product, "IP-WHT-64", price, 5);
+
+        var inStockVariantResult = ProductVariant.Create(product.Id, "IP-WHT-64", price, 5);
         Assert.True(inStockVariantResult.IsSuccess);
         var inStockVariant = inStockVariantResult.Value;
 
@@ -139,22 +139,22 @@ public class InStockProductSpecificationTests
         var slugResult = Slug.Create("iphone");
         Assert.True(slugResult.IsSuccess);
         var slug = slugResult.Value;
-        
+
         var priceResult = Money.FromDollars(999);
         Assert.True(priceResult.IsSuccess);
         var price = priceResult.Value;
-        
+
         var productResult = Product.Create("iPhone", slug, price);
         Assert.True(productResult.IsSuccess);
         var product = productResult.Value;
-        
-        var variantResult = ProductVariant.Create(product, "IP-BLK-64", price, 10);
+
+        var variantResult = ProductVariant.Create(product.Id, "IP-BLK-64", price, 10);
         Assert.True(variantResult.IsSuccess);
         var variant = variantResult.Value;
-        
-        var deactivateResult = variant.Deactivate(product);
+
+        var deactivateResult = variant.Deactivate();
         Assert.True(deactivateResult.IsSuccess);
-        
+
         var addVariantResult = product.AddVariant(variant);
         Assert.True(addVariantResult.IsSuccess);
 
