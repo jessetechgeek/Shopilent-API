@@ -224,7 +224,7 @@ public class ProductEventTests
         Assert.True(variantPriceResult.IsSuccess);
         var variantPrice = variantPriceResult.Value;
 
-        var variantResult = ProductVariant.Create(product, "V1", variantPrice, 10);
+        var variantResult = ProductVariant.Create(product.Id, "V1", variantPrice, 10);
         Assert.True(variantResult.IsSuccess);
         var variant = variantResult.Value;
 

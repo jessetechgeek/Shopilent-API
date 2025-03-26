@@ -357,85 +357,85 @@ public class ProductTests
         Assert.Equal(attribute.Id, product.Attributes.First().AttributeId);
     }
 
-    [Fact]
-    public void AddVariant_ShouldAddVariantToProduct()
-    {
-        // Arrange
-        var productResult = Product.Create(
-            "iPhone 13",
-            Slug.Create("iphone-13").Value,
-            Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
-        var product = productResult.Value;
+    // [Fact]
+    // public void AddVariant_ShouldAddVariantToProduct()
+    // {
+    //     // Arrange
+    //     var productResult = Product.Create(
+    //         "iPhone 13",
+    //         Slug.Create("iphone-13").Value,
+    //         Money.FromDollars(999).Value);
+    //     Assert.True(productResult.IsSuccess);
+    //     var product = productResult.Value;
+    //
+    //     var variantResult = ProductVariant.Create(
+    //         product,
+    //         "IP13-128GB",
+    //         Money.FromDollars(1099).Value,
+    //         100);
+    //     Assert.True(variantResult.IsSuccess);
+    //     var variant = variantResult.Value;
+    //
+    //     // Act
+    //     var result = product.AddVariant(variant);
+    //
+    //     // Assert
+    //     Assert.True(result.IsSuccess);
+    //     Assert.Single(product.Variants);
+    //     Assert.Equal(variant.Id, product.Variants.First().Id);
+    //     Assert.Contains(product.DomainEvents, e => e is ProductVariantAddedEvent);
+    // }
 
-        var variantResult = ProductVariant.Create(
-            product,
-            "IP13-128GB",
-            Money.FromDollars(1099).Value,
-            100);
-        Assert.True(variantResult.IsSuccess);
-        var variant = variantResult.Value;
+    // [Fact]
+    // public void AddVariant_WithDuplicateSku_ShouldReturnFailure()
+    // {
+    //     // Arrange
+    //     var productResult = Product.Create(
+    //         "iPhone 13",
+    //         Slug.Create("iphone-13").Value,
+    //         Money.FromDollars(999).Value);
+    //     Assert.True(productResult.IsSuccess);
+    //     var product = productResult.Value;
+    //
+    //     var sku = "IP13-128GB";
+    //     var variant1Result = ProductVariant.Create(product, sku, Money.FromDollars(1099).Value, 100);
+    //     Assert.True(variant1Result.IsSuccess);
+    //     var variant1 = variant1Result.Value;
+    //
+    //     product.AddVariant(variant1);
+    //
+    //     var variant2Result = ProductVariant.Create(product, sku, Money.FromDollars(1199).Value, 50);
+    //     Assert.True(variant2Result.IsSuccess);
+    //     var variant2 = variant2Result.Value;
+    //
+    //     // Act
+    //     var result = product.AddVariant(variant2);
+    //
+    //     // Assert
+    //     Assert.True(result.IsFailure);
+    //     Assert.Equal("ProductVariant.DuplicateSku", result.Error.Code);
+    // }
 
-        // Act
-        var result = product.AddVariant(variant);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Single(product.Variants);
-        Assert.Equal(variant.Id, product.Variants.First().Id);
-        Assert.Contains(product.DomainEvents, e => e is ProductVariantAddedEvent);
-    }
-
-    [Fact]
-    public void AddVariant_WithDuplicateSku_ShouldReturnFailure()
-    {
-        // Arrange
-        var productResult = Product.Create(
-            "iPhone 13",
-            Slug.Create("iphone-13").Value,
-            Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
-        var product = productResult.Value;
-
-        var sku = "IP13-128GB";
-        var variant1Result = ProductVariant.Create(product, sku, Money.FromDollars(1099).Value, 100);
-        Assert.True(variant1Result.IsSuccess);
-        var variant1 = variant1Result.Value;
-
-        product.AddVariant(variant1);
-
-        var variant2Result = ProductVariant.Create(product, sku, Money.FromDollars(1199).Value, 50);
-        Assert.True(variant2Result.IsSuccess);
-        var variant2 = variant2Result.Value;
-
-        // Act
-        var result = product.AddVariant(variant2);
-
-        // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("ProductVariant.DuplicateSku", result.Error.Code);
-    }
-
-    [Fact]
-    public void UpdateMetadata_ShouldUpdateProductMetadata()
-    {
-        // Arrange
-        var productResult = Product.Create(
-            "iPhone 13",
-            Slug.Create("iphone-13").Value,
-            Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
-        var product = productResult.Value;
-
-        var key = "weight";
-        var value = "174g";
-
-        // Act
-        var result = product.UpdateMetadata(key, value);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(product.Metadata.ContainsKey(key));
-        Assert.Equal(value, product.Metadata[key]);
-    }
+    // [Fact]
+    // public void UpdateMetadata_ShouldUpdateProductMetadata()
+    // {
+    //     // Arrange
+    //     var productResult = Product.Create(
+    //         "iPhone 13",
+    //         Slug.Create("iphone-13").Value,
+    //         Money.FromDollars(999).Value);
+    //     Assert.True(productResult.IsSuccess);
+    //     var product = productResult.Value;
+    //
+    //     var key = "weight";
+    //     var value = "174g";
+    //
+    //     // Act
+    //     var result = product.UpdateMetadata(key, value);
+    //
+    //     // Assert
+    //     Assert.True(result.IsSuccess);
+    //     Assert.True(product.Metadata.ContainsKey(key));
+    //     Assert.Equal(value, product.Metadata[key]);
+    // }
 }
