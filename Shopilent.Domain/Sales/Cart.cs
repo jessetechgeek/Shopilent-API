@@ -98,11 +98,7 @@ public class Cart : AggregateRoot
             return Result.Success(existingItem);
         }
 
-        var itemResult = CartItem.Create(this, product, quantity, variant);
-        if (itemResult.IsFailure)
-            return itemResult;
-
-        var item = itemResult.Value;
+        var item = CartItem.Create(this, product, quantity, variant);
         _items.Add(item);
 
         AddDomainEvent(new CartItemAddedEvent(Id, item.Id));

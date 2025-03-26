@@ -18,6 +18,8 @@ public class Order : AggregateRoot
     private Order()
     {
         // Required by EF Core
+        _items = new List<OrderItem>();
+        InitializeRefundProperties();
     }
 
     private Order(
@@ -42,33 +44,9 @@ public class Order : AggregateRoot
         Metadata = new Dictionary<string, object>();
 
         _items = new List<OrderItem>();
+        InitializeRefundProperties();
     }
 
-    // public static Result<Order> Create(
-    //     User user,
-    //     Address shippingAddress,
-    //     Address billingAddress,
-    //     Money subtotal,
-    //     Money tax,
-    //     Money shippingCost,
-    //     string shippingMethod = null)
-    // {
-    //     if (subtotal == null)
-    //         return Result.Failure<Order>(OrderErrors.NegativeAmount);
-    //
-    //     if (tax == null)
-    //         return Result.Failure<Order>(OrderErrors.NegativeAmount);
-    //
-    //     if (shippingCost == null)
-    //         return Result.Failure<Order>(OrderErrors.NegativeAmount);
-    //
-    //     if (shippingAddress == null)
-    //         return Result.Failure<Order>(OrderErrors.ShippingAddressRequired);
-    //
-    //     var order = new Order(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
-    //     order.AddDomainEvent(new OrderCreatedEvent(order.Id));
-    //     return Result.Success(order);
-    // }
     public static Result<Order> Create(
         User user,
         Address shippingAddress,
@@ -93,32 +71,6 @@ public class Order : AggregateRoot
         var order = new Order(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
         order.AddDomainEvent(new OrderCreatedEvent(order.Id));
         return Result.Success(order);
-    }
-
-    public static Result<Order> CreateFromCart(
-        Cart cart,
-        User user,
-        Address shippingAddress,
-        Address billingAddress,
-        Money tax,
-        Money shippingCost,
-        string shippingMethod = null)
-    {
-        if (cart == null)
-            return Result.Failure<Order>(CartErrors.CartNotFound(Guid.Empty));
-
-        if (cart.Items.Count == 0)
-            return Result.Failure<Order>(OrderErrors.EmptyCart);
-
-        // In a real implementation, you would calculate subtotal from cart items
-        var subtotal = Money.Zero("USD"); // Placeholder
-        var result = Create(user, shippingAddress, billingAddress, subtotal, tax, shippingCost, shippingMethod);
-
-        if (result.IsFailure)
-            return result;
-
-        // In a real implementation, you would transfer cart items to order items here
-        return result;
     }
 
     public static Result<Order> CreatePaidOrder(
@@ -155,8 +107,21 @@ public class Order : AggregateRoot
     public string ShippingMethod { get; private set; }
     public Dictionary<string, object> Metadata { get; private set; } = new();
 
+    // Refund-related properties
+    public Money RefundedAmount { get; private set; }
+    public DateTime? RefundedAt { get; private set; }
+    public string RefundReason { get; private set; }
+
     private readonly List<OrderItem> _items = new();
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
+
+    private void InitializeRefundProperties()
+    {
+        if (Total != null)
+            RefundedAmount = Money.Zero(Total.Currency);
+        else
+            RefundedAmount = Money.Zero("USD");
+    }
 
     public Result<OrderItem> AddItem(Product product, int quantity, Money unitPrice, ProductVariant variant = null)
     {
@@ -177,6 +142,7 @@ public class Order : AggregateRoot
 
         RecalculateOrderTotals();
 
+        AddDomainEvent(new OrderItemAddedEvent(Id, item.Id));
         return Result.Success(item);
     }
 
@@ -238,11 +204,13 @@ public class Order : AggregateRoot
         if (PaymentStatus != PaymentStatus.Succeeded)
             return Result.Failure(OrderErrors.PaymentRequired);
 
+        var oldStatus = Status;
         Status = OrderStatus.Shipped;
 
         if (trackingNumber != null)
             Metadata["trackingNumber"] = trackingNumber;
 
+        AddDomainEvent(new OrderStatusChangedEvent(Id, oldStatus, Status));
         AddDomainEvent(new OrderShippedEvent(Id));
         return Result.Success();
     }
@@ -255,8 +223,10 @@ public class Order : AggregateRoot
         if (Status != OrderStatus.Shipped)
             return Result.Failure(OrderErrors.InvalidOrderStatus("mark as delivered"));
 
+        var oldStatus = Status;
         Status = OrderStatus.Delivered;
 
+        AddDomainEvent(new OrderStatusChangedEvent(Id, oldStatus, Status));
         AddDomainEvent(new OrderDeliveredEvent(Id));
         return Result.Success();
     }
@@ -269,11 +239,13 @@ public class Order : AggregateRoot
         if (Status == OrderStatus.Delivered)
             return Result.Failure(OrderErrors.InvalidOrderStatus("cancel"));
 
+        var oldStatus = Status;
         Status = OrderStatus.Cancelled;
 
         if (reason != null)
             Metadata["cancellationReason"] = reason;
 
+        AddDomainEvent(new OrderStatusChangedEvent(Id, oldStatus, Status));
         AddDomainEvent(new OrderCancelledEvent(Id));
         return Result.Success();
     }
@@ -293,6 +265,189 @@ public class Order : AggregateRoot
             return Result.Failure(PaymentErrors.PaymentMethodNotFound(paymentMethodId));
 
         PaymentMethodId = paymentMethodId;
+        return Result.Success();
+    }
+
+    // Method to process a full refund
+    public Result ProcessRefund(string reason = null)
+    {
+        // Only paid orders can be refunded
+        if (PaymentStatus != PaymentStatus.Succeeded)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("refund"));
+
+        // Can't refund delivered orders without special permission
+        if (Status == OrderStatus.Delivered)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("refund a delivered order"));
+
+        // Can't refund if already fully refunded
+        if (RefundedAmount != null && RefundedAmount.Amount == Total.Amount)
+            return Result.Failure(OrderErrors.OrderAlreadyRefunded);
+
+        // Update order properties
+        RefundedAmount = Total;
+        RefundedAt = DateTime.UtcNow;
+        RefundReason = reason;
+
+        // Update order status
+        var oldStatus = Status;
+        var oldPaymentStatus = PaymentStatus;
+        Status = OrderStatus.Cancelled;
+        PaymentStatus = PaymentStatus.Refunded;
+
+        // Add a note to metadata about the refund
+        Metadata["refunded"] = true;
+        Metadata["refundedAt"] = RefundedAt;
+        if (!string.IsNullOrEmpty(reason))
+            Metadata["refundReason"] = reason;
+
+        // Raise domain events
+        AddDomainEvent(new OrderRefundedEvent(Id, reason));
+        AddDomainEvent(new OrderStatusChangedEvent(Id, oldStatus, Status));
+        AddDomainEvent(new OrderPaymentStatusChangedEvent(Id, oldPaymentStatus, PaymentStatus));
+
+        return Result.Success();
+    }
+
+    // Method to process a partial refund
+    public Result ProcessPartialRefund(Money amount, string reason = null)
+    {
+        // Only paid orders can be refunded
+        if (PaymentStatus != PaymentStatus.Succeeded)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("refund"));
+
+        // Validate refund amount
+        if (amount == null || amount.Amount <= 0)
+            return Result.Failure(OrderErrors.InvalidAmount);
+
+        // Check if currencies match
+        if (amount.Currency != Total.Currency)
+            return Result.Failure(OrderErrors.CurrencyMismatch);
+
+        // Can't refund more than the total
+        if (amount.Amount > Total.Amount)
+            return Result.Failure(OrderErrors.InvalidAmount);
+
+        // If RefundedAmount hasn't been initialized yet
+        if (RefundedAmount == null)
+            RefundedAmount = Money.Zero(Total.Currency);
+
+        // Calculate new total refunded amount
+        var newRefundedAmount = RefundedAmount.Add(amount);
+
+        // Can't refund more than the total
+        if (newRefundedAmount.Amount > Total.Amount)
+            return Result.Failure(OrderErrors.InvalidAmount);
+
+        // Update order properties
+        RefundedAmount = newRefundedAmount;
+        RefundedAt = DateTime.UtcNow;
+
+        // If it's a full refund now, cancel the order
+        if (RefundedAmount.Amount == Total.Amount)
+        {
+            var oldStatus = Status;
+            var oldPaymentStatus = PaymentStatus;
+            Status = OrderStatus.Cancelled;
+            PaymentStatus = PaymentStatus.Refunded;
+            RefundReason = reason;
+
+            // Add a note to metadata about the refund
+            Metadata["refunded"] = true;
+            Metadata["refundedAt"] = RefundedAt;
+            if (!string.IsNullOrEmpty(reason))
+                Metadata["refundReason"] = reason;
+
+            // Raise domain events for full refund
+            AddDomainEvent(new OrderRefundedEvent(Id, reason));
+            AddDomainEvent(new OrderStatusChangedEvent(Id, oldStatus, Status));
+            AddDomainEvent(new OrderPaymentStatusChangedEvent(Id, oldPaymentStatus, PaymentStatus));
+        }
+        else
+        {
+            // For partial refunds, just add to metadata
+            if (Metadata.ContainsKey("partialRefunds"))
+            {
+                var refunds = (List<Dictionary<string, object>>)Metadata["partialRefunds"];
+                refunds.Add(new Dictionary<string, object>
+                {
+                    { "amount", amount.Amount },
+                    { "currency", amount.Currency },
+                    { "date", DateTime.UtcNow },
+                    { "reason", reason ?? "Partial refund" }
+                });
+            }
+            else
+            {
+                var refunds = new List<Dictionary<string, object>>
+                {
+                    new Dictionary<string, object>
+                    {
+                        { "amount", amount.Amount },
+                        { "currency", amount.Currency },
+                        { "date", DateTime.UtcNow },
+                        { "reason", reason ?? "Partial refund" }
+                    }
+                };
+                Metadata["partialRefunds"] = refunds;
+            }
+
+            // Raise domain event for partial refund
+            AddDomainEvent(new OrderPartiallyRefundedEvent(Id, amount, reason));
+        }
+
+        return Result.Success();
+    }
+
+    // Method to modify an existing order item's quantity
+    public Result UpdateOrderItemQuantity(Guid itemId, int quantity)
+    {
+        if (Status != OrderStatus.Pending)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("update item quantity"));
+
+        var item = _items.FirstOrDefault(i => i.Id == itemId);
+        if (item == null)
+            return Result.Failure(OrderErrors.ItemNotFound(itemId));
+
+        if (quantity <= 0)
+        {
+            // Remove the item if quantity is 0 or negative
+            _items.Remove(item);
+            AddDomainEvent(new OrderItemRemovedEvent(Id, itemId));
+            return Result.Failure(OrderErrors.InvalidQuantity);
+
+        }
+        else
+        {
+            // Update the item quantity
+            var updateResult = item.UpdateQuantity(quantity);
+            if (updateResult.IsFailure)
+                return updateResult;
+
+            AddDomainEvent(new OrderItemUpdatedEvent(Id, itemId));
+        }
+
+        // Recalculate order totals after item changes
+        RecalculateOrderTotals();
+
+        return Result.Success();
+    }
+
+    // Method to remove an item from an order
+    public Result RemoveOrderItem(Guid itemId)
+    {
+        if (Status != OrderStatus.Pending)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("remove item"));
+
+        var item = _items.FirstOrDefault(i => i.Id == itemId);
+        if (item == null)
+            return Result.Failure(OrderErrors.ItemNotFound(itemId));
+
+        _items.Remove(item);
+
+        // Recalculate order totals after item removal
+        RecalculateOrderTotals();
+
+        AddDomainEvent(new OrderItemRemovedEvent(Id, itemId));
         return Result.Success();
     }
 

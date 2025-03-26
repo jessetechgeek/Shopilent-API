@@ -36,6 +36,53 @@ public class Payment : AggregateRoot
         Metadata = new Dictionary<string, object>();
     }
 
+    // Internal factory method for use by Order aggregate
+    internal static Payment CreateInternal(
+        Order order,
+        User user,
+        Money amount,
+        PaymentMethodType methodType,
+        PaymentProvider provider,
+        string externalReference = null)
+    {
+        if (order == null)
+            throw new ArgumentNullException(nameof(order));
+
+        if (amount == null)
+            throw new ArgumentException("Amount cannot be null", nameof(amount));
+
+        if (amount.Amount < 0)
+            throw new ArgumentException("Amount cannot be negative", nameof(amount));
+
+        var payment = new Payment(order, user, amount, methodType, provider, externalReference);
+        payment.AddDomainEvent(new PaymentCreatedEvent(payment.Id));
+        return payment;
+    }
+
+    // For use by the Order aggregate which should validate inputs
+    internal static Result<Payment> CreateFromOrder(
+        Result<Order> orderResult,
+        User user,
+        Money amount,
+        PaymentMethodType methodType,
+        PaymentProvider provider,
+        string externalReference = null)
+    {
+        if (orderResult.IsFailure)
+            return Result.Failure<Payment>(orderResult.Error);
+
+        if (amount == null)
+            return Result.Failure<Payment>(PaymentErrors.NegativeAmount);
+
+        if (amount.Amount < 0)
+            return Result.Failure<Payment>(PaymentErrors.NegativeAmount);
+
+        var payment = new Payment(orderResult.Value, user, amount, methodType, provider, externalReference);
+        payment.AddDomainEvent(new PaymentCreatedEvent(payment.Id));
+        return Result.Success(payment);
+    }
+
+    // Public factory methods that call the internal ones
     public static Result<Payment> Create(
         Order order,
         User user,
@@ -46,19 +93,50 @@ public class Payment : AggregateRoot
     {
         if (order == null)
             return Result.Failure<Payment>(OrderErrors.NotFound(Guid.Empty));
-            
+
         if (amount == null)
             return Result.Failure<Payment>(PaymentErrors.NegativeAmount);
-            
+
         if (amount.Amount < 0)
             return Result.Failure<Payment>(PaymentErrors.NegativeAmount);
 
-        var payment = new Payment(order, user, amount, methodType, provider, externalReference);
-        payment.AddDomainEvent(new PaymentCreatedEvent(payment.Id));
+        var payment = CreateInternal(order, user, amount, methodType, provider, externalReference);
         return Result.Success(payment);
     }
 
     // With PaymentMethod entity reference
+    internal static Payment CreateInternalWithPaymentMethod(
+        Order order,
+        User user,
+        Money amount,
+        PaymentMethod paymentMethod,
+        string externalReference = null)
+    {
+        if (order == null)
+            throw new ArgumentNullException(nameof(order));
+
+        if (amount == null || amount.Amount <= 0)
+            throw new ArgumentException("Amount must be positive", nameof(amount));
+
+        if (paymentMethod == null)
+            throw new ArgumentException("Payment method cannot be null", nameof(paymentMethod));
+
+        if (!paymentMethod.IsActive)
+            throw new ArgumentException("Payment method is not active", nameof(paymentMethod));
+
+        var payment = new Payment(
+            order,
+            user,
+            amount,
+            paymentMethod.Type,
+            paymentMethod.Provider,
+            externalReference);
+
+        payment.PaymentMethodId = paymentMethod.Id;
+        payment.AddDomainEvent(new PaymentCreatedEvent(payment.Id));
+        return payment;
+    }
+
     public static Result<Payment> CreateWithPaymentMethod(
         Order order,
         User user,
@@ -68,26 +146,17 @@ public class Payment : AggregateRoot
     {
         if (order == null)
             return Result.Failure<Payment>(OrderErrors.NotFound(Guid.Empty));
-            
+
         if (amount == null || amount.Amount <= 0)
             return Result.Failure<Payment>(PaymentErrors.NegativeAmount);
-            
+
         if (paymentMethod == null)
             return Result.Failure<Payment>(PaymentErrors.PaymentMethodNotFound(Guid.Empty));
-            
+
         if (!paymentMethod.IsActive)
             return Result.Failure<Payment>(PaymentMethodErrors.InactivePaymentMethod);
 
-        var payment = new Payment(
-            order, 
-            user, 
-            amount, 
-            paymentMethod.Type, 
-            paymentMethod.Provider, 
-            externalReference);
-            
-        payment.PaymentMethodId = paymentMethod.Id;
-        payment.AddDomainEvent(new PaymentCreatedEvent(payment.Id));
+        var payment = CreateInternalWithPaymentMethod(order, user, amount, paymentMethod, externalReference);
         return Result.Success(payment);
     }
 
@@ -107,6 +176,9 @@ public class Payment : AggregateRoot
 
     public Result UpdateStatus(PaymentStatus newStatus, string transactionId = null, string errorMessage = null)
     {
+        if (Status == newStatus)
+            return Result.Success();
+            
         var oldStatus = Status;
         Status = newStatus;
 
@@ -127,11 +199,14 @@ public class Payment : AggregateRoot
     {
         if (Status == PaymentStatus.Succeeded)
             return Result.Success();
-            
+
         if (string.IsNullOrWhiteSpace(transactionId))
             return Result.Failure(PaymentErrors.TokenRequired);
 
-        UpdateStatus(PaymentStatus.Succeeded, transactionId);
+        var updateResult = UpdateStatus(PaymentStatus.Succeeded, transactionId);
+        if (updateResult.IsFailure)
+            return updateResult;
+            
         AddDomainEvent(new PaymentSucceededEvent(Id, OrderId));
         return Result.Success();
     }
@@ -141,7 +216,10 @@ public class Payment : AggregateRoot
         if (Status == PaymentStatus.Failed)
             return Result.Success();
 
-        UpdateStatus(PaymentStatus.Failed, null, errorMessage);
+        var updateResult = UpdateStatus(PaymentStatus.Failed, null, errorMessage);
+        if (updateResult.IsFailure)
+            return updateResult;
+            
         AddDomainEvent(new PaymentFailedEvent(Id, OrderId, errorMessage));
         return Result.Success();
     }
@@ -153,11 +231,14 @@ public class Payment : AggregateRoot
 
         if (Status != PaymentStatus.Succeeded)
             return Result.Failure(PaymentErrors.InvalidPaymentStatus("refund"));
-            
+
         if (string.IsNullOrWhiteSpace(transactionId))
             return Result.Failure(PaymentErrors.TokenRequired);
 
-        UpdateStatus(PaymentStatus.Refunded, transactionId);
+        var updateResult = UpdateStatus(PaymentStatus.Refunded, transactionId);
+        if (updateResult.IsFailure)
+            return updateResult;
+            
         AddDomainEvent(new PaymentRefundedEvent(Id, OrderId));
         return Result.Success();
     }
@@ -168,6 +249,7 @@ public class Payment : AggregateRoot
             return Result.Failure(PaymentErrors.TokenRequired);
 
         ExternalReference = externalReference;
+        AddDomainEvent(new PaymentUpdatedEvent(Id));
         return Result.Success();
     }
 
@@ -177,6 +259,7 @@ public class Payment : AggregateRoot
             return Result.Failure(PaymentErrors.InvalidMetadataKey);
 
         Metadata[key] = value;
+        AddDomainEvent(new PaymentUpdatedEvent(Id));
         return Result.Success();
     }
 
@@ -184,13 +267,14 @@ public class Payment : AggregateRoot
     {
         if (paymentMethod == null)
             return Result.Failure(PaymentErrors.PaymentMethodNotFound(Guid.Empty));
-            
+
         if (!paymentMethod.IsActive)
             return Result.Failure(PaymentMethodErrors.InactivePaymentMethod);
 
         PaymentMethodId = paymentMethod.Id;
         MethodType = paymentMethod.Type;
         Provider = paymentMethod.Provider;
+        AddDomainEvent(new PaymentUpdatedEvent(Id));
         return Result.Success();
     }
 }

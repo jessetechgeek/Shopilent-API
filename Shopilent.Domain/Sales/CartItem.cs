@@ -21,25 +21,47 @@ public class CartItem : Entity
         Quantity = quantity;
     }
 
-    // Add static factory method
-    public static Result<CartItem> Create(Cart cart, Product product, int quantity = 1, ProductVariant variant = null)
+    // Static factory method for internal use by Cart aggregate
+    internal static CartItem Create(Cart cart, Product product, int quantity = 1, ProductVariant variant = null)
     {
         if (cart == null)
-            return Result.Failure<CartItem>(CartErrors.CartNotFound(Guid.Empty));
-            
+            throw new ArgumentNullException(nameof(cart));
+
+        if (product == null)
+            throw new ArgumentNullException(nameof(product));
+
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be positive", nameof(quantity));
+
+        if (!product.IsActive)
+            throw new ArgumentException("Product is not active", nameof(product));
+
+        if (variant != null && !variant.IsActive)
+            throw new ArgumentException("Variant is not active", nameof(variant));
+
+        return new CartItem(cart, product, quantity, variant);
+    }
+
+    // For use by the Cart aggregate which should validate inputs
+    internal static Result<CartItem> Create(Result<Cart> cartResult, Product product, int quantity = 1,
+        ProductVariant variant = null)
+    {
+        if (cartResult.IsFailure)
+            return Result.Failure<CartItem>(cartResult.Error);
+
         if (product == null)
             return Result.Failure<CartItem>(ProductErrors.NotFound(Guid.Empty));
-            
+
         if (quantity <= 0)
             return Result.Failure<CartItem>(CartErrors.InvalidQuantity);
-            
-        if (!product.IsActive)
-            return Result.Failure<CartItem>(ProductErrors.InactiveProduct);
-            
-        if (variant != null && !variant.IsActive)
-            return Result.Failure<CartItem>(ProductVariantErrors.InactiveVariant);
 
-        return Result.Success(new CartItem(cart, product, quantity, variant));
+        if (!product.IsActive)
+            return Result.Failure<CartItem>(CartErrors.ProductUnavailable(product.Id));
+
+        if (variant != null && !variant.IsActive)
+            return Result.Failure<CartItem>(CartErrors.ProductVariantNotAvailable(variant.Id));
+
+        return Result.Success(new CartItem(cartResult.Value, product, quantity, variant));
     }
 
     public Guid CartId { get; private set; }
@@ -47,7 +69,8 @@ public class CartItem : Entity
     public Guid? VariantId { get; private set; }
     public int Quantity { get; private set; }
 
-    public Result UpdateQuantity(int quantity)
+    // Internal method for Cart aggregate to update quantity
+    internal Result UpdateQuantity(int quantity)
     {
         if (quantity <= 0)
             return Result.Failure(CartErrors.InvalidQuantity);
