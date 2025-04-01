@@ -1,7 +1,7 @@
 namespace Shopilent.Domain.Common.Repositories.Base.Read;
 
-public interface IReadRepository<T> where T : class
+public interface IReadRepository<TDto> where TDto : class
 {
-    Task<T> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<T>> ListAllAsync(CancellationToken cancellationToken = default);
+    Task<TDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TDto>> ListAllAsync(CancellationToken cancellationToken = default);
 }
