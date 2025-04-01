@@ -1,4 +1,4 @@
-namespace Shopilent.Domain.Common.Repositories.Base.Write;
+namespace Shopilent.Domain.Common.Repositories.Write;
 
 public interface IWriteRepository<T> where T : class
 {

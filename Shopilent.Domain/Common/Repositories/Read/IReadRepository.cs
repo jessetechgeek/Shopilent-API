@@ -1,4 +1,4 @@
-namespace Shopilent.Domain.Common.Repositories.Base.Read;
+namespace Shopilent.Domain.Common.Repositories.Read;
 
 public interface IReadRepository<TDto> where TDto : class
 {

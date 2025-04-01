@@ -1,5 +1,5 @@
 using Shopilent.Domain.Catalog.DTOs;
-using Shopilent.Domain.Common.Repositories.Base.Read;
+using Shopilent.Domain.Common.Repositories.Read;
 
 namespace Shopilent.Domain.Catalog.Repositories.Read;
 

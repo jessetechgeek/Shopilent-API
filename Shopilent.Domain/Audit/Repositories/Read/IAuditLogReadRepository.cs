@@ -1,6 +1,6 @@
 using Shopilent.Domain.Audit.DTOs;
 using Shopilent.Domain.Audit.Enums;
-using Shopilent.Domain.Common.Repositories.Base.Read;
+using Shopilent.Domain.Common.Repositories.Read;
 
 namespace Shopilent.Domain.Audit.Repositories.Read;
 

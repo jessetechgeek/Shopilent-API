@@ -1,4 +1,4 @@
-using Shopilent.Domain.Common.Repositories.Base.Write;
+using Shopilent.Domain.Common.Repositories.Write;
 using Shopilent.Domain.Sales.Enums;
 
 namespace Shopilent.Domain.Sales.Repositories.Write;

@@ -1,4 +1,4 @@
-using Shopilent.Domain.Common.Repositories.Base.Write;
+using Shopilent.Domain.Common.Repositories.Write;
 
 namespace Shopilent.Domain.Identity.Repositories.Write;
 
