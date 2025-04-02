@@ -1,4 +1,4 @@
-using Shopilent.Domain.Common.Repositories.Base.Read;
+using Shopilent.Domain.Common.Repositories.Read;
 using Shopilent.Domain.Identity.DTOs;
 
 namespace Shopilent.Domain.Identity.Repositories.Read;

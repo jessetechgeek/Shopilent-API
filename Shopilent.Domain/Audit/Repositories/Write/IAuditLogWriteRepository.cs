@@ -1,5 +1,5 @@
 using Shopilent.Domain.Audit.Enums;
-using Shopilent.Domain.Common.Repositories.Base.Write;
+using Shopilent.Domain.Common.Repositories.Write;
 
 namespace Shopilent.Domain.Audit.Repositories.Write;
 

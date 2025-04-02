@@ -1,4 +1,4 @@
-namespace Shopilent.Domain.Common.Repositories.Base.Write;
+namespace Shopilent.Domain.Common.Repositories.Write;
 
 public interface IAggregateWriteRepository<T> : IWriteRepository<T> where T : AggregateRoot
 {
