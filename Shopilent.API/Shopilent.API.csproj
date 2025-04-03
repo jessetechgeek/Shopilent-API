@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+        <PackageReference Include="FastEndpoints" Version="5.35.0" />
+        <PackageReference Include="FastEndpoints.Security" Version="5.35.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Shopilent.Application\Shopilent.Application.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure.Cache.Redis\Shopilent.Infrastructure.Cache.Redis.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure.Identity\Shopilent.Infrastructure.Identity.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure.Logging\Shopilent.Infrastructure.Logging.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure\Shopilent.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Endpoints\Users\" />
+    </ItemGroup>
+
+</Project>
