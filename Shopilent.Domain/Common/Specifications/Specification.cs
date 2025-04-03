@@ -1,4 +1,4 @@
-namespace Shopilent.Domain.Common;
+namespace Shopilent.Domain.Common.Specifications;
 
 public abstract class Specification<T>
 {

@@ -2,6 +2,7 @@ using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Catalog.Events;
 using Shopilent.Domain.Catalog.ValueObjects;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Events;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Sales.ValueObjects;
 

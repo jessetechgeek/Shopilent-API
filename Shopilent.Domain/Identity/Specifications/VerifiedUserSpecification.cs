@@ -1,4 +1,5 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Specifications;
 
 namespace Shopilent.Domain.Identity.Specifications;
 

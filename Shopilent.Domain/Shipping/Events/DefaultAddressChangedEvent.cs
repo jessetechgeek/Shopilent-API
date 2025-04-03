@@ -1,4 +1,5 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Events;
 using Shopilent.Domain.Shipping.Enums;
 
 namespace Shopilent.Domain.Shipping.Events;

@@ -1,4 +1,5 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Specifications;
 using Shopilent.Domain.Shipping.Enums;
 
 namespace Shopilent.Domain.Shipping.Specifications;

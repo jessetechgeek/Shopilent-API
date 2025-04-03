@@ -1,4 +1,4 @@
-namespace Shopilent.Domain.Common;
+namespace Shopilent.Domain.Common.Specifications;
 
 public class NotSpecification<T> : Specification<T>
 {
