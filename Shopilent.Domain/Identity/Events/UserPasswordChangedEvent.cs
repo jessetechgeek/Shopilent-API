@@ -1,4 +1,5 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Events;
 
 namespace Shopilent.Domain.Identity.Events;
 

@@ -99,7 +99,7 @@ public class User : AggregateRoot
 
     private readonly List<Cart> _carts = new();
     public IReadOnlyCollection<Cart> Carts => _carts.AsReadOnly();
-    
+
     private readonly List<Order> _orders = new();
     public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
@@ -252,6 +252,10 @@ public class User : AggregateRoot
         if (refreshToken == null)
             return Result.Failure(RefreshTokenErrors.NotFound(token));
 
+        //throw failure if token is already revoked
+        if (refreshToken.IsRevoked)
+            return Result.Failure(RefreshTokenErrors.AlreadyRevoked);
+
         refreshToken.Revoke(reason);
         return Result.Success();
     }
@@ -274,14 +278,14 @@ public class User : AggregateRoot
     {
         if (postalAddress == null)
             return Result.Failure<Address>(AddressErrors.AddressLine1Required);
-    
+
         var result = Address.Create(
             this,
             postalAddress,
             addressType,
             phone,
             isDefault);
-    
+
         if (isDefault)
         {
             // Update other addresses of the same type
@@ -290,17 +294,17 @@ public class User : AggregateRoot
                 existingAddress.SetDefault(false);
             }
         }
-    
+
         _addresses.Add(result);
         return Result.Success(result);
     }
-    
+
     public Result RemoveAddress(Guid addressId)
     {
         var address = _addresses.Find(a => a.Id == addressId);
         if (address == null)
             return Result.Failure(AddressErrors.NotFound(addressId));
-    
+
         _addresses.Remove(address);
         return Result.Success();
     }

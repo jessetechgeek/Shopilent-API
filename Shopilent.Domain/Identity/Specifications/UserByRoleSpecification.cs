@@ -1,4 +1,5 @@
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Specifications;
 using Shopilent.Domain.Identity.Enums;
 
 namespace Shopilent.Domain.Identity.Specifications;

@@ -8,3 +8,4 @@ riderModule.iml
 .vscode
 .env
 *.DotSettings*
+logs

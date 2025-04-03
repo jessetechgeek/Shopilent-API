@@ -1,3 +1,5 @@
+using Shopilent.Domain.Common.Events;
+
 namespace Shopilent.Domain.Common;
 
 public abstract class AggregateRoot : AuditableEntity
