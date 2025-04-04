@@ -11,4 +11,5 @@ public interface IOrderReadRepository : IAggregateReadRepository<OrderDto>
     Task<IReadOnlyList<OrderDto>> GetByStatusAsync(OrderStatus status, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<OrderDto>> GetRecentOrdersAsync(int count, CancellationToken cancellationToken = default);
     Task<OrderItemDto> GetOrderItemByIdAsync(Guid orderItemId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<OrderDto>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 }
