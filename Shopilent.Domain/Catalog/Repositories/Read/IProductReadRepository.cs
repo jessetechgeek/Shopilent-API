@@ -23,4 +23,7 @@ public interface IProductReadRepository : IAggregateReadRepository<ProductDto>
         string sortColumn = null, 
         bool sortDescending = false,
         CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyList<ProductDto>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+
 }

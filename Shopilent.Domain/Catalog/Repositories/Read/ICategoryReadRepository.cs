@@ -15,4 +15,6 @@ public interface ICategoryReadRepository : IAggregateReadRepository<CategoryDto>
         CancellationToken cancellationToken = default);
 
     Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyList<CategoryDto>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 }

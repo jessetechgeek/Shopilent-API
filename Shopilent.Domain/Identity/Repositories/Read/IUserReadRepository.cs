@@ -16,4 +16,6 @@ public interface IUserReadRepository : IAggregateReadRepository<UserDto>
     Task<UserDto> GetByPasswordResetTokenAsync(string token, CancellationToken cancellationToken = default);
     Task<bool> EmailExistsAsync(string email, Guid? excludeId = null, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<UserDto>> GetByRoleAsync(string role, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<UserDto>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+
 }
