@@ -1,4 +1,5 @@
 using Shopilent.Domain.Catalog.DTOs;
+using Shopilent.Domain.Common.Models;
 using Shopilent.Domain.Common.Repositories.Read;
 
 namespace Shopilent.Domain.Catalog.Repositories.Read;
@@ -14,4 +15,12 @@ public interface IProductReadRepository : IAggregateReadRepository<ProductDto>
 
     Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default);
     Task<bool> SkuExistsAsync(string sku, Guid? excludeId = null, CancellationToken cancellationToken = default);
+    
+    Task<PaginatedResult<ProductDto>> GetPaginatedByCategoryAsync(
+        Guid categoryId,
+        int pageNumber, 
+        int pageSize, 
+        string sortColumn = null, 
+        bool sortDescending = false,
+        CancellationToken cancellationToken = default);
 }
