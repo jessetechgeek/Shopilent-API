@@ -39,7 +39,7 @@ public class Attribute : AggregateRoot
         var attributeResult = Create(name, displayName, type);
         if (attributeResult.IsFailure)
             return attributeResult;
-            
+
         var attribute = attributeResult.Value;
         attribute.Filterable = true;
         return Result.Success(attribute);
@@ -50,7 +50,7 @@ public class Attribute : AggregateRoot
         var attributeResult = Create(name, displayName, type);
         if (attributeResult.IsFailure)
             return attributeResult;
-            
+
         var attribute = attributeResult.Value;
         attribute.Searchable = true;
         return Result.Success(attribute);
@@ -61,7 +61,7 @@ public class Attribute : AggregateRoot
         var attributeResult = Create(name, displayName, type);
         if (attributeResult.IsFailure)
             return attributeResult;
-            
+
         var attribute = attributeResult.Value;
         attribute.IsVariant = true;
         return Result.Success(attribute);
@@ -99,6 +99,20 @@ public class Attribute : AggregateRoot
             return Result.Failure(AttributeErrors.InvalidConfigurationFormat);
 
         Configuration[key] = value;
+        return Result.Success();
+    }
+
+
+    public Result Update(string name, string displayName)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+            return Result.Failure(AttributeErrors.DisplayNameRequired);
+
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure(AttributeErrors.NameRequired);
+
+        DisplayName = displayName;
+        Name = name;
         return Result.Success();
     }
 }
