@@ -1,4 +1,5 @@
 using Shopilent.Domain.Catalog.DTOs;
+using Shopilent.Domain.Common.Models;
 using Shopilent.Domain.Common.Repositories.Read;
 
 namespace Shopilent.Domain.Catalog.Repositories.Read;
@@ -17,4 +18,8 @@ public interface ICategoryReadRepository : IAggregateReadRepository<CategoryDto>
     Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default);
     
     Task<IReadOnlyList<CategoryDto>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+    
+    Task<DataTableResult<CategoryDetailDto>> GetCategoryDetailDataTableAsync(
+        DataTableRequest request,
+        CancellationToken cancellationToken = default);
 }

@@ -8,7 +8,6 @@ public class DataTableRequest
     public List<DataTableColumn> Columns { get; set; } = new List<DataTableColumn>();
     public List<DataTableOrder> Order { get; set; } = new List<DataTableOrder>();
     public DataTableSearch Search { get; set; } = new DataTableSearch();
-
     public int PageNumber => Start / Length + 1;
     public int PageSize => Length;
 }
