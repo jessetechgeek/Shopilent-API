@@ -1,7 +1,7 @@
 using Shopilent.Domain.Sales.Enums;
 using Shopilent.Domain.Sales.ValueObjects;
 
-namespace Shopilent.Domain.Tests.Sales.ValueObjects;
+namespace Shopilent.Domain.Tests.Sales;
 
 public class DiscountTests
 {
