@@ -26,4 +26,8 @@ public interface IProductReadRepository : IAggregateReadRepository<ProductDto>
     
     Task<IReadOnlyList<ProductDto>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 
+    
+    Task<DataTableResult<ProductDetailDto>> GetProductDetailDataTableAsync(
+        DataTableRequest request,
+        CancellationToken cancellationToken = default);
 }

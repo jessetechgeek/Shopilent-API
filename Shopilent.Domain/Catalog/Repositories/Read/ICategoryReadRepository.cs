@@ -22,4 +22,8 @@ public interface ICategoryReadRepository : IAggregateReadRepository<CategoryDto>
     Task<DataTableResult<CategoryDetailDto>> GetCategoryDetailDataTableAsync(
         DataTableRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<CategoryDto>> GetByProductIdAsync(Guid productId, CancellationToken cancellationToken);
+    
+ 
 }
