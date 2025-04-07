@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Shopilent.Domain.Catalog.Enums;
 
 namespace Shopilent.Domain.Catalog.DTOs;
@@ -7,6 +8,8 @@ public class AttributeDto
     public Guid Id { get; set; }
     public string Name { get; set; }
     public string DisplayName { get; set; }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public AttributeType Type { get; set; }
     public Dictionary<string, object> Configuration { get; set; }
     public bool Filterable { get; set; }

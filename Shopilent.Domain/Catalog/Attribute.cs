@@ -103,16 +103,12 @@ public class Attribute : AggregateRoot
     }
 
 
-    public Result Update(string name, string displayName)
+    public Result Update(string displayName)
     {
         if (string.IsNullOrWhiteSpace(displayName))
             return Result.Failure(AttributeErrors.DisplayNameRequired);
 
-        if (string.IsNullOrWhiteSpace(name))
-            return Result.Failure(AttributeErrors.NameRequired);
-
         DisplayName = displayName;
-        Name = name;
         return Result.Success();
     }
 }
