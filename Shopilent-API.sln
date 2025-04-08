@@ -24,7 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Domain", "Shopile
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Application", "Shopilent.Application\Shopilent.Application.csproj", "{740057DC-0042-405B-A679-69703134DF6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Domain.Tests", "Shopilent.Domain.Tests\Shopilent.Domain.Tests.csproj", "{EAF3A4B1-9F62-43D6-8415-6BC179456638}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Domain.UnitTests", "Shopilent.Domain.UnitTests\Shopilent.Domain.UnitTests.csproj", "{EAF3A4B1-9F62-43D6-8415-6BC179456638}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure", "Shopilent.Infrastructure\Shopilent.Infrastructure.csproj", "{E8554658-1675-4E86-A772-4F7EE0BF46A3}"
 EndProject
@@ -43,6 +43,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Persistence.PostgreSQL", "Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj", "{0368FCF2-3563-4A1F-9E22-ADA61ACCD3F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Cache.Redis", "Shopilent.Infrastructure.Cache.Redis\Shopilent.Infrastructure.Cache.Redis.csproj", "{863F1A8A-2694-4BFA-9093-166A8B18C7F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{9CF72851-172A-482E-81B4-5113748D4758}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Application.UnitTests", "Shopilent.Application.UnitTests\Shopilent.Application.UnitTests.csproj", "{2E1D9AB4-C199-41B8-B5DB-C7A286B79690}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +72,8 @@ Global
 		{60435A6F-23FD-4135-A640-3D9E166D4DF0} = {463540A1-2D10-4BA8-B838-31CD0C03B9D7}
 		{0368FCF2-3563-4A1F-9E22-ADA61ACCD3F3} = {463540A1-2D10-4BA8-B838-31CD0C03B9D7}
 		{863F1A8A-2694-4BFA-9093-166A8B18C7F1} = {463540A1-2D10-4BA8-B838-31CD0C03B9D7}
+		{9CF72851-172A-482E-81B4-5113748D4758} = {0EA014D9-5D23-4EE2-A0E5-B6A0916000CD}
+		{2E1D9AB4-C199-41B8-B5DB-C7A286B79690} = {9752E1C1-67E6-4F5E-896F-676AF1FDF425}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{11108A59-AF3B-48F1-87A6-015229D93024}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -118,5 +124,9 @@ Global
 		{863F1A8A-2694-4BFA-9093-166A8B18C7F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{863F1A8A-2694-4BFA-9093-166A8B18C7F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{863F1A8A-2694-4BFA-9093-166A8B18C7F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E1D9AB4-C199-41B8-B5DB-C7A286B79690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E1D9AB4-C199-41B8-B5DB-C7A286B79690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E1D9AB4-C199-41B8-B5DB-C7A286B79690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E1D9AB4-C199-41B8-B5DB-C7A286B79690}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,4 @@
-name: Domain Tests
+name: Tests
 
 on:
   push:
