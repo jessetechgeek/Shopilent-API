@@ -16,6 +16,10 @@ public static class UserErrors
         code: "User.PasswordRequired",
         message: "Password hash cannot be empty.");
 
+    public static Error PasswordTooShort => Error.Validation(
+        code: "User.PasswordTooShort",
+        message: "Password must be at least 8 characters long");
+    
     public static Error FirstNameRequired => Error.Validation(
         code: "User.FirstNameRequired",
         message: "First name cannot be empty.");
