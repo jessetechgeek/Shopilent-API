@@ -171,4 +171,10 @@ public class Address : AggregateRoot
         AddDomainEvent(new AddressUpdatedEvent(Id));
         return Result.Success();
     }
+    
+    public Result Delete()
+    {
+        AddDomainEvent(new AddressDeletedEvent(Id, UserId));
+        return Result.Success();
+    }
 }

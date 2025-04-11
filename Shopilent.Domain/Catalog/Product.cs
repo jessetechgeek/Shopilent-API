@@ -277,4 +277,23 @@ public class Product : AggregateRoot
     {
         AddDomainEvent(domainEvent);
     }
+    
+    public Result Delete()
+    {
+        if (!_variants.Any())
+        {
+            AddDomainEvent(new ProductDeletedEvent(Id));
+            return Result.Success();
+        }
+        else
+        {
+            foreach (var variant in _variants)
+            {
+                AddDomainEvent(new ProductVariantDeletedEvent(Id, variant.Id));
+            }
+        
+            AddDomainEvent(new ProductDeletedEvent(Id));
+            return Result.Success();
+        }
+    }
 }

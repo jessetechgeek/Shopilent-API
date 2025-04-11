@@ -298,4 +298,11 @@ public class ProductVariant : AggregateRoot
         AddDomainEvent(new ProductVariantAttributeUpdatedEvent(ProductId, Id, attributeId));
         return Result.Success();
     }
+    
+    public Result Delete()
+    {
+        AddDomainEvent(new ProductVariantDeletedEvent(ProductId, Id));
+        return Result.Success();
+    }
+
 }
