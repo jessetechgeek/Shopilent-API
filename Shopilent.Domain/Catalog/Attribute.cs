@@ -111,4 +111,10 @@ public class Attribute : AggregateRoot
         DisplayName = displayName;
         return Result.Success();
     }
+    
+    public Result Delete()
+    {
+        AddDomainEvent(new AttributeDeletedEvent(Id));
+        return Result.Success();
+    }
 }

@@ -277,4 +277,20 @@ public class Payment : AggregateRoot
         AddDomainEvent(new PaymentUpdatedEvent(Id));
         return Result.Success();
     }
+    
+    public Result Cancel(string reason = null)
+    {
+        if (Status == PaymentStatus.Succeeded || Status == PaymentStatus.Refunded)
+            return Result.Failure(PaymentErrors.InvalidPaymentStatus("cancel"));
+    
+        var oldStatus = Status;
+        Status = PaymentStatus.Canceled;
+    
+        if (reason != null)
+            Metadata["cancellationReason"] = reason;
+    
+        AddDomainEvent(new PaymentStatusChangedEvent(Id, oldStatus, Status));
+        AddDomainEvent(new PaymentCancelledEvent(Id, OrderId));
+        return Result.Success();
+    }
 }

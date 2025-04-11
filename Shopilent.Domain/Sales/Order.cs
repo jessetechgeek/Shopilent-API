@@ -464,4 +464,17 @@ public class Order : AggregateRoot
         Subtotal = newSubtotal;
         Total = Subtotal.Add(Tax).Add(ShippingCost);
     }
+    
+    public Result CancelOrderItem(Guid itemId, string reason = null)
+    {
+        if (Status != OrderStatus.Pending && Status != OrderStatus.Processing)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("cancel item"));
+    
+        var item = _items.Find(i => i.Id == itemId);
+        if (item == null)
+            return Result.Failure(OrderErrors.ItemNotFound(itemId));
+    
+        AddDomainEvent(new OrderItemCancelledEvent(Id, itemId));
+        return Result.Success();
+    }
 }

@@ -150,4 +150,10 @@ public class Cart : AggregateRoot
         Metadata[key] = value;
         return Result.Success();
     }
+    
+    public Result MarkAsExpired()
+    {
+        AddDomainEvent(new CartExpiredEvent(Id));
+        return Result.Success();
+    }
 }

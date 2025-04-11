@@ -149,4 +149,16 @@ public class Category : AggregateRoot
         _children.Add(child);
         return Result.Success();
     }
+    
+    public Result Delete()
+    {
+        if (_productCategories.Any())
+            return Result.Failure(CategoryErrors.CannotDeleteWithProducts);
+    
+        if (_children.Any())
+            return Result.Failure(CategoryErrors.CannotDeleteWithChildren);
+    
+        AddDomainEvent(new CategoryDeletedEvent(Id));
+        return Result.Success();
+    }
 }
