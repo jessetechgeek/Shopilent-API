@@ -34,7 +34,7 @@ public class OrderItem : Entity
         if (variant != null)
         {
             ProductData["variant_sku"] = variant.Sku;
-            ProductData["variant_attributes"] = variant.Attributes;
+            ProductData["variant_attributes"] = variant.VariantAttributes;
         }
     }
 

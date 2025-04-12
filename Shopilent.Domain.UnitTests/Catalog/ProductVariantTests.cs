@@ -41,7 +41,7 @@ public class ProductVariantTests
         Assert.Equal(price, variant.Price);
         Assert.Equal(stockQuantity, variant.StockQuantity);
         Assert.True(variant.IsActive);
-        Assert.Empty(variant.Attributes);
+        Assert.Empty(variant.VariantAttributes);
         Assert.Empty(variant.Metadata);
     }
 
@@ -338,8 +338,8 @@ public class ProductVariantTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Single(variant.Attributes);
-        Assert.Equal(attribute.Id, variant.Attributes.First().AttributeId);
+        Assert.Single(variant.VariantAttributes);
+        Assert.Equal(attribute.Id, variant.VariantAttributes.First().AttributeId);
     }
 
     [Fact]
