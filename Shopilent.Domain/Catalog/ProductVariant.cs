@@ -117,7 +117,7 @@ public class ProductVariant : AggregateRoot
     public Dictionary<string, object> Metadata { get; private set; } = new();
 
     private readonly List<VariantAttribute> _variantAttributes = new();
-    public IReadOnlyCollection<VariantAttribute> Attributes => _variantAttributes.AsReadOnly();
+    public IReadOnlyCollection<VariantAttribute> VariantAttributes => _variantAttributes.AsReadOnly();
 
     // Self-contained update methods that raise their own domain events
     public Result Update(string sku, Money price)

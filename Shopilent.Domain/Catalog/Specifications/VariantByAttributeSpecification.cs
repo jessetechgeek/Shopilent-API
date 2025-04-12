@@ -17,7 +17,7 @@ public class VariantByAttributeSpecification : Specification<ProductVariant>
     public override bool IsSatisfiedBy(ProductVariant variant)
     {
         // Check if variant has the specified attribute
-        var attribute = variant.Attributes.FirstOrDefault(a => a.AttributeId == _attributeId);
+        var attribute = variant.VariantAttributes.FirstOrDefault(a => a.AttributeId == _attributeId);
         if (attribute == null)
             return false;
 

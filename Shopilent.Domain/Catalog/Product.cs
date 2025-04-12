@@ -24,7 +24,7 @@ public class Product : AggregateRoot
         IsActive = true;
         Metadata = new Dictionary<string, object>();
 
-        _productCategories = new List<ProductCategory>();
+        _categories = new List<ProductCategory>();
         _attributes = new List<ProductAttribute>();
         _variants = new List<ProductVariant>();
     }
@@ -76,8 +76,8 @@ public class Product : AggregateRoot
     public Dictionary<string, object> Metadata { get; private set; } = new Dictionary<string, object>();
     public bool IsActive { get; private set; }
 
-    private readonly List<ProductCategory> _productCategories = new();
-    public IReadOnlyCollection<ProductCategory> Categories => _productCategories.AsReadOnly();
+    private readonly List<ProductCategory> _categories = new();
+    public IReadOnlyCollection<ProductCategory> Categories => _categories.AsReadOnly();
 
     private readonly List<ProductAttribute> _attributes = new();
     public IReadOnlyCollection<ProductAttribute> Attributes => _attributes.AsReadOnly();
@@ -131,11 +131,11 @@ public class Product : AggregateRoot
         if (category == null)
             return Result.Failure(CategoryErrors.NotFound(Guid.Empty));
 
-        if (_productCategories.Exists(pc => pc.CategoryId == category.Id))
+        if (_categories.Exists(pc => pc.CategoryId == category.Id))
             return Result.Success(); // Already added
 
         var productCategory = ProductCategory.Create(this, category);
-        _productCategories.Add(productCategory);
+        _categories.Add(productCategory);
         AddDomainEvent(new ProductCategoryAddedEvent(Id, category.Id));
         return Result.Success();
     }
@@ -145,11 +145,11 @@ public class Product : AggregateRoot
         if (category == null)
             return Result.Failure(CategoryErrors.NotFound(Guid.Empty));
 
-        var productCategory = _productCategories.Find(pc => pc.CategoryId == category.Id);
+        var productCategory = _categories.Find(pc => pc.CategoryId == category.Id);
         if (productCategory == null)
             return Result.Failure(CategoryErrors.NotFound(category.Id));
 
-        _productCategories.Remove(productCategory);
+        _categories.Remove(productCategory);
         AddDomainEvent(new ProductCategoryRemovedEvent(Id, category.Id));
         return Result.Success();
     }
@@ -272,12 +272,12 @@ public class Product : AggregateRoot
 
         return Result.Success(variant);
     }
-    
+
     public void RaiseVariantEvent(DomainEvent domainEvent)
     {
         AddDomainEvent(domainEvent);
     }
-    
+
     public Result Delete()
     {
         if (!_variants.Any())
@@ -291,7 +291,7 @@ public class Product : AggregateRoot
             {
                 AddDomainEvent(new ProductVariantDeletedEvent(Id, variant.Id));
             }
-        
+
             AddDomainEvent(new ProductDeletedEvent(Id));
             return Result.Success();
         }
