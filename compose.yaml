@@ -19,7 +19,6 @@
       - ConnectionStrings__PostgreSql=Host=postgres;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - ConnectionStrings__PostgreSqlReadReplicas__0=Host=postgres-replica-1;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - Redis__ConnectionString=redis:6379
-      - Redis__ConnectionString=redis:6379
       - Redis__InstanceName=shopilent_
 
   postgres:
@@ -69,8 +68,8 @@
       - SEQ_ADMIN_USERNAME=${SEQ_ADMIN_USERNAME}
       - SEQ_ADMIN_PASSWORD=${SEQ_ADMIN_PASSWORD}
     ports:
-      - "${SEQ_UI_PORT}:80"      # Web UI
-      - "${SEQ_INGEST_PORT}:5341"    # Ingestion endpoint
+      - "${SEQ_UI_PORT}:80"
+      - "${SEQ_INGEST_PORT}:5341"
     volumes:
       - seq_data:/data
     restart: unless-stopped
