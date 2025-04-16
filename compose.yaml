@@ -6,7 +6,7 @@
       context: .
       dockerfile: Shopilent.API/Dockerfile
     ports:
-      - "${API_PORT_1}:8080"
+      - "${API_PORT_1:-9801}:8080"
     depends_on:
       - postgres
       - postgres-replica-1
@@ -19,7 +19,25 @@
       - ConnectionStrings__PostgreSql=Host=postgres;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - ConnectionStrings__PostgreSqlReadReplicas__0=Host=postgres-replica-1;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - Redis__ConnectionString=redis:6379
-      - Redis__InstanceName=shopilent_
+      - Redis__InstanceName=shopilent_ 
+  
+  admin:
+    container_name: shopilent-admin
+    image: shopilent.admin
+    build:
+      context: ./Shopilent.Admin
+      dockerfile: Dockerfile 
+    ports:
+      - "${ADMIN_PORT:-9802}:5173"
+    volumes:
+      - ./Shopilent.Admin:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://shopilent.api:8080
+    depends_on:
+      - shopilent.api
+    restart: unless-stopped
 
   postgres:
     container_name: shopilent-postgres
@@ -29,7 +47,7 @@
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT:-9851}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -44,7 +62,7 @@
       - POSTGRES_MASTER_HOST=postgres
       - POSTGRES_MASTER_PORT=5432
     ports:
-      - "${POSTGRES_REPLICA_PORT_1}:5432"
+      - "${POSTGRES_REPLICA_PORT_1:-9852}:5432"
     volumes:
       - postgres_replica_1_data:/var/lib/postgresql/data
     depends_on:
@@ -55,11 +73,11 @@
     container_name: shopilent-redis
     image: redis:alpine
     ports:
-      - "${REDIS_PORT}:6379"
+      - "${REDIS_PORT:-9856}:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
-    
+  
   seq:
     container_name: shopilent-seq
     image: datalust/seq:latest
@@ -68,12 +86,12 @@
       - SEQ_ADMIN_USERNAME=${SEQ_ADMIN_USERNAME}
       - SEQ_ADMIN_PASSWORD=${SEQ_ADMIN_PASSWORD}
     ports:
-      - "${SEQ_UI_PORT}:80"
-      - "${SEQ_INGEST_PORT}:5341"
+      - "${SEQ_UI_PORT:-9803}:80"
+      - "${SEQ_INGEST_PORT:-5341}:5341"
     volumes:
       - seq_data:/data
     restart: unless-stopped
-    
+
 volumes:
   postgres_data:
     name: shopilent_postgres_data
