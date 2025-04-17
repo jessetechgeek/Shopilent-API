@@ -21,6 +21,27 @@
       - Redis__ConnectionString=redis:6379
       - Redis__InstanceName=shopilent_ 
   
+  client:
+    container_name: shopilent-client
+    image: shopilent.client
+    build:
+      context: ./Shopilent.Client
+      dockerfile: Dockerfile
+    ports:
+      - "${CLIENT_PORT:-9800}:3000"
+    volumes:
+      - ./Shopilent.Client:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://shopilent.api:8080
+      - WATCHPACK_POLLING=true
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      - shopilent.api
+    restart: unless-stopped
+  
   admin:
     container_name: shopilent-admin
     image: shopilent.admin
