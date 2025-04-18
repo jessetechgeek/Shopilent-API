@@ -19,12 +19,17 @@ public static class AttributeErrors
     public static Error NotFound(Guid id) => Error.NotFound(
         code: "Attribute.NotFound",
         message: $"Attribute with ID {id} was not found.");
-        
+
     public static Error DuplicateName(string name) => Error.Conflict(
         code: "Attribute.DuplicateName",
         message: $"An attribute with name '{name}' already exists.");
-        
+
     public static Error InvalidConfigurationFormat => Error.Validation(
         code: "Attribute.InvalidConfigurationFormat",
         message: "The attribute configuration format is invalid.");
+
+    public static Error NotVariantAttribute(string name) =>
+        Error.Validation(
+            code: "Attribute.NotVariantAttribute",
+            message: $"Attribute '{name}' is not a variant attribute.");
 }
