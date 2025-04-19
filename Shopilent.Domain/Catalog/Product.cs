@@ -2,6 +2,7 @@ using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Catalog.Events;
 using Shopilent.Domain.Catalog.ValueObjects;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Errors;
 using Shopilent.Domain.Common.Events;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Sales.ValueObjects;
@@ -164,6 +165,39 @@ public class Product : AggregateRoot
 
         var productAttribute = ProductAttribute.Create(this, attribute, value);
         _attributes.Add(productAttribute);
+        return Result.Success();
+    }
+
+    public Result RemoveAttribute(Attribute attribute)
+    {
+        if (attribute == null)
+            return Result.Failure(Error.Validation(message: "Attribute cannot be null"));
+
+        var productAttribute = Attributes.FirstOrDefault(pa => pa.AttributeId == attribute.Id);
+        if (productAttribute == null)
+            return Result.Failure(Error.Validation(message: "Attribute is not associated with this product"));
+
+        // Remove the attribute
+        _attributes.Remove(productAttribute);
+
+        return Result.Success();
+    }
+
+    public Result UpdateAttributeValue(Guid attributeId, object value)
+    {
+        var productAttribute = Attributes.FirstOrDefault(pa => pa.AttributeId == attributeId);
+        if (productAttribute == null)
+            return Result.Failure(Error.Validation(message: "Attribute is not associated with this product"));
+
+        // Update the attribute value
+        productAttribute.UpdateValue(value);
+
+        return Result.Success();
+    }
+    
+    public Result ClearAttributes()
+    {
+        _attributes.Clear();
         return Result.Success();
     }
 
