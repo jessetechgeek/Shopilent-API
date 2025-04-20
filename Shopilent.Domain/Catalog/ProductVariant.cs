@@ -1,6 +1,8 @@
 using Shopilent.Domain.Catalog.Errors;
 using Shopilent.Domain.Catalog.Events;
+using Shopilent.Domain.Catalog.ValueObjects;
 using Shopilent.Domain.Common;
+using Shopilent.Domain.Common.Errors;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Sales.ValueObjects;
 
@@ -118,6 +120,9 @@ public class ProductVariant : AggregateRoot
 
     private readonly List<VariantAttribute> _variantAttributes = new();
     public IReadOnlyCollection<VariantAttribute> VariantAttributes => _variantAttributes.AsReadOnly();
+
+    private readonly List<ProductImage> _images = new();
+    public IReadOnlyCollection<ProductImage> Images => _images.AsReadOnly();
 
     // Self-contained update methods that raise their own domain events
     public Result Update(string sku, Money price)
@@ -298,11 +303,76 @@ public class ProductVariant : AggregateRoot
         AddDomainEvent(new ProductVariantAttributeUpdatedEvent(ProductId, Id, attributeId));
         return Result.Success();
     }
-    
+
     public Result Delete()
     {
         AddDomainEvent(new ProductVariantDeletedEvent(ProductId, Id));
         return Result.Success();
     }
 
+    public Result AddImage(ProductImage image)
+    {
+        // If this is the first image or it's marked as default and no other default exists
+        if (_images.Count == 0 || (image.IsDefault && !_images.Any(i => i.IsDefault)))
+        {
+            _images.Add(image);
+            return Result.Success();
+        }
+
+        // If this image is marked as default, remove default from other images
+        if (image.IsDefault)
+        {
+            foreach (var existingImage in _images.Where(i => i.IsDefault))
+            {
+                existingImage.RemoveDefault();
+            }
+        }
+
+        _images.Add(image);
+        return Result.Success();
+    }
+
+    public Result RemoveImage(ProductImage image)
+    {
+        if (!_images.Contains(image))
+            return Result.Failure(Error.Validation(message: "Image not found"));
+
+        bool wasDefault = image.IsDefault;
+        _images.Remove(image);
+
+        // If removed image was default and we have other images, set the first one as default
+        if (wasDefault && _images.Any())
+        {
+            _images.First().SetAsDefault();
+        }
+
+        return Result.Success();
+    }
+
+    public Result SetDefaultImage(ProductImage image)
+    {
+        if (!_images.Contains(image))
+            return Result.Failure(Error.Validation(message: "Image not found"));
+
+        foreach (var existingImage in _images)
+        {
+            existingImage.RemoveDefault();
+        }
+
+        image.SetAsDefault();
+        return Result.Success();
+    }
+
+    public Result ReorderImages(List<(ProductImage Image, int Order)> newOrder)
+    {
+        foreach (var (image, order) in newOrder)
+        {
+            if (!_images.Contains(image))
+                return Result.Failure(Error.Validation(message: "One or more images not found"));
+
+            image.UpdateDisplayOrder(order);
+        }
+
+        return Result.Success();
+    }
 }
