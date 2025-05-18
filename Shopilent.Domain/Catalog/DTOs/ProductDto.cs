@@ -1,3 +1,5 @@
+using Shopilent.Domain.Catalog.ValueObjects;
+
 namespace Shopilent.Domain.Catalog.DTOs;
 
 public class ProductDto
@@ -11,6 +13,7 @@ public class ProductDto
     public string Slug { get; set; }
     public bool IsActive { get; set; }
     public Dictionary<string, object> Metadata { get; set; }
+    public IReadOnlyList<ProductImageDto> Images { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
