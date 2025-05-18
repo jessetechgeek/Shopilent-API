@@ -6,7 +6,8 @@ namespace Shopilent.Domain.Catalog.ValueObjects;
 
 public class ProductImage : ValueObject
 {
-    public string Url { get; }
+    public string ImageKey { get; }
+    public string ThumbnailKey { get; }
     public string? AltText { get; }
     public bool IsDefault { get; private set; }
     public int DisplayOrder { get; private set; }
@@ -15,25 +16,27 @@ public class ProductImage : ValueObject
     protected ProductImage()
     {
     }
-    
-    private ProductImage(string url, string? altText, bool isDefault, int displayOrder)
+
+    private ProductImage(string imageKey, string thumbnailKey, string? altText, bool isDefault, int displayOrder)
     {
-        Url = url;
+        ImageKey = imageKey;
+        ThumbnailKey = thumbnailKey;
         AltText = altText;
         IsDefault = isDefault;
         DisplayOrder = displayOrder;
     }
 
-    public static Result<ProductImage> Create(string url, string? altText = null, bool isDefault = false, int displayOrder = 0)
+    public static Result<ProductImage> Create(string imageKey, string thumbnailKey, string? altText = null,
+        bool isDefault = false,
+        int displayOrder = 0)
     {
-        if (string.IsNullOrWhiteSpace(url))
-            return Result.Failure<ProductImage>(Error.Validation(message: "Image URL is required"));
+        if (string.IsNullOrWhiteSpace(imageKey))
+            return Result.Failure<ProductImage>(Error.Validation(message: "Image Key is required"));
 
-        // You might want to add URL validation here
-        if (!Uri.TryCreate(url, UriKind.Absolute, out _))
-            return Result.Failure<ProductImage>(Error.Validation(message: "Invalid image URL format"));
+        if (string.IsNullOrWhiteSpace(thumbnailKey))
+            return Result.Failure<ProductImage>(Error.Validation(message: "Thumbnail Key is required"));
 
-        return Result.Success(new ProductImage(url, altText, isDefault, displayOrder));
+        return Result.Success(new ProductImage(imageKey, thumbnailKey, altText, isDefault, displayOrder));
     }
 
     public void SetAsDefault()
@@ -50,13 +53,14 @@ public class ProductImage : ValueObject
     {
         if (order < 0)
             throw new ArgumentException("Display order cannot be negative");
-            
+
         DisplayOrder = order;
     }
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Url;
+        yield return ImageKey;
+        yield return ThumbnailKey;
         if (AltText != null) yield return AltText;
         yield return IsDefault;
         yield return DisplayOrder;
