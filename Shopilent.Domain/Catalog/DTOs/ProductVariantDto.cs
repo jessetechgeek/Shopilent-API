@@ -11,6 +11,7 @@ public class ProductVariantDto
     public bool IsActive { get; set; }
     public Dictionary<string, object> Metadata { get; set; }
     public IReadOnlyList<VariantAttributeDto> Attributes { get; set; }
+    public IReadOnlyList<ProductImageDto> Images { get; set; } // Added variant images
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
