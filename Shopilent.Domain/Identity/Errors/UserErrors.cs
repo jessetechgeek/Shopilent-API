@@ -19,7 +19,7 @@ public static class UserErrors
     public static Error PasswordTooShort => Error.Validation(
         code: "User.PasswordTooShort",
         message: "Password must be at least 8 characters long");
-    
+
     public static Error FirstNameRequired => Error.Validation(
         code: "User.FirstNameRequired",
         message: "First name cannot be empty.");
@@ -27,6 +27,8 @@ public static class UserErrors
     public static Error LastNameRequired => Error.Validation(
         code: "User.LastNameRequired",
         message: "Last name cannot be empty.");
+
+    public static Error NotAuthenticated => Error.Unauthorized();
 
     public static Error EmailAlreadyExists(string email) => Error.Conflict(
         code: "User.EmailAlreadyExists",
@@ -51,7 +53,7 @@ public static class UserErrors
     public static Error InvalidCredentials => Error.Unauthorized(
         code: "User.InvalidCredentials",
         message: "Invalid login credentials.");
-    
+
     public static Error PhoneRequired => Error.Validation(
         code: "User.PhoneRequired",
         message: "Phone number cannot be empty.");

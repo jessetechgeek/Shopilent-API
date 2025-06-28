@@ -63,4 +63,8 @@ public static class OrderErrors
     public static Error ItemNotFound(Guid itemId) => Error.NotFound(
         code: "Order.ItemNotFound",
         message: $"Order item with ID {itemId} was not found.");
+
+    public static Error AccessDenied => Error.Forbidden(
+        code: "Order.AccessDenied",
+        message: "You are not authorized to view this order.");
 }
