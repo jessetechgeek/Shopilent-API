@@ -1,3 +1,4 @@
+using Shopilent.Domain.Common.Models;
 using Shopilent.Domain.Common.Repositories.Read;
 using Shopilent.Domain.Sales.DTOs;
 using Shopilent.Domain.Sales.Enums;
@@ -12,4 +13,7 @@ public interface IOrderReadRepository : IAggregateReadRepository<OrderDto>
     Task<IReadOnlyList<OrderDto>> GetRecentOrdersAsync(int count, CancellationToken cancellationToken = default);
     Task<OrderItemDto> GetOrderItemByIdAsync(Guid orderItemId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<OrderDto>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+
+    Task<DataTableResult<OrderDetailDto>> GetOrderDetailDataTableAsync(DataTableRequest request,
+        CancellationToken cancellationToken = default);
 }
