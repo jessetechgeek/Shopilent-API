@@ -61,4 +61,8 @@ public static class UserErrors
     public static Error InvalidPhoneFormat => Error.Validation(
         code: "User.InvalidPhoneFormat",
         message: "Invalid phone number format.");
+
+    public static Error CannotDeactivateSelf => Error.Validation(
+        code: "User.CannotDeactivateSelf",
+        message: "Cannot deactivate your own account. Contact another administrator.");
 }
