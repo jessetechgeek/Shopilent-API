@@ -146,6 +146,7 @@ public class User : AggregateRoot
     public Result SetRole(UserRole role)
     {
         Role = role;
+        Console.WriteLine(Role);
         AddDomainEvent(new UserRoleChangedEvent(Id, role));
         return Result.Success();
     }
