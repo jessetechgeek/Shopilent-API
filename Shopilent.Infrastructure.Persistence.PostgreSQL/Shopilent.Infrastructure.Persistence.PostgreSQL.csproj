@@ -22,4 +22,8 @@
       <ProjectReference Include="..\Shopilent.Infrastructure.Logging\Shopilent.Infrastructure.Logging.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
 </Project>
