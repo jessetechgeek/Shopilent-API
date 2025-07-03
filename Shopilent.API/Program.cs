@@ -4,7 +4,6 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
 using Shopilent.Application.Extensions;
-using Shopilent.Application.Features.Identity.Commands.Register.V1;
 using Shopilent.Infrastructure.Cache.Redis.Extensions;
 using Shopilent.Infrastructure.Extensions;
 using Shopilent.Infrastructure.Identity.Extensions;
