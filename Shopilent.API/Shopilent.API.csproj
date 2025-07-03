@@ -31,12 +31,15 @@
       <ProjectReference Include="..\Shopilent.Infrastructure.Cache.Redis\Shopilent.Infrastructure.Cache.Redis.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure.Identity\Shopilent.Infrastructure.Identity.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure.Logging\Shopilent.Infrastructure.Logging.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure.S3ObjectStorage\Shopilent.Infrastructure.S3ObjectStorage.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure\Shopilent.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Endpoints\Users\" />
+      <Folder Include="Endpoints\Catalog\Attributes\" />
+      <Folder Include="Endpoints\Catalog\Categories\" />
     </ItemGroup>
 
 </Project>
