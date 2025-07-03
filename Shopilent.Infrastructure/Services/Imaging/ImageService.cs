@@ -5,7 +5,7 @@ namespace Shopilent.Infrastructure.Services.Imaging;
 
 public class ImageService : IImageService
 {
-    public async Task<OptimizedImageResult> ProcessProductImage(Stream imageStream)
+    public async Task<ImageResult> ProcessProductImage(Stream imageStream)
     {
         // Read the stream into memory (optional, depending on SKBitmap.Decode)
         using var memoryStream = new MemoryStream();
@@ -16,7 +16,7 @@ public class ImageService : IImageService
         using var originalBitmap = SKBitmap.Decode(memoryStream);
 
         // Create result object
-        var result = new OptimizedImageResult
+        var result = new ImageResult
         {
             // Generate main product image (max dimensions 1200x1200)
             MainImage = ResizeAndEncodeToWebP(originalBitmap, 1600, 1600, 95),
