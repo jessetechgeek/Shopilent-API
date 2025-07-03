@@ -1,6 +1,7 @@
 using FastEndpoints;
 using MediatR;
 using Shopilent.API.Common.Models;
+using Shopilent.Application.Common.Constants;
 using Shopilent.Application.Features.Identity.Commands.Logout.V1;
 using Shopilent.Domain.Common.Errors;
 
@@ -23,6 +24,7 @@ public class LogoutEndpointV1 : Endpoint<LogoutRequestV1, ApiResponse<string>>
             .Produces<ApiResponse<String>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<String>>(StatusCodes.Status401Unauthorized)
             .WithTags("Identity"));
+        Policies(nameof(AuthorizationPolicy.RequireAuthenticated));
     }
 
     public override async Task HandleAsync(LogoutRequestV1 req, CancellationToken ct)
