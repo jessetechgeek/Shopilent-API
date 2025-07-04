@@ -17,4 +17,7 @@ public interface IPaymentReadRepository : IAggregateReadRepository<PaymentDto>
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<PaymentDto>> GetRecentPaymentsAsync(int count, CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyList<PaymentDto>> GetByPaymentMethodIdAsync(Guid paymentMethodId, CancellationToken cancellationToken = default);
+
 }
