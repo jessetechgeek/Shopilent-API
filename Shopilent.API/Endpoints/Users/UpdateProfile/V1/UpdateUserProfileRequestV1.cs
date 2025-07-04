@@ -1,0 +1,9 @@
+namespace Shopilent.API.Endpoints.Users.UpdateProfile.V1;
+
+public class UpdateUserProfileRequestV1
+{
+    public string FirstName { get; init; }
+    public string LastName { get; init; }
+    public string? MiddleName { get; init; }
+    public string? Phone { get; init; }
+}
