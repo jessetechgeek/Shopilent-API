@@ -1,0 +1,168 @@
+using Microsoft.Extensions.Logging;
+using Moq;
+using Shopilent.Application.Features.Catalog.Queries.GetChildCategories.V1;
+using Shopilent.Application.UnitTests.Common;
+using Shopilent.Domain.Catalog.DTOs;
+using Shopilent.Domain.Catalog.Errors;
+using Shopilent.Domain.Common.Results;
+using Xunit;
+
+namespace Shopilent.Application.UnitTests.Features.Catalog.Queries;
+
+public class GetChildCategoriesQueryHandlerTests : TestBase
+{
+    private readonly GetChildCategoriesQueryHandlerV1 _handler;
+
+    public GetChildCategoriesQueryHandlerTests()
+    {
+        _handler = new GetChildCategoriesQueryHandlerV1(
+            Fixture.MockUnitOfWork.Object,
+            Fixture.GetLogger<GetChildCategoriesQueryHandlerV1>());
+    }
+
+    [Fact]
+    public async Task Handle_WithValidParentId_ReturnsChildCategories()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var query = new GetChildCategoriesQueryV1 { ParentId = parentId };
+
+        // Mock parent category exists
+        var parentCategory = new CategoryDto
+        {
+            Id = parentId,
+            Name = "Parent Category",
+            Slug = "parent-category",
+            IsActive = true
+        };
+
+        Fixture.MockCategoryReadRepository
+            .Setup(repo => repo.GetByIdAsync(parentId, CancellationToken))
+            .ReturnsAsync(parentCategory);
+
+        // Create child categories
+        var childCategories = new List<CategoryDto>
+        {
+            new CategoryDto
+            {
+                Id = Guid.NewGuid(),
+                Name = "Child Category 1",
+                Slug = "child-category-1",
+                ParentId = parentId,
+                Level = 1,
+                Path = "/parent-category/child-category-1",
+                IsActive = true
+            },
+            new CategoryDto
+            {
+                Id = Guid.NewGuid(),
+                Name = "Child Category 2",
+                Slug = "child-category-2",
+                ParentId = parentId,
+                Level = 1,
+                Path = "/parent-category/child-category-2",
+                IsActive = true
+            }
+        };
+
+        Fixture.MockCategoryReadRepository
+            .Setup(repo => repo.GetChildCategoriesAsync(parentId, CancellationToken))
+            .ReturnsAsync(childCategories);
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(2, result.Value.Count);
+        Assert.Contains(result.Value, c => c.Name == "Child Category 1");
+        Assert.Contains(result.Value, c => c.Name == "Child Category 2");
+    }
+
+    [Fact]
+    public async Task Handle_WithNonExistentParentId_ReturnsErrorResult()
+    {
+        // Arrange
+        var nonExistentParentId = Guid.NewGuid();
+        var query = new GetChildCategoriesQueryV1 { ParentId = nonExistentParentId };
+
+        // Mock parent category does not exist
+        Fixture.MockCategoryReadRepository
+            .Setup(repo => repo.GetByIdAsync(nonExistentParentId, CancellationToken))
+            .ReturnsAsync((CategoryDto)null);
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(CategoryErrors.NotFound(nonExistentParentId).Code, result.Error.Code);
+    }
+
+    [Fact]
+    public async Task Handle_WithNoChildCategories_ReturnsEmptyList()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var query = new GetChildCategoriesQueryV1 { ParentId = parentId };
+
+        // Mock parent category exists
+        var parentCategory = new CategoryDto
+        {
+            Id = parentId,
+            Name = "Parent Category",
+            Slug = "parent-category",
+            IsActive = true
+        };
+
+        Fixture.MockCategoryReadRepository
+            .Setup(repo => repo.GetByIdAsync(parentId, CancellationToken))
+            .ReturnsAsync(parentCategory);
+
+        // Mock empty child categories list
+        Fixture.MockCategoryReadRepository
+            .Setup(repo => repo.GetChildCategoriesAsync(parentId, CancellationToken))
+            .ReturnsAsync(new List<CategoryDto>());
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Empty(result.Value);
+    }
+
+    [Fact]
+    public async Task Handle_WhenExceptionOccurs_ReturnsFailureResult()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var query = new GetChildCategoriesQueryV1 { ParentId = parentId };
+
+        // Mock parent category exists
+        var parentCategory = new CategoryDto
+        {
+            Id = parentId,
+            Name = "Parent Category",
+            Slug = "parent-category",
+            IsActive = true
+        };
+
+        Fixture.MockCategoryReadRepository
+            .Setup(repo => repo.GetByIdAsync(parentId, CancellationToken))
+            .ReturnsAsync(parentCategory);
+
+        // Mock exception
+        Fixture.MockCategoryReadRepository
+            .Setup(repo => repo.GetChildCategoriesAsync(parentId, CancellationToken))
+            .ThrowsAsync(new Exception("Test exception"));
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Categories.GetChildCategoriesFailed", result.Error.Code);
+        Assert.Contains("Test exception", result.Error.Message);
+    }
+}
