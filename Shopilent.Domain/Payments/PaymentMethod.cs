@@ -63,13 +63,19 @@ public class PaymentMethod : AggregateRoot
         bool isDefault = false)
     {
         if (user == null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
 
         if (string.IsNullOrWhiteSpace(token))
+        {
             throw new ArgumentException("Token cannot be empty", nameof(token));
+        }
 
         if (string.IsNullOrWhiteSpace(displayName))
+        {
             throw new ArgumentException("Display name cannot be empty", nameof(displayName));
+        }
 
         var paymentMethod = new PaymentMethod(user, type, provider, token, displayName, isDefault);
         paymentMethod.AddDomainEvent(new PaymentMethodCreatedEvent(paymentMethod.Id, user.Id));
@@ -86,13 +92,19 @@ public class PaymentMethod : AggregateRoot
         bool isDefault = false)
     {
         if (userResult.IsFailure)
+        {
             return Result.Failure<PaymentMethod>(userResult.Error);
+        }
 
         if (string.IsNullOrWhiteSpace(token))
+        {
             return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
+        }
 
         if (string.IsNullOrWhiteSpace(displayName))
+        {
             return Result.Failure<PaymentMethod>(PaymentMethodErrors.DisplayNameRequired);
+        }
 
         var paymentMethod = new PaymentMethod(userResult.Value, type, provider, token, displayName, isDefault);
         paymentMethod.AddDomainEvent(new PaymentMethodCreatedEvent(paymentMethod.Id, userResult.Value.Id));
@@ -109,15 +121,21 @@ public class PaymentMethod : AggregateRoot
         bool isDefault = false)
     {
         if (user == null)
+        {
             return Result.Failure<PaymentMethod>(UserErrors.NotFound(Guid.Empty));
+        }
 
         if (string.IsNullOrWhiteSpace(token))
+        {
             return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
+        }
 
         if (string.IsNullOrWhiteSpace(displayName))
+        {
             return Result.Failure<PaymentMethod>(PaymentMethodErrors.DisplayNameRequired);
+        }
 
-        var paymentMethod = CreateInternal(user, type, provider, token, displayName, isDefault);
+        PaymentMethod paymentMethod = CreateInternal(user, type, provider, token, displayName, isDefault);
         return Result.Success(paymentMethod);
     }
 
@@ -129,13 +147,19 @@ public class PaymentMethod : AggregateRoot
         bool isDefault = false)
     {
         if (user == null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
 
         if (string.IsNullOrWhiteSpace(token))
+        {
             throw new ArgumentException("Token cannot be empty", nameof(token));
+        }
 
         if (cardDetails == null)
+        {
             throw new ArgumentException("Card details cannot be null", nameof(cardDetails));
+        }
 
         string displayName = $"{cardDetails.Brand} ending in {cardDetails.LastFourDigits}";
         var paymentMethod = new PaymentMethod(user, PaymentMethodType.CreditCard, provider, token, displayName, cardDetails, isDefault);
@@ -151,18 +175,26 @@ public class PaymentMethod : AggregateRoot
         bool isDefault = false)
     {
         if (user == null)
+        {
             return Result.Failure<PaymentMethod>(UserErrors.NotFound(Guid.Empty));
-            
+        }
+
         if (string.IsNullOrWhiteSpace(token))
+        {
             return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
-            
+        }
+
         if (cardDetails == null)
+        {
             return Result.Failure<PaymentMethod>(PaymentMethodErrors.InvalidCardDetails);
+        }
 
         if (cardDetails.ExpiryDate < DateTime.UtcNow)
+        {
             return Result.Failure<PaymentMethod>(PaymentMethodErrors.ExpiredCard);
+        }
 
-        var paymentMethod = CreateInternalWithCardDetails(user, provider, token, cardDetails, isDefault);
+        PaymentMethod paymentMethod = CreateInternalWithCardDetails(user, provider, token, cardDetails, isDefault);
         return Result.Success(paymentMethod);
     }
 
@@ -173,15 +205,21 @@ public class PaymentMethod : AggregateRoot
         bool isDefault = false)
     {
         if (user == null)
+        {
             throw new ArgumentNullException(nameof(user));
+        }
 
         if (string.IsNullOrWhiteSpace(token))
+        {
             throw new ArgumentException("Token cannot be empty", nameof(token));
+        }
 
         if (string.IsNullOrWhiteSpace(email))
+        {
             throw new ArgumentException("Email cannot be empty", nameof(email));
+        }
 
-        var displayName = $"PayPal ({email})";
+        string displayName = $"PayPal ({email})";
         var paymentMethod = new PaymentMethod(user, PaymentMethodType.PayPal, PaymentProvider.PayPal, token, displayName, isDefault);
         paymentMethod.UpdateMetadata("email", email);
         paymentMethod.AddDomainEvent(new PaymentMethodCreatedEvent(paymentMethod.Id, user.Id));
@@ -195,15 +233,21 @@ public class PaymentMethod : AggregateRoot
         bool isDefault = false)
     {
         if (user == null)
+        {
             return Result.Failure<PaymentMethod>(UserErrors.NotFound(Guid.Empty));
-            
-        if (string.IsNullOrWhiteSpace(token))
-            return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
-            
-        if (string.IsNullOrWhiteSpace(email))
-            return Result.Failure<PaymentMethod>(UserErrors.EmailRequired);
+        }
 
-        var paymentMethod = CreateInternalPayPalMethod(user, token, email, isDefault);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return Result.Failure<PaymentMethod>(PaymentMethodErrors.TokenRequired);
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Result.Failure<PaymentMethod>(UserErrors.EmailRequired);
+        }
+
+        PaymentMethod paymentMethod = CreateInternalPayPalMethod(user, token, email, isDefault);
         return Result.Success(paymentMethod);
     }
 
@@ -222,7 +266,9 @@ public class PaymentMethod : AggregateRoot
     public Result UpdateDisplayName(string displayName)
     {
         if (string.IsNullOrWhiteSpace(displayName))
+        {
             return Result.Failure(PaymentMethodErrors.DisplayNameRequired);
+        }
 
         DisplayName = displayName;
         AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
@@ -232,13 +278,17 @@ public class PaymentMethod : AggregateRoot
     public Result SetDefault(bool isDefault)
     {
         if (IsDefault == isDefault)
+        {
             return Result.Success();
-            
+        }
+
         IsDefault = isDefault;
         
         if (isDefault)
+        {
             AddDomainEvent(new DefaultPaymentMethodChangedEvent(Id, UserId));
-            
+        }
+
         AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
         return Result.Success();
     }
@@ -246,8 +296,10 @@ public class PaymentMethod : AggregateRoot
     public Result Activate()
     {
         if (IsActive)
+        {
             return Result.Success();
-            
+        }
+
         IsActive = true;
         AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
         return Result.Success();
@@ -256,8 +308,10 @@ public class PaymentMethod : AggregateRoot
     public Result Deactivate()
     {
         if (!IsActive)
+        {
             return Result.Success();
-            
+        }
+
         IsActive = false;
         AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
         return Result.Success();
@@ -266,7 +320,9 @@ public class PaymentMethod : AggregateRoot
     public Result UpdateToken(string token)
     {
         if (string.IsNullOrWhiteSpace(token))
+        {
             return Result.Failure(PaymentMethodErrors.TokenRequired);
+        }
 
         Token = token;
         AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
@@ -276,13 +332,19 @@ public class PaymentMethod : AggregateRoot
     public Result UpdateCardDetails(PaymentCardDetails cardDetails)
     {
         if (Type != PaymentMethodType.CreditCard)
+        {
             return Result.Failure(PaymentMethodErrors.InvalidCardDetails);
+        }
 
         if (cardDetails == null)
+        {
             return Result.Failure(PaymentMethodErrors.InvalidCardDetails);
-            
+        }
+
         if (cardDetails.ExpiryDate < DateTime.UtcNow)
+        {
             return Result.Failure(PaymentMethodErrors.ExpiredCard);
+        }
 
         CardBrand = cardDetails.Brand;
         LastFourDigits = cardDetails.LastFourDigits;
@@ -296,11 +358,26 @@ public class PaymentMethod : AggregateRoot
     public Result UpdateMetadata(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key))
+        {
             return Result.Failure(PaymentMethodErrors.InvalidMetadataKey);
+        }
 
         Metadata[key] = value;
         
         AddDomainEvent(new PaymentMethodUpdatedEvent(Id));
+        return Result.Success();
+    }
+    
+    public Result Delete()
+    {
+        //TODO: Handler Payment Method Deletion
+        // Consider if default payment methods can be deleted
+        if (IsDefault)
+        {
+            // Either prevent deletion or handle setting a new default
+        }
+    
+        AddDomainEvent(new PaymentMethodDeletedEvent(Id, UserId));
         return Result.Success();
     }
 }
