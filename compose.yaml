@@ -9,9 +9,10 @@
       - "${API_PORT_1:-9801}:8080"
     depends_on:
       - postgres
-      - postgres-replica-1
+#      - postgres-replica-1
       - redis
       - seq
+      - minio
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
@@ -19,7 +20,8 @@
       - ConnectionStrings__PostgreSql=Host=postgres;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - ConnectionStrings__PostgreSqlReadReplicas__0=Host=postgres-replica-1;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - Redis__ConnectionString=redis:6379
-      - Redis__InstanceName=shopilent_ 
+      - Redis__InstanceName=shopilent_
+      - S3__ServiceUrl=http://minio:9000
   
   client:
     container_name: shopilent-client
@@ -98,7 +100,40 @@
     volumes:
       - redis_data:/data
     restart: unless-stopped
-  
+
+  minio:
+    container_name: shopilent-minio
+    image: minio/minio:latest
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9001" /data
+    healthcheck:
+      test: [ "CMD", "mc", "ready", "local" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+
+  minio-createbuckets:
+    container_name: shopilent-minio-createbuckets
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10 &&
+      /usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+      /usr/bin/mc mb myminio/${S3_BUCKET_NAME} &&
+      /usr/bin/mc anonymous set public myminio/${S3_BUCKET_NAME}
+      "
+    restart: no
+
   seq:
     container_name: shopilent-seq
     image: datalust/seq:latest
@@ -120,5 +155,7 @@ volumes:
     name: shopilent_postgres_replica_1_data
   redis_data:
     name: shopilent_redis_data
+  minio_data:
+    name: shopilen_minio_data
   seq_data:
     name: shopilent_seq_data
