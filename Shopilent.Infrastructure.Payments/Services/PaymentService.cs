@@ -24,6 +24,7 @@ public class PaymentService : IPaymentService
         PaymentMethodType methodType,
         PaymentProvider provider,
         string paymentMethodToken,
+        string customerId = null,
         string externalReference = null,
         Dictionary<string, object> metadata = null,
         CancellationToken cancellationToken = default)
@@ -42,6 +43,7 @@ public class PaymentService : IPaymentService
                 Amount = amount,
                 MethodType = methodType,
                 PaymentMethodToken = paymentMethodToken,
+                CustomerId = customerId,
                 ExternalReference = externalReference,
                 Metadata = metadata ?? new Dictionary<string, object>()
             };
@@ -110,6 +112,57 @@ public class PaymentService : IPaymentService
         {
             _logger.LogError(ex, "Error getting payment status for transaction {TransactionId}", transactionId);
             return Result.Failure<PaymentStatus>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
+    }
+
+    public async Task<Result<string>> CreateCustomerAsync(
+        PaymentProvider provider,
+        string userId,
+        string email,
+        Dictionary<string, object> metadata = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!_providers.TryGetValue(provider, out var paymentProvider))
+            {
+                _logger.LogError("Payment provider not configured: {Provider}", provider);
+                return Result.Failure<string>(
+                    Domain.Payments.Errors.PaymentErrors.InvalidProvider);
+            }
+
+            return await paymentProvider.CreateCustomerAsync(userId, email, metadata, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating customer with provider {Provider}", provider);
+            return Result.Failure<string>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
+    }
+
+    public async Task<Result<string>> AttachPaymentMethodToCustomerAsync(
+        PaymentProvider provider,
+        string paymentMethodToken,
+        string customerId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!_providers.TryGetValue(provider, out var paymentProvider))
+            {
+                _logger.LogError("Payment provider not configured: {Provider}", provider);
+                return Result.Failure<string>(
+                    Domain.Payments.Errors.PaymentErrors.InvalidProvider);
+            }
+
+            return await paymentProvider.AttachPaymentMethodToCustomerAsync(paymentMethodToken, customerId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error attaching payment method to customer with provider {Provider}", provider);
+            return Result.Failure<string>(
                 Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
         }
     }
