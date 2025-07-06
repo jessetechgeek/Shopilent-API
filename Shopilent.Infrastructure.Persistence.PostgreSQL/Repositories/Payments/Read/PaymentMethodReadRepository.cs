@@ -26,6 +26,7 @@ public class PaymentMethodReadRepository : AggregateReadRepositoryBase<PaymentMe
                 user_id AS UserId,
                 type AS Type,
                 provider AS Provider,
+                token AS Token,
                 display_name AS DisplayName,
                 card_brand AS CardBrand,
                 last_four_digits AS LastFourDigits,

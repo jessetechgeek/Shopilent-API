@@ -8,6 +8,7 @@ public class PaymentMethodDto
     public Guid UserId { get; set; }
     public PaymentMethodType Type { get; set; }
     public PaymentProvider Provider { get; set; }
+    public string Token { get; set; }
     public string DisplayName { get; set; }
     public string CardBrand { get; set; }
     public string LastFourDigits { get; set; }
