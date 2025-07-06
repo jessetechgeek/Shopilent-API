@@ -168,8 +168,7 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 orderAmount.Value,
                 request.MethodType,
                 request.Provider,
-                // request.ExternalReference);
-                "Sample Data");
+                request.ExternalReference);
 
             if (payment.IsFailure)
             {
@@ -224,8 +223,7 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 MethodType = payment.Value.MethodType,
                 Provider = payment.Value.Provider,
                 TransactionId = payment.Value.TransactionId,
-                // ExternalReference = payment.Value.ExternalReference + "Sample Data",
-                ExternalReference = "Sample Data",
+                ExternalReference = payment.Value.ExternalReference,
                 ProcessedAt = payment.Value.ProcessedAt ?? DateTime.UtcNow,
                 Message = "Payment processed successfully"
             });
