@@ -7,6 +7,7 @@ using Shopilent.Domain.Common.Errors;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Payments;
+using Shopilent.Domain.Payments.DTOs;
 using Shopilent.Domain.Payments.Enums;
 using Shopilent.Domain.Payments.Errors;
 using Shopilent.Domain.Sales.Enums;
@@ -83,10 +84,11 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 user = await _unitOfWork.UserWriter.GetByIdAsync(order.UserId.Value, cancellationToken);
             }
 
-            // Validate payment method if provided
+            // Validate payment method if provided and get token
+            PaymentMethodDto paymentMethod = null;
             if (request.PaymentMethodId.HasValue)
             {
-                var paymentMethod = await _unitOfWork.PaymentMethodReader.GetByIdAsync(
+                paymentMethod = await _unitOfWork.PaymentMethodReader.GetByIdAsync(
                     request.PaymentMethodId.Value, cancellationToken);
 
                 if (paymentMethod == null)
@@ -117,12 +119,15 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 return Result.Failure<ProcessOrderPaymentResponseV1>(orderAmount.Error);
             }
 
+            // Determine which payment token to use
+            var paymentToken = paymentMethod?.Token ?? request.PaymentMethodToken;
+
             // Process payment with external provider
             var paymentResult = await _paymentService.ProcessPaymentAsync(
                 orderAmount.Value,
                 request.MethodType,
                 request.Provider,
-                request.PaymentMethodToken,
+                paymentToken,
                 request.ExternalReference,
                 request.Metadata,
                 cancellationToken);
@@ -163,7 +168,8 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 orderAmount.Value,
                 request.MethodType,
                 request.Provider,
-                request.ExternalReference);
+                // request.ExternalReference);
+                "Sample Data");
 
             if (payment.IsFailure)
             {
@@ -218,7 +224,8 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 MethodType = payment.Value.MethodType,
                 Provider = payment.Value.Provider,
                 TransactionId = payment.Value.TransactionId,
-                ExternalReference = payment.Value.ExternalReference,
+                // ExternalReference = payment.Value.ExternalReference + "Sample Data",
+                ExternalReference = "Sample Data",
                 ProcessedAt = payment.Value.ProcessedAt ?? DateTime.UtcNow,
                 Message = "Payment processed successfully"
             });
