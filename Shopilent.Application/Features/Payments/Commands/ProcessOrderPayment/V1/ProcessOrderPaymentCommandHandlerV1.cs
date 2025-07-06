@@ -122,12 +122,31 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
             // Determine which payment token to use
             var paymentToken = paymentMethod?.Token ?? request.PaymentMethodToken;
 
+            // Extract customer ID based on provider
+            string customerId = null;
+            if (paymentMethod?.Metadata != null)
+            {
+                // Get customer ID for the specific provider
+                var customerIdKey = request.Provider switch
+                {
+                    PaymentProvider.Stripe => "stripe_customer_id",
+                    PaymentProvider.PayPal => "paypal_customer_id",
+                    _ => null
+                };
+
+                if (customerIdKey != null && paymentMethod.Metadata.TryGetValue(customerIdKey, out var customerIdObj))
+                {
+                    customerId = customerIdObj?.ToString();
+                }
+            }
+
             // Process payment with external provider
             var paymentResult = await _paymentService.ProcessPaymentAsync(
                 orderAmount.Value,
                 request.MethodType,
                 request.Provider,
                 paymentToken,
+                customerId,
                 request.ExternalReference,
                 request.Metadata,
                 cancellationToken);

@@ -8,6 +8,7 @@ public class PaymentRequest
     public Money Amount { get; init; }
     public PaymentMethodType MethodType { get; init; }
     public string PaymentMethodToken { get; init; }
+    public string CustomerId { get; init; }
     public string ExternalReference { get; init; }
     public Dictionary<string, object> Metadata { get; init; } = new();
 }

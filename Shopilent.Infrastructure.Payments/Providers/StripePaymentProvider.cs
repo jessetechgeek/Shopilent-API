@@ -14,6 +14,9 @@ public class StripePaymentProvider : IPaymentProvider
     private readonly ILogger<StripePaymentProvider> _logger;
     private readonly PaymentIntentService _paymentIntentService;
     private readonly RefundService _refundService;
+    private readonly CustomerService _customerService;
+    private readonly SetupIntentService _setupIntentService;
+    private readonly PaymentMethodService _paymentMethodService;
 
     public PaymentProvider Provider => PaymentProvider.Stripe;
 
@@ -23,15 +26,18 @@ public class StripePaymentProvider : IPaymentProvider
     {
         _settings = settings.Value;
         _logger = logger;
-        
+
         StripeConfiguration.ApiKey = _settings.SecretKey;
-        
+
         _paymentIntentService = new PaymentIntentService();
         _refundService = new RefundService();
+        _customerService = new CustomerService();
+        _setupIntentService = new SetupIntentService();
+        _paymentMethodService = new PaymentMethodService();
     }
 
     public async Task<Result<string>> ProcessPaymentAsync(
-        PaymentRequest request, 
+        PaymentRequest request,
         CancellationToken cancellationToken = default)
     {
         try
@@ -48,6 +54,13 @@ public class StripePaymentProvider : IPaymentProvider
                 ReturnUrl = GetReturnUrl(request),
                 Metadata = ConvertMetadata(request.Metadata)
             };
+
+            // Add customer if provided
+            if (!string.IsNullOrEmpty(request.CustomerId))
+            {
+                options.Customer = request.CustomerId;
+                _logger.LogInformation("Using customer {CustomerId} for payment processing", request.CustomerId);
+            }
 
             // Add external reference if provided
             if (!string.IsNullOrEmpty(request.ExternalReference))
@@ -76,8 +89,8 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     public async Task<Result<string>> RefundPaymentAsync(
-        string transactionId, 
-        Money amount = null, 
+        string transactionId,
+        Money amount = null,
         string reason = null,
         CancellationToken cancellationToken = default)
     {
@@ -117,14 +130,15 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     public async Task<Result<PaymentStatus>> GetPaymentStatusAsync(
-        string transactionId, 
+        string transactionId,
         CancellationToken cancellationToken = default)
     {
         try
         {
             _logger.LogInformation("Getting Stripe payment status for transaction {TransactionId}", transactionId);
 
-            var paymentIntent = await _paymentIntentService.GetAsync(transactionId, cancellationToken: cancellationToken);
+            var paymentIntent =
+                await _paymentIntentService.GetAsync(transactionId, cancellationToken: cancellationToken);
 
             var status = ConvertStripeStatus(paymentIntent.Status);
 
@@ -182,7 +196,7 @@ public class StripePaymentProvider : IPaymentProvider
     private static Dictionary<string, string> ConvertMetadata(Dictionary<string, object> metadata)
     {
         var stripeMetadata = new Dictionary<string, string>();
-        
+
         foreach (var kvp in metadata)
         {
             stripeMetadata.Add(kvp.Key, kvp.Value?.ToString() ?? string.Empty);
@@ -196,5 +210,91 @@ public class StripePaymentProvider : IPaymentProvider
         // In a real implementation, this would come from configuration
         // or be passed in the request
         return "https://your-app.com/payment/return";
+    }
+
+    public async Task<Result<string>> CreateCustomerAsync(
+        string userId,
+        string email,
+        Dictionary<string, object> metadata = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Creating Stripe customer for user {UserId}", userId);
+
+            var options = new CustomerCreateOptions
+            {
+                Email = email,
+                Metadata = new Dictionary<string, string>
+                {
+                    ["user_id"] = userId
+                }
+            };
+
+            if (metadata != null)
+            {
+                foreach (var kvp in metadata)
+                {
+                    options.Metadata.Add($"custom_{kvp.Key}", kvp.Value?.ToString() ?? string.Empty);
+                }
+            }
+
+            var customer = await _customerService.CreateAsync(options, cancellationToken: cancellationToken);
+
+            _logger.LogInformation("Stripe customer created: {CustomerId} for user {UserId}", customer.Id, userId);
+
+            return Result.Success(customer.Id);
+        }
+        catch (StripeException stripeEx)
+        {
+            _logger.LogError(stripeEx, "Stripe customer creation failed: {ErrorMessage}", stripeEx.Message);
+            return Result.Failure<string>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(stripeEx.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error creating Stripe customer");
+            return Result.Failure<string>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
+    }
+
+    public async Task<Result<string>> AttachPaymentMethodToCustomerAsync(
+        string paymentMethodToken,
+        string customerId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Attaching payment method {PaymentMethodToken} to customer {CustomerId}",
+                paymentMethodToken, customerId);
+
+            var options = new PaymentMethodAttachOptions
+            {
+                Customer = customerId
+            };
+
+            var paymentMethod = await _paymentMethodService.AttachAsync(
+                paymentMethodToken,
+                options,
+                cancellationToken: cancellationToken);
+
+            _logger.LogInformation("Payment method {PaymentMethodId} attached to customer {CustomerId}",
+                paymentMethod.Id, customerId);
+
+            return Result.Success(paymentMethod.Id);
+        }
+        catch (StripeException stripeEx)
+        {
+            _logger.LogError(stripeEx, "Stripe payment method attachment failed: {ErrorMessage}", stripeEx.Message);
+            return Result.Failure<string>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(stripeEx.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error attaching payment method to customer");
+            return Result.Failure<string>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
     }
 }
