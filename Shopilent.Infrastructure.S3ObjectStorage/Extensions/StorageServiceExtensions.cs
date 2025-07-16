@@ -2,8 +2,8 @@ using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.S3Storage;
-using Shopilent.Application.Settings.S3Storage;
 using Shopilent.Infrastructure.S3ObjectStorage.Services;
+using Shopilent.Infrastructure.S3ObjectStorage.Settings;
 
 namespace Shopilent.Infrastructure.S3ObjectStorage.Extensions;
 

@@ -2,17 +2,16 @@ using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Payments.Enums;
 using Shopilent.Domain.Sales.ValueObjects;
 
-namespace Shopilent.Application.Abstractions.Services;
+namespace Shopilent.Application.Abstractions.Payments;
 
 public interface IPaymentService
 {
-    Task<Result<string>> ProcessPaymentAsync(
+    Task<Result<PaymentResult>> ProcessPaymentAsync(
         Money amount,
         PaymentMethodType methodType,
         PaymentProvider provider,
         string paymentMethodToken,
         string customerId = null,
-        string externalReference = null,
         Dictionary<string, object> metadata = null,
         CancellationToken cancellationToken = default);
 
@@ -38,5 +37,13 @@ public interface IPaymentService
         PaymentProvider provider,
         string paymentMethodToken,
         string customerId,
+        CancellationToken cancellationToken = default);
+
+    // Webhook processing method
+    Task<Result<WebhookResult>> ProcessWebhookAsync(
+        PaymentProvider provider,
+        string webhookPayload,
+        string signature = null,
+        Dictionary<string, string> headers = null,
         CancellationToken cancellationToken = default);
 }

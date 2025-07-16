@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Shopilent.Application.Abstractions.Identity;
 using Shopilent.Application.Abstractions.Messaging;
+using Shopilent.Application.Abstractions.Payments;
 using Shopilent.Application.Abstractions.Persistence;
-using Shopilent.Application.Abstractions.Services;
 using Shopilent.Domain.Common.Errors;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity.Errors;

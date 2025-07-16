@@ -1,4 +1,4 @@
-namespace Shopilent.Application.Settings.Email;
+namespace Shopilent.Infrastructure.Settings;
 
 public class EmailSettings
 {

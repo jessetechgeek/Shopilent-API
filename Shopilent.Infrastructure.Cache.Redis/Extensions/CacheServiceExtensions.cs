@@ -3,9 +3,9 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Caching;
-using Shopilent.Application.Settings.Cache;
 using Shopilent.Infrastructure.Cache.Redis.Converter;
 using Shopilent.Infrastructure.Cache.Redis.Services;
+using Shopilent.Infrastructure.Cache.Redis.Settings;
 using StackExchange.Redis;
 
 namespace Shopilent.Infrastructure.Cache.Redis.Extensions;

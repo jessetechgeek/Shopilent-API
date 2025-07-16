@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Shopilent.Application.Abstractions.Identity;
 using Shopilent.Application.Abstractions.Messaging;
+using Shopilent.Application.Abstractions.Payments;
 using Shopilent.Application.Abstractions.Persistence;
-using Shopilent.Application.Abstractions.Services;
 using Shopilent.Domain.Common.Errors;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
@@ -147,7 +147,6 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 request.Provider,
                 paymentToken,
                 customerId,
-                request.ExternalReference,
                 request.Metadata,
                 cancellationToken);
 
@@ -162,8 +161,7 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                     user,
                     orderAmount.Value,
                     request.MethodType,
-                    request.Provider,
-                    request.ExternalReference);
+                    request.Provider);
 
                 if (failedPayment.IsSuccess)
                 {
@@ -178,16 +176,17 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 return Result.Failure<ProcessOrderPaymentResponseV1>(paymentResult.Error);
             }
 
-            var transactionId = paymentResult.Value;
+            var paymentProcessingResult = paymentResult.Value;
+            var transactionId = paymentProcessingResult.TransactionId;
 
-            // Create successful payment record
+            // Create payment record
             var payment = Payment.Create(
                 order,
                 user,
                 orderAmount.Value,
                 request.MethodType,
                 request.Provider,
-                request.ExternalReference);
+                transactionId);
 
             if (payment.IsFailure)
             {
@@ -196,13 +195,48 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 return Result.Failure<ProcessOrderPaymentResponseV1>(payment.Error);
             }
 
-            // Mark payment as succeeded
-            var markSuccessResult = payment.Value.MarkAsSucceeded(transactionId);
-            if (markSuccessResult.IsFailure)
+            // Handle different payment statuses
+            switch (paymentProcessingResult.Status)
             {
-                _logger.LogError("Failed to mark payment as succeeded. OrderId: {OrderId}, Error: {Error}",
-                    request.OrderId, markSuccessResult.Error);
-                return Result.Failure<ProcessOrderPaymentResponseV1>(markSuccessResult.Error);
+                case PaymentStatus.Succeeded:
+                    // Mark payment as succeeded
+                    var markSuccessResult = payment.Value.MarkAsSucceeded(transactionId);
+                    if (markSuccessResult.IsFailure)
+                    {
+                        _logger.LogError("Failed to mark payment as succeeded. OrderId: {OrderId}, Error: {Error}",
+                            request.OrderId, markSuccessResult.Error);
+                        return Result.Failure<ProcessOrderPaymentResponseV1>(markSuccessResult.Error);
+                    }
+
+                    // Update order payment status
+                    var updateOrderResult = order.MarkAsPaid();
+                    if (updateOrderResult.IsFailure)
+                    {
+                        _logger.LogError("Failed to mark order as paid. OrderId: {OrderId}, Error: {Error}",
+                            request.OrderId, updateOrderResult.Error);
+                        return Result.Failure<ProcessOrderPaymentResponseV1>(updateOrderResult.Error);
+                    }
+
+                    break;
+
+                case PaymentStatus.RequiresAction:
+                case PaymentStatus.RequiresConfirmation:
+                    // Payment needs additional action (e.g., 3D Secure)
+                    _logger.LogInformation(
+                        "Payment requires action. OrderId: {OrderId}, Status: {Status}, ActionType: {ActionType}",
+                        request.OrderId, paymentProcessingResult.Status, paymentProcessingResult.NextActionType);
+
+                    // Keep payment and order status as pending
+                    break;
+
+                case PaymentStatus.Processing:
+                    _logger.LogInformation("Payment is processing. OrderId: {OrderId}", request.OrderId);
+                    break;
+
+                default:
+                    _logger.LogWarning("Unexpected payment status. OrderId: {OrderId}, Status: {Status}",
+                        request.OrderId, paymentProcessingResult.Status);
+                    break;
             }
 
             // Add metadata if provided
@@ -214,23 +248,36 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 }
             }
 
-            // Update order payment status
-            var updateOrderResult = order.MarkAsPaid();
-            if (updateOrderResult.IsFailure)
+            // Add processing result metadata
+            if (paymentProcessingResult.Metadata?.Any() == true)
             {
-                _logger.LogError("Failed to mark order as paid. OrderId: {OrderId}, Error: {Error}",
-                    request.OrderId, updateOrderResult.Error);
-                return Result.Failure<ProcessOrderPaymentResponseV1>(updateOrderResult.Error);
+                foreach (var kvp in paymentProcessingResult.Metadata)
+                {
+                    payment.Value.UpdateMetadata($"provider_{kvp.Key}", kvp.Value);
+                }
             }
 
             // Save changes
             await _unitOfWork.PaymentWriter.AddAsync(payment.Value, cancellationToken);
-            await _unitOfWork.OrderWriter.UpdateAsync(order, cancellationToken);
+            if (paymentProcessingResult.Status == PaymentStatus.Succeeded)
+            {
+                await _unitOfWork.OrderWriter.UpdateAsync(order, cancellationToken);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Payment processed successfully. OrderId: {OrderId}, PaymentId: {PaymentId}, TransactionId: {TransactionId}",
-                request.OrderId, payment.Value.Id, transactionId);
+                "Payment processed. OrderId: {OrderId}, PaymentId: {PaymentId}, TransactionId: {TransactionId}, Status: {Status}",
+                request.OrderId, payment.Value.Id, transactionId, paymentProcessingResult.Status);
+
+            var responseMessage = paymentProcessingResult.Status switch
+            {
+                PaymentStatus.Succeeded => "Payment processed successfully",
+                PaymentStatus.RequiresAction => "Payment requires additional authentication",
+                PaymentStatus.RequiresConfirmation => "Payment requires confirmation",
+                PaymentStatus.Processing => "Payment is being processed",
+                _ => "Payment processing completed"
+            };
 
             return Result.Success(new ProcessOrderPaymentResponseV1
             {
@@ -238,13 +285,19 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 OrderId = order.Id,
                 Amount = payment.Value.Amount.Amount,
                 Currency = payment.Value.Amount.Currency,
-                Status = payment.Value.Status,
+                Status = paymentProcessingResult.Status,
                 MethodType = payment.Value.MethodType,
                 Provider = payment.Value.Provider,
                 TransactionId = payment.Value.TransactionId,
-                ExternalReference = payment.Value.ExternalReference,
                 ProcessedAt = payment.Value.ProcessedAt ?? DateTime.UtcNow,
-                Message = "Payment processed successfully"
+                Message = responseMessage,
+                ClientSecret = paymentProcessingResult.ClientSecret,
+                RequiresAction = paymentProcessingResult.RequiresAction,
+                NextActionType = paymentProcessingResult.NextActionType,
+                DeclineReason = paymentProcessingResult.DeclineReason,
+                RiskLevel = paymentProcessingResult.RiskLevel,
+                FailureReason = paymentProcessingResult.FailureReason,
+                Metadata = paymentProcessingResult.Metadata
             });
         }
         catch (Exception ex)

@@ -10,6 +10,5 @@ public sealed record ProcessOrderPaymentCommandV1 : ICommand<ProcessOrderPayment
     public PaymentMethodType MethodType { get; init; }
     public PaymentProvider Provider { get; init; }
     public string PaymentMethodToken { get; init; }
-    public string ExternalReference { get; init; }
     public Dictionary<string, object> Metadata { get; init; } = new();
 }

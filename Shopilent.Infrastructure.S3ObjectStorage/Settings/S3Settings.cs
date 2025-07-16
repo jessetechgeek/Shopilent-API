@@ -1,4 +1,4 @@
-namespace Shopilent.Application.Settings.S3Storage;
+namespace Shopilent.Infrastructure.S3ObjectStorage.Settings;
 
 public class S3Settings
 {

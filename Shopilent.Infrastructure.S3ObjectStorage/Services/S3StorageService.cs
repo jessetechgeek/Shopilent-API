@@ -4,9 +4,9 @@ using Amazon.S3.Transfer;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shopilent.Application.Abstractions.S3Storage;
-using Shopilent.Application.Settings.S3Storage;
 using Shopilent.Domain.Common.Errors;
 using Shopilent.Domain.Common.Results;
+using Shopilent.Infrastructure.S3ObjectStorage.Settings;
 
 namespace Shopilent.Infrastructure.S3ObjectStorage.Services;
 

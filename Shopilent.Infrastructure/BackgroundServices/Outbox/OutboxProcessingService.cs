@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shopilent.Application.Abstractions.Outbox;
-using Shopilent.Application.Settings.Outbox;
+using Shopilent.Infrastructure.Settings;
 
 namespace Shopilent.Infrastructure.BackgroundServices.Outbox;
 

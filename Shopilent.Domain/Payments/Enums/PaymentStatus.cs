@@ -8,5 +8,8 @@ public enum PaymentStatus
     Failed,
     Refunded,
     Disputed,
-    Canceled
+    Canceled,
+    RequiresAction,
+    RequiresConfirmation,
+    Declined
 }
