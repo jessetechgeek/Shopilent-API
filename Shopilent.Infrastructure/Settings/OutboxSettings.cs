@@ -1,4 +1,4 @@
-namespace Shopilent.Application.Settings.Outbox;
+namespace Shopilent.Infrastructure.Settings;
 
 public class OutboxSettings
 {

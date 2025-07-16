@@ -1,4 +1,4 @@
-namespace Shopilent.Application.Settings.Cache;
+namespace Shopilent.Infrastructure.Cache.Redis.Settings;
 
 public class RedisSettings
 {

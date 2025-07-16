@@ -52,7 +52,6 @@ public class
             MethodType = req.MethodType,
             Provider = req.Provider,
             PaymentMethodToken = req.PaymentMethodToken,
-            ExternalReference = req.ExternalReference,
             Metadata = req.Metadata
         };
 

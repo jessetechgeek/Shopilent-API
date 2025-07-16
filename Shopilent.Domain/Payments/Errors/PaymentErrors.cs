@@ -47,4 +47,32 @@ public static class PaymentErrors
     public static Error AmountMismatch => Error.Validation(
         code: "Payment.AmountMismatch",
         message: "The payment amount does not match the order total.");
+        
+    public static Error CardDeclined(string reason) => Error.Validation(
+        code: "Payment.CardDeclined",
+        message: $"Payment was declined: {reason}");
+        
+    public static Error FraudSuspected => Error.Validation(
+        code: "Payment.FraudSuspected", 
+        message: "Payment was declined due to suspected fraud.");
+        
+    public static Error AuthenticationRequired => Error.Validation(
+        code: "Payment.AuthenticationRequired",
+        message: "Additional authentication is required to complete this payment.");
+        
+    public static Error InsufficientFunds => Error.Validation(
+        code: "Payment.InsufficientFunds",
+        message: "Payment was declined due to insufficient funds.");
+        
+    public static Error ExpiredCard => Error.Validation(
+        code: "Payment.ExpiredCard",
+        message: "Payment was declined because the card has expired.");
+        
+    public static Error InvalidCard => Error.Validation(
+        code: "Payment.InvalidCard",
+        message: "Payment was declined due to invalid card details.");
+        
+    public static Error RiskLevelTooHigh => Error.Validation(
+        code: "Payment.RiskLevelTooHigh",
+        message: "Payment was declined due to high risk level.");
 }

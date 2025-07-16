@@ -4,8 +4,6 @@ using Shopilent.Application.Abstractions.Email;
 using Shopilent.Application.Abstractions.Events;
 using Shopilent.Application.Abstractions.Imaging;
 using Shopilent.Application.Abstractions.Outbox;
-using Shopilent.Application.Settings.Email;
-using Shopilent.Application.Settings.Outbox;
 using Shopilent.Domain.Common;
 using Shopilent.Infrastructure.BackgroundServices.Outbox;
 using Shopilent.Infrastructure.OpenApi;
@@ -15,6 +13,7 @@ using Shopilent.Infrastructure.Services.Email;
 using Shopilent.Infrastructure.Services.Events;
 using Shopilent.Infrastructure.Services.Imaging;
 using Shopilent.Infrastructure.Services.Outbox;
+using Shopilent.Infrastructure.Settings;
 
 namespace Shopilent.Infrastructure.Extensions;
 

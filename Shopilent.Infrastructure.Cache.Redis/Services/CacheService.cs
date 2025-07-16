@@ -3,15 +3,15 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Shopilent.Application.Abstractions.Caching;
-using Shopilent.Application.Settings.Cache;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Infrastructure.Cache.Redis.Converter;
+using Shopilent.Infrastructure.Cache.Redis.Settings;
 using Shopilent.Infrastructure.Cache.Redis.Utilities;
 using StackExchange.Redis;
 
 namespace Shopilent.Infrastructure.Cache.Redis.Services;
 
-public class CacheService : ICacheService
+internal class CacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
     private readonly DistributedCacheEntryOptions _defaultOptions;

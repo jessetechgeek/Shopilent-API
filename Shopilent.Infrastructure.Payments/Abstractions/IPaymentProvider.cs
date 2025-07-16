@@ -1,14 +1,16 @@
+using Shopilent.Application.Abstractions.Payments;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Payments.Enums;
 using Shopilent.Domain.Sales.ValueObjects;
+using Shopilent.Infrastructure.Payments.Models;
 
-namespace Shopilent.Infrastructure.Payments;
+namespace Shopilent.Infrastructure.Payments.Abstractions;
 
 public interface IPaymentProvider
 {
     PaymentProvider Provider { get; }
     
-    Task<Result<string>> ProcessPaymentAsync(
+    Task<Result<PaymentResult>> ProcessPaymentAsync(
         PaymentRequest request,
         CancellationToken cancellationToken = default);
     
@@ -44,5 +46,18 @@ public interface IPaymentProvider
             Domain.Common.Errors.Error.Failure(
                 code: "CustomerManagement.NotSupported", 
                 message: $"Payment method attachment is not supported by {Provider} provider")));
+    }
+    
+    // Webhook processing method - optional for providers that support it
+    Task<Result<WebhookResult>> ProcessWebhookAsync(
+        string webhookPayload,
+        string signature = null,
+        Dictionary<string, string> headers = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Result.Failure<WebhookResult>(
+            Domain.Common.Errors.Error.Failure(
+                code: "Webhook.NotSupported",
+                message: $"Webhook processing is not supported by {Provider} provider")));
     }
 }

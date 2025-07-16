@@ -34,8 +34,5 @@ public class ProcessOrderPaymentRequestValidatorV1 : Validator<ProcessOrderPayme
             .Must(x => !(x.PaymentMethodId.HasValue && !string.IsNullOrEmpty(x.PaymentMethodToken)))
             .WithMessage("Cannot specify both PaymentMethodId and PaymentMethodToken. Use one or the other.");
 
-        RuleFor(x => x.ExternalReference)
-            .MaximumLength(255).WithMessage("External reference cannot exceed 255 characters.")
-            .When(x => !string.IsNullOrEmpty(x.ExternalReference));
     }
 }

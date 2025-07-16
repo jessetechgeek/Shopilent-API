@@ -1,4 +1,4 @@
-namespace Shopilent.Infrastructure.Payments.Configuration;
+namespace Shopilent.Infrastructure.Payments.Settings;
 
 public class StripeSettings
 {

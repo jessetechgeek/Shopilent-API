@@ -3,11 +3,11 @@ using System.Net.Mail;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shopilent.Application.Abstractions.Email;
-using Shopilent.Application.Settings.Email;
+using Shopilent.Infrastructure.Settings;
 
 namespace Shopilent.Infrastructure.Services.Email;
 
-public class EmailService : IEmailService
+internal class EmailService : IEmailService
 {
     private readonly EmailSettings _emailSettings;
     private readonly ILogger<EmailService> _logger;

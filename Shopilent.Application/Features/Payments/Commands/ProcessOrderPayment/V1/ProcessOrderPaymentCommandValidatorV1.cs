@@ -36,8 +36,5 @@ internal sealed class ProcessOrderPaymentCommandValidatorV1 : AbstractValidator<
             .Must(v => !(v.PaymentMethodId.HasValue && !string.IsNullOrEmpty(v.PaymentMethodToken)))
             .WithMessage("Cannot specify both PaymentMethodId and PaymentMethodToken. Use one or the other.");
 
-        RuleFor(v => v.ExternalReference)
-            .MaximumLength(255).WithMessage("External reference cannot exceed 255 characters.")
-            .When(v => !string.IsNullOrEmpty(v.ExternalReference));
     }
 }

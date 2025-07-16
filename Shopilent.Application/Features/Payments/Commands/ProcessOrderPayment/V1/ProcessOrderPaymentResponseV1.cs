@@ -12,7 +12,15 @@ public sealed class ProcessOrderPaymentResponseV1
     public PaymentMethodType MethodType { get; init; }
     public PaymentProvider Provider { get; init; }
     public string TransactionId { get; init; }
-    public string ExternalReference { get; init; }
     public DateTime ProcessedAt { get; init; }
     public string Message { get; init; }
+    
+    // Enhanced payment processing details
+    public string ClientSecret { get; init; }
+    public bool RequiresAction { get; init; }
+    public string NextActionType { get; init; }
+    public string DeclineReason { get; init; }
+    public string RiskLevel { get; init; }
+    public string FailureReason { get; init; }
+    public Dictionary<string, object> Metadata { get; init; } = new();
 }

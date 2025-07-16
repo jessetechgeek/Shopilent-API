@@ -1,7 +1,7 @@
 using Shopilent.Domain.Payments.Enums;
 using Shopilent.Domain.Sales.ValueObjects;
 
-namespace Shopilent.Infrastructure.Payments;
+namespace Shopilent.Infrastructure.Payments.Models;
 
 public class PaymentRequest
 {
@@ -9,6 +9,5 @@ public class PaymentRequest
     public PaymentMethodType MethodType { get; init; }
     public string PaymentMethodToken { get; init; }
     public string CustomerId { get; init; }
-    public string ExternalReference { get; init; }
     public Dictionary<string, object> Metadata { get; init; } = new();
 }

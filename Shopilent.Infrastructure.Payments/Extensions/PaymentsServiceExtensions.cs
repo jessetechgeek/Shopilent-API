@@ -1,9 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shopilent.Application.Abstractions.Services;
-using Shopilent.Infrastructure.Payments.Configuration;
-using Shopilent.Infrastructure.Payments.Providers;
+using Shopilent.Application.Abstractions.Payments;
+using Shopilent.Infrastructure.Payments.Abstractions;
+using Shopilent.Infrastructure.Payments.Providers.Stripe;
 using Shopilent.Infrastructure.Payments.Services;
+using Shopilent.Infrastructure.Payments.Settings;
 
 namespace Shopilent.Infrastructure.Payments.Extensions;
 
