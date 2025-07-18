@@ -7,6 +7,7 @@ using Shopilent.Domain.Sales.ValueObjects;
 using Shopilent.Infrastructure.Payments.Abstractions;
 using Shopilent.Infrastructure.Payments.Models;
 using Shopilent.Infrastructure.Payments.Providers.Base;
+using Shopilent.Infrastructure.Payments.Providers.Stripe.Handlers;
 using Shopilent.Infrastructure.Payments.Settings;
 using Stripe;
 
@@ -22,14 +23,17 @@ internal class StripePaymentProvider : PaymentProviderBase
     private readonly PaymentMethodService _paymentMethodService;
     private readonly ChargeService _chargeService;
     private readonly EventService _eventService;
+    private readonly StripeWebhookHandlerFactory _webhookHandlerFactory;
 
     public override PaymentProvider Provider => PaymentProvider.Stripe;
 
     public StripePaymentProvider(
         IOptions<StripeSettings> settings,
-        ILogger<StripePaymentProvider> logger) : base(logger)
+        ILogger<StripePaymentProvider> logger,
+        StripeWebhookHandlerFactory webhookHandlerFactory) : base(logger)
     {
         _settings = settings.Value;
+        _webhookHandlerFactory = webhookHandlerFactory;
 
         StripeConfiguration.ApiKey = _settings.SecretKey;
 
@@ -505,49 +509,16 @@ internal class StripePaymentProvider : PaymentProviderBase
 
         try
         {
-            switch (stripeEvent.Type)
+            var handler = _webhookHandlerFactory.GetHandler(stripeEvent.Type);
+            if (handler != null)
             {
-                case "payment_intent.succeeded":
-                    await HandlePaymentIntentSucceeded(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "payment_intent.payment_failed":
-                    await HandlePaymentIntentFailed(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "payment_intent.requires_action":
-                    await HandlePaymentIntentRequiresAction(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "payment_intent.canceled":
-                    await HandlePaymentIntentCanceled(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "charge.succeeded":
-                    await HandleChargeSucceeded(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "charge.dispute.created":
-                    await HandleChargeDisputeCreated(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "customer.created":
-                    await HandleCustomerCreated(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "customer.updated":
-                    await HandleCustomerUpdated(stripeEvent, result, cancellationToken);
-                    break;
-
-                case "payment_method.attached":
-                    await HandlePaymentMethodAttached(stripeEvent, result, cancellationToken);
-                    break;
-
-                default:
-                    Logger.LogInformation("Unhandled Stripe event type: {EventType}", stripeEvent.Type);
-                    result.ProcessingMessage = $"Event type {stripeEvent.Type} is not handled";
-                    result.IsProcessed = true; // Mark as processed to avoid retries
-                    break;
+                result = await handler.HandleAsync(stripeEvent, result, cancellationToken);
+            }
+            else
+            {
+                Logger.LogInformation("Unhandled Stripe event type: {EventType}", stripeEvent.Type);
+                result.ProcessingMessage = $"Event type {stripeEvent.Type} is not handled";
+                result.IsProcessed = true; // Mark as processed to avoid retries
             }
         }
         catch (Exception ex)
@@ -561,292 +532,4 @@ internal class StripePaymentProvider : PaymentProviderBase
         return result;
     }
 
-    private async Task HandlePaymentIntentSucceeded(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-        if (paymentIntent == null)
-        {
-            result.ProcessingMessage = "Invalid PaymentIntent data in webhook";
-            return;
-        }
-
-        result.TransactionId = paymentIntent.Id;
-        result.PaymentStatus = PaymentStatus.Succeeded;
-        result.CustomerId = paymentIntent.CustomerId;
-        result.EventData.Add("amount", paymentIntent.Amount);
-        result.EventData.Add("currency", paymentIntent.Currency);
-        result.EventData.Add("payment_method", paymentIntent.PaymentMethodId);
-
-        if (paymentIntent.Metadata != null)
-        {
-            result.EventData.Add("metadata", paymentIntent.Metadata);
-        }
-
-        result.OrderId = paymentIntent.Metadata["orderId"];
-        result.ProcessingMessage = "Payment succeeded";
-        result.IsProcessed = true;
-
-        Logger.LogInformation("Payment succeeded: {PaymentIntentId}", paymentIntent.Id);
-    }
-
-    private async Task HandlePaymentIntentFailed(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-        if (paymentIntent == null)
-        {
-            result.ProcessingMessage = "Invalid PaymentIntent data in webhook";
-            return;
-        }
-
-        result.TransactionId = paymentIntent.Id;
-        result.PaymentStatus = PaymentStatus.Failed;
-        result.CustomerId = paymentIntent.CustomerId;
-        result.EventData.Add("last_payment_error", paymentIntent.LastPaymentError?.Message ?? "Unknown error");
-
-        if (paymentIntent.Metadata != null)
-        {
-            result.EventData.Add("metadata", paymentIntent.Metadata);
-        }
-
-        result.OrderId = paymentIntent.Metadata["orderId"];
-        result.ProcessingMessage = $"Payment failed: {paymentIntent.LastPaymentError?.Message ?? "Unknown error"}";
-        result.IsProcessed = true;
-
-        Logger.LogWarning("Payment failed: {PaymentIntentId}, Error: {Error}",
-            paymentIntent.Id, paymentIntent.LastPaymentError?.Message);
-    }
-
-    private async Task HandlePaymentIntentRequiresAction(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-        if (paymentIntent == null)
-        {
-            result.ProcessingMessage = "Invalid PaymentIntent data in webhook";
-            return;
-        }
-
-        result.TransactionId = paymentIntent.Id;
-        result.PaymentStatus = PaymentStatus.RequiresAction;
-        result.CustomerId = paymentIntent.CustomerId;
-        result.EventData.Add("next_action", paymentIntent.NextAction?.Type ?? "unknown");
-
-        if (paymentIntent.Metadata != null)
-        {
-            result.EventData.Add("metadata", paymentIntent.Metadata);
-        }
-
-        result.OrderId = paymentIntent.Metadata["orderId"];
-        result.ProcessingMessage = "Payment requires additional action";
-        result.IsProcessed = true;
-
-        Logger.LogInformation("Payment requires action: {PaymentIntentId}", paymentIntent.Id);
-    }
-
-    private async Task HandlePaymentIntentCanceled(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-        if (paymentIntent == null)
-        {
-            result.ProcessingMessage = "Invalid PaymentIntent data in webhook";
-            return;
-        }
-
-        result.TransactionId = paymentIntent.Id;
-        result.PaymentStatus = PaymentStatus.Canceled;
-        result.CustomerId = paymentIntent.CustomerId;
-
-        if (paymentIntent.Metadata != null)
-        {
-            result.EventData.Add("metadata", paymentIntent.Metadata);
-        }
-
-        result.OrderId = paymentIntent.Metadata["orderId"];
-        result.ProcessingMessage = "Payment was canceled";
-        result.IsProcessed = true;
-
-        Logger.LogInformation("Payment canceled: {PaymentIntentId}", paymentIntent.Id);
-    }
-
-    private async Task HandleChargeSucceeded(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var charge = stripeEvent.Data.Object as Charge;
-        if (charge == null)
-        {
-            result.ProcessingMessage = "Invalid Charge data in webhook";
-            return;
-        }
-
-        result.TransactionId = charge.PaymentIntentId ?? charge.Id;
-        result.PaymentStatus = PaymentStatus.Succeeded;
-        result.CustomerId = charge.CustomerId;
-        result.EventData.Add("charge_id", charge.Id);
-        result.EventData.Add("payment_intent_id", charge.PaymentIntentId ?? string.Empty);
-        result.EventData.Add("amount", charge.Amount);
-        result.EventData.Add("currency", charge.Currency);
-        result.EventData.Add("payment_method", charge.PaymentMethod ?? string.Empty);
-
-        // Add charge outcome information (risk assessment, etc.)
-        if (charge.Outcome != null)
-        {
-            result.EventData.Add("risk_level", charge.Outcome.RiskLevel ?? "unknown");
-            result.EventData.Add("outcome_type", charge.Outcome.Type ?? "unknown");
-            result.EventData.Add("seller_message", charge.Outcome.SellerMessage ?? string.Empty);
-
-            if (!string.IsNullOrEmpty(charge.Outcome.Reason))
-            {
-                result.EventData.Add("outcome_reason", charge.Outcome.Reason);
-            }
-        }
-
-        // Add payment method details if available
-        if (charge.PaymentMethodDetails?.Card != null)
-        {
-            var card = charge.PaymentMethodDetails.Card;
-            result.EventData.Add("card_brand", card.Brand ?? string.Empty);
-            result.EventData.Add("card_last4", card.Last4 ?? string.Empty);
-            result.EventData.Add("card_country", card.Country ?? string.Empty);
-
-            if (card.ThreeDSecure != null)
-            {
-                result.EventData.Add("three_d_secure_result", card.ThreeDSecure.Result ?? string.Empty);
-                result.EventData.Add("three_d_secure_version", card.ThreeDSecure.Version ?? string.Empty);
-            }
-        }
-
-        // Add charge metadata
-        if (charge.Metadata != null && charge.Metadata.Count > 0)
-        {
-            result.EventData.Add("metadata", charge.Metadata);
-        }
-
-        // Add billing details if available
-        if (charge.BillingDetails != null)
-        {
-            result.EventData.Add("billing_email", charge.BillingDetails.Email ?? string.Empty);
-            result.EventData.Add("billing_name", charge.BillingDetails.Name ?? string.Empty);
-        }
-
-        result.OrderId = charge.Metadata["orderId"];
-        result.ProcessingMessage = "Charge succeeded";
-        result.IsProcessed = true;
-
-        Logger.LogInformation(
-            "Charge succeeded: {ChargeId} for PaymentIntent: {PaymentIntentId}, Amount: {Amount} {Currency}",
-            charge.Id, charge.PaymentIntentId, charge.Amount, charge.Currency?.ToUpperInvariant());
-
-        // Log 3DS information if available
-        if (charge.PaymentMethodDetails?.Card?.ThreeDSecure != null)
-        {
-            var threeDSecure = charge.PaymentMethodDetails.Card.ThreeDSecure;
-            Logger.LogInformation(
-                "3D Secure authentication completed for charge {ChargeId}: Result={Result}, Version={Version}",
-                charge.Id, threeDSecure.Result, threeDSecure.Version);
-        }
-    }
-
-    private async Task HandleChargeDisputeCreated(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var dispute = stripeEvent.Data.Object as Dispute;
-        if (dispute == null)
-        {
-            result.ProcessingMessage = "Invalid Dispute data in webhook";
-            return;
-        }
-
-        result.TransactionId = dispute.ChargeId;
-        result.EventData.Add("dispute_id", dispute.Id);
-        result.EventData.Add("dispute_reason", dispute.Reason);
-        result.EventData.Add("dispute_amount", dispute.Amount);
-        result.EventData.Add("dispute_currency", dispute.Currency);
-
-        result.OrderId = dispute.Metadata["orderId"];
-        result.ProcessingMessage = $"Dispute created for charge: {dispute.ChargeId}";
-        result.IsProcessed = true;
-
-        Logger.LogWarning("Dispute created for charge: {ChargeId}, Reason: {Reason}",
-            dispute.ChargeId, dispute.Reason);
-    }
-
-    private async Task HandleCustomerCreated(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var customer = stripeEvent.Data.Object as Customer;
-        if (customer == null)
-        {
-            result.ProcessingMessage = "Invalid Customer data in webhook";
-            return;
-        }
-
-        result.CustomerId = customer.Id;
-        result.EventData.Add("email", customer.Email ?? string.Empty);
-
-        if (customer.Metadata != null)
-        {
-            result.EventData.Add("metadata", customer.Metadata);
-        }
-
-        result.ProcessingMessage = $"Customer created: {customer.Id}";
-        result.IsProcessed = true;
-
-        Logger.LogInformation("Customer created: {CustomerId}", customer.Id);
-    }
-
-    private async Task HandleCustomerUpdated(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var customer = stripeEvent.Data.Object as Customer;
-        if (customer == null)
-        {
-            result.ProcessingMessage = "Invalid Customer data in webhook";
-            return;
-        }
-
-        result.CustomerId = customer.Id;
-        result.EventData.Add("email", customer.Email ?? string.Empty);
-
-        if (customer.Metadata != null)
-        {
-            result.EventData.Add("metadata", customer.Metadata);
-        }
-
-        result.ProcessingMessage = $"Customer updated: {customer.Id}";
-        result.IsProcessed = true;
-
-        Logger.LogInformation("Customer updated: {CustomerId}", customer.Id);
-    }
-
-    private async Task HandlePaymentMethodAttached(Event stripeEvent, WebhookResult result,
-        CancellationToken cancellationToken)
-    {
-        var paymentMethod = stripeEvent.Data.Object as PaymentMethod;
-        if (paymentMethod == null)
-        {
-            result.ProcessingMessage = "Invalid PaymentMethod data in webhook";
-            return;
-        }
-
-        result.CustomerId = paymentMethod.CustomerId;
-        result.EventData.Add("payment_method_id", paymentMethod.Id);
-        result.EventData.Add("payment_method_type", paymentMethod.Type);
-
-        if (paymentMethod.Card != null)
-        {
-            result.EventData.Add("card_brand", paymentMethod.Card.Brand);
-            result.EventData.Add("card_last4", paymentMethod.Card.Last4);
-            result.EventData.Add("card_exp_month", paymentMethod.Card.ExpMonth);
-            result.EventData.Add("card_exp_year", paymentMethod.Card.ExpYear);
-        }
-
-        result.ProcessingMessage = $"Payment method attached: {paymentMethod.Id}";
-        result.IsProcessed = true;
-
-        Logger.LogInformation("Payment method attached: {PaymentMethodId} to customer: {CustomerId}",
-            paymentMethod.Id, paymentMethod.CustomerId);
-    }
 }

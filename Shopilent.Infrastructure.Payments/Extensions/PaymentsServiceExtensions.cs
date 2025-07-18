@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Payments;
 using Shopilent.Infrastructure.Payments.Abstractions;
 using Shopilent.Infrastructure.Payments.Providers.Stripe;
+using Shopilent.Infrastructure.Payments.Providers.Stripe.Handlers;
 using Shopilent.Infrastructure.Payments.Services;
 using Shopilent.Infrastructure.Payments.Settings;
 
@@ -22,6 +23,18 @@ public static class PaymentsServiceExtensions
         // Register payment providers
         services.AddScoped<IPaymentProvider, StripePaymentProvider>();
         // services.AddScoped<IPaymentProvider, PayPalPaymentProvider>();
+
+        // Register Stripe webhook handlers
+        services.AddScoped<PaymentIntentSucceededHandler>();
+        services.AddScoped<PaymentIntentFailedHandler>();
+        services.AddScoped<PaymentIntentRequiresActionHandler>();
+        services.AddScoped<PaymentIntentCanceledHandler>();
+        services.AddScoped<ChargeSucceededHandler>();
+        services.AddScoped<ChargeDisputeCreatedHandler>();
+        services.AddScoped<CustomerCreatedHandler>();
+        services.AddScoped<CustomerUpdatedHandler>();
+        services.AddScoped<PaymentMethodAttachedHandler>();
+        services.AddScoped<StripeWebhookHandlerFactory>();
 
         return services;
     }
