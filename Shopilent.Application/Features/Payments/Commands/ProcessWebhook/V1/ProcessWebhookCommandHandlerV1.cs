@@ -111,6 +111,19 @@ public class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookComm
                     await HandlePaymentRefundedAsync(webhookResult, cancellationToken);
                     break;
 
+                case "setup_intent.succeeded":
+                    await HandleSetupIntentSucceededAsync(webhookResult, cancellationToken);
+                    break;
+
+                case "setup_intent.canceled":
+                    await HandleSetupIntentCanceledAsync(webhookResult, cancellationToken);
+                    break;
+
+                case "setup_intent.requires_action":
+                    _logger.LogInformation("Setup intent {SetupIntentId} requires action - handled client-side",
+                        webhookResult.TransactionId);
+                    break;
+
                 default:
                     _logger.LogInformation("Webhook event type {EventType} does not require order/payment updates",
                         webhookResult.EventType);
@@ -308,5 +321,36 @@ public class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookComm
 
         _logger.LogInformation("Updated payment {PaymentId} status to refunded for transaction {TransactionId}",
             payment.Id, webhookResult.TransactionId);
+    }
+
+    private async Task HandleSetupIntentSucceededAsync(WebhookResult webhookResult,
+        CancellationToken cancellationToken)
+    {
+        // Setup intents don't directly create payments, but they set up payment methods for future use
+        // We can track this in the payment method system if needed
+        
+        var customerId = webhookResult.CustomerId;
+        var paymentMethodId = webhookResult.EventData.GetValueOrDefault("payment_method_id")?.ToString();
+        
+        if (!string.IsNullOrEmpty(customerId) && !string.IsNullOrEmpty(paymentMethodId))
+        {
+            // Here we could update the payment method status in the database
+            // For now, we'll just log the successful setup
+            _logger.LogInformation(
+                "Payment method {PaymentMethodId} successfully set up for customer {CustomerId} via setup intent {SetupIntentId}",
+                paymentMethodId, customerId, webhookResult.TransactionId);
+        }
+    }
+
+    private async Task HandleSetupIntentCanceledAsync(WebhookResult webhookResult,
+        CancellationToken cancellationToken)
+    {
+        // Setup intent was canceled - log for monitoring
+        var customerId = webhookResult.CustomerId;
+        var cancellationReason = webhookResult.EventData.GetValueOrDefault("cancellation_reason")?.ToString();
+        
+        _logger.LogWarning(
+            "Setup intent {SetupIntentId} was canceled for customer {CustomerId}, reason: {CancellationReason}",
+            webhookResult.TransactionId, customerId, cancellationReason ?? "Unknown");
     }
 }

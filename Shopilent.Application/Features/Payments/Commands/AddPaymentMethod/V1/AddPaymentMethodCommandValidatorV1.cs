@@ -15,9 +15,23 @@ internal sealed class AddPaymentMethodCommandValidatorV1 : AbstractValidator<Add
             .NotEmpty().WithMessage("Payment provider is required.")
             .Must(BeValidPaymentProvider).WithMessage("Invalid payment provider.");
 
-        RuleFor(v => v.Token)
-            .NotEmpty().WithMessage("Payment method token is required.")
-            .MaximumLength(255).WithMessage("Token cannot exceed 255 characters.");
+        // Ensure either PaymentMethodToken or SetupIntentId is provided
+        RuleFor(v => v)
+            .Must(HaveTokenOrSetupIntentId).WithMessage("Either PaymentMethodToken or SetupIntentId must be provided.");
+
+        // Payment method token validation
+        When(v => !string.IsNullOrEmpty(v.PaymentMethodToken), () =>
+        {
+            RuleFor(v => v.PaymentMethodToken)
+                .MaximumLength(255).WithMessage("Payment method token cannot exceed 255 characters.");
+        });
+
+        // Setup Intent ID validation - for confirming existing setup intents
+        When(v => !string.IsNullOrEmpty(v.SetupIntentId), () =>
+        {
+            RuleFor(v => v.SetupIntentId)
+                .MaximumLength(255).WithMessage("Setup intent ID cannot exceed 255 characters.");
+        });
 
         RuleFor(v => v.DisplayName)
             .NotEmpty().WithMessage("Display name is required.")
@@ -56,5 +70,10 @@ internal sealed class AddPaymentMethodCommandValidatorV1 : AbstractValidator<Add
     private static bool BeValidPaymentProvider(string provider)
     {
         return Enum.TryParse<PaymentProvider>(provider, true, out _);
+    }
+
+    private static bool HaveTokenOrSetupIntentId(AddPaymentMethodCommandV1 command)
+    {
+        return !string.IsNullOrEmpty(command.PaymentMethodToken) || !string.IsNullOrEmpty(command.SetupIntentId);
     }
 }

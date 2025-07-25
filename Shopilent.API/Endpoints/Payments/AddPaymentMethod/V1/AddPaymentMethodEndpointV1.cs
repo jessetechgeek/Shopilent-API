@@ -21,7 +21,10 @@ public class AddPaymentMethodEndpointV1 : Endpoint<AddPaymentMethodRequestV1, Ap
         Post("v1/payment-methods");
         Description(b => b
             .WithName("AddPaymentMethod")
+            .WithSummary("Add a new payment method with optional 3DS authentication")
+            .WithDescription("Creates a new payment method for the authenticated user. Supports 3D Secure (3DS) authentication flow for European cards and other payment methods requiring additional verification.")
             .Produces<ApiResponse<AddPaymentMethodResponseV1>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<AddPaymentMethodResponseV1>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<AddPaymentMethodResponseV1>>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse<AddPaymentMethodResponseV1>>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse<AddPaymentMethodResponseV1>>(StatusCodes.Status409Conflict)
@@ -46,14 +49,16 @@ public class AddPaymentMethodEndpointV1 : Endpoint<AddPaymentMethodRequestV1, Ap
         {
             Type = req.Type,
             Provider = req.Provider,
-            Token = req.Token,
             DisplayName = req.DisplayName,
             IsDefault = req.IsDefault,
             CardBrand = req.CardBrand,
             LastFourDigits = req.LastFourDigits,
             ExpiryDate = req.ExpiryDate,
             Email = req.Email,
-            Metadata = req.Metadata ?? new Dictionary<string, object>()
+            Metadata = req.Metadata ?? new Dictionary<string, object>(),
+            PaymentMethodToken = req.PaymentMethodToken,
+            RequiresSetupIntent = req.RequiresSetupIntent,
+            SetupIntentId = req.SetupIntentId
         };
 
         // Send the command to the handler
@@ -80,8 +85,9 @@ public class AddPaymentMethodEndpointV1 : Endpoint<AddPaymentMethodRequestV1, Ap
 
         var response = ApiResponse<AddPaymentMethodResponseV1>.Success(
             result.Value,
-            "Payment method added successfully");
+            result.Value.RequiresAuthentication ? "3DS authentication required" : "Payment method added successfully");
 
-        await SendAsync(response, StatusCodes.Status201Created, ct);
+        var responseStatusCode = result.Value.RequiresAuthentication ? StatusCodes.Status200OK : StatusCodes.Status201Created;
+        await SendAsync(response, responseStatusCode, ct);
     }
 }

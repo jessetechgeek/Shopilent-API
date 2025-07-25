@@ -60,4 +60,29 @@ public interface IPaymentProvider
                 code: "Webhook.NotSupported",
                 message: $"Webhook processing is not supported by {Provider} provider")));
     }
+    
+    // Setup intent methods - optional for providers that support it
+    Task<Result<SetupIntentResult>> CreateSetupIntentAsync(
+        string customerId,
+        string paymentMethodToken = null,
+        Dictionary<string, object> metadata = null,
+        string usage = "off_session",
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Result.Failure<SetupIntentResult>(
+            Domain.Common.Errors.Error.Failure(
+                code: "SetupIntent.NotSupported",
+                message: $"Setup intent is not supported by {Provider} provider")));
+    }
+    
+    Task<Result<SetupIntentResult>> ConfirmSetupIntentAsync(
+        string setupIntentId,
+        string paymentMethodToken = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Result.Failure<SetupIntentResult>(
+            Domain.Common.Errors.Error.Failure(
+                code: "SetupIntent.NotSupported",
+                message: $"Setup intent confirmation is not supported by {Provider} provider")));
+    }
 }

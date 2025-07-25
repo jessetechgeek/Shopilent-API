@@ -27,6 +27,9 @@ internal class StripeWebhookHandlerFactory
             "customer.created" => _serviceProvider.GetRequiredService<CustomerCreatedHandler>(),
             "customer.updated" => _serviceProvider.GetRequiredService<CustomerUpdatedHandler>(),
             "payment_method.attached" => _serviceProvider.GetRequiredService<PaymentMethodAttachedHandler>(),
+            "setup_intent.succeeded" => _serviceProvider.GetRequiredService<SetupIntentSucceededHandler>(),
+            "setup_intent.requires_action" => _serviceProvider.GetRequiredService<SetupIntentRequiresActionHandler>(),
+            "setup_intent.canceled" => _serviceProvider.GetRequiredService<SetupIntentCanceledHandler>(),
             _ => null
         };
     }

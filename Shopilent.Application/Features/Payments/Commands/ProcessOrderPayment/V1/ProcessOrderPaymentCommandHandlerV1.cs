@@ -140,6 +140,10 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 }
             }
 
+           
+            // Add off-session metadata for proper payment processing
+            var paymentMetadata = new Dictionary<string, object>(request.Metadata ?? new Dictionary<string, object>());
+
             // Process payment with external provider
             var paymentResult = await _paymentService.ProcessPaymentAsync(
                 orderAmount.Value,
@@ -147,7 +151,7 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 request.Provider,
                 paymentToken,
                 customerId,
-                request.Metadata,
+                paymentMetadata,
                 cancellationToken);
 
             if (paymentResult.IsFailure)
@@ -155,25 +159,28 @@ internal sealed class ProcessOrderPaymentCommandHandlerV1
                 _logger.LogError("Payment processing failed. OrderId: {OrderId}, Error: {Error}",
                     request.OrderId, paymentResult.Error);
 
-                // Create failed payment record
-                var failedPayment = Payment.Create(
-                    order,
-                    user,
-                    orderAmount.Value,
-                    request.MethodType,
-                    request.Provider);
-
-                if (failedPayment.IsSuccess)
+                if (paymentResult.IsFailure)
                 {
-                    var markFailedResult = failedPayment.Value.MarkAsFailed(paymentResult.Error.Message);
-                    if (markFailedResult.IsSuccess)
-                    {
-                        await _unitOfWork.PaymentWriter.AddAsync(failedPayment.Value, cancellationToken);
-                        await _unitOfWork.SaveChangesAsync(cancellationToken);
-                    }
-                }
+                    // Create failed payment record
+                    var failedPayment = Payment.Create(
+                        order,
+                        user,
+                        orderAmount.Value,
+                        request.MethodType,
+                        request.Provider);
 
-                return Result.Failure<ProcessOrderPaymentResponseV1>(paymentResult.Error);
+                    if (failedPayment.IsSuccess)
+                    {
+                        var markFailedResult = failedPayment.Value.MarkAsFailed(paymentResult.Error.Message);
+                        if (markFailedResult.IsSuccess)
+                        {
+                            await _unitOfWork.PaymentWriter.AddAsync(failedPayment.Value, cancellationToken);
+                            await _unitOfWork.SaveChangesAsync(cancellationToken);
+                        }
+                    }
+
+                    return Result.Failure<ProcessOrderPaymentResponseV1>(paymentResult.Error);
+                }
             }
 
             var paymentProcessingResult = paymentResult.Value;

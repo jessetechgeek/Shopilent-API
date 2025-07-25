@@ -45,7 +45,8 @@ internal class PaymentService : IPaymentService
                 MethodType = methodType,
                 PaymentMethodToken = paymentMethodToken,
                 CustomerId = customerId,
-                Metadata = metadata ?? new Dictionary<string, object>()
+                Metadata = metadata ?? new Dictionary<string, object>(),
+                SavePaymentMethod = false // Not saving, just processing
             };
 
             return await paymentProvider.ProcessPaymentAsync(request, cancellationToken);
@@ -201,6 +202,58 @@ internal class PaymentService : IPaymentService
         {
             _logger.LogError(ex, "Error processing webhook with provider {Provider}", provider);
             return Result.Failure<WebhookResult>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
+    }
+
+    public async Task<Result<SetupIntentResult>> CreateSetupIntentAsync(
+        PaymentProvider provider,
+        string customerId,
+        string paymentMethodToken = null,
+        Dictionary<string, object> metadata = null,
+        string usage = "off_session",
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!_providers.TryGetValue(provider, out var paymentProvider))
+            {
+                _logger.LogError("Payment provider not configured: {Provider}", provider);
+                return Result.Failure<SetupIntentResult>(
+                    Domain.Payments.Errors.PaymentErrors.InvalidProvider);
+            }
+
+            return await paymentProvider.CreateSetupIntentAsync(customerId, paymentMethodToken, metadata, usage, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating setup intent with provider {Provider}", provider);
+            return Result.Failure<SetupIntentResult>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
+    }
+
+    public async Task<Result<SetupIntentResult>> ConfirmSetupIntentAsync(
+        PaymentProvider provider,
+        string setupIntentId,
+        string paymentMethodToken = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!_providers.TryGetValue(provider, out var paymentProvider))
+            {
+                _logger.LogError("Payment provider not configured: {Provider}", provider);
+                return Result.Failure<SetupIntentResult>(
+                    Domain.Payments.Errors.PaymentErrors.InvalidProvider);
+            }
+
+            return await paymentProvider.ConfirmSetupIntentAsync(setupIntentId, paymentMethodToken, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error confirming setup intent with provider {Provider}", provider);
+            return Result.Failure<SetupIntentResult>(
                 Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
         }
     }

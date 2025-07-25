@@ -68,6 +68,29 @@ public abstract class PaymentProviderBase : IPaymentProvider
                 message: $"Webhook processing is not supported by {Provider} provider")));
     }
 
+    public virtual Task<Result<SetupIntentResult>> CreateSetupIntentAsync(
+        string customerId,
+        string paymentMethodToken = null,
+        Dictionary<string, object> metadata = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Result.Failure<SetupIntentResult>(
+            Domain.Common.Errors.Error.Failure(
+                code: "SetupIntent.NotSupported",
+                message: $"Setup intent is not supported by {Provider} provider")));
+    }
+
+    public virtual Task<Result<SetupIntentResult>> ConfirmSetupIntentAsync(
+        string setupIntentId,
+        string paymentMethodToken = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Result.Failure<SetupIntentResult>(
+            Domain.Common.Errors.Error.Failure(
+                code: "SetupIntent.NotSupported",
+                message: $"Setup intent confirmation is not supported by {Provider} provider")));
+    }
+
     protected virtual void LogPaymentOperation(string operation, string transactionId, PaymentStatus? status = null)
     {
         Logger.LogInformation("Payment operation {Operation} for transaction {TransactionId} with status {Status}",
