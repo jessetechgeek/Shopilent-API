@@ -10,4 +10,5 @@ public class PaymentRequest
     public string PaymentMethodToken { get; init; }
     public string CustomerId { get; init; }
     public Dictionary<string, object> Metadata { get; init; } = new();
+    public bool SavePaymentMethod { get; init; }
 }

@@ -13,4 +13,9 @@ public sealed class AddPaymentMethodResponseV1
     public bool IsActive { get; init; }
     public Dictionary<string, object> Metadata { get; init; }
     public DateTime CreatedAt { get; init; }
+    public bool RequiresAuthentication { get; init; } = false;
+    public string? SetupIntentId { get; init; }
+    public string? ClientSecret { get; init; }
+    public string? NextActionType { get; init; }
+    public string? PaymentMethodToken { get; init; }
 }

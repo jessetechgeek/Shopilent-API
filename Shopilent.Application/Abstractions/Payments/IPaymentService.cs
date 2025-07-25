@@ -46,4 +46,19 @@ public interface IPaymentService
         string signature = null,
         Dictionary<string, string> headers = null,
         CancellationToken cancellationToken = default);
+
+    // Setup intent methods
+    Task<Result<SetupIntentResult>> CreateSetupIntentAsync(
+        PaymentProvider provider,
+        string customerId,
+        string paymentMethodToken = null,
+        Dictionary<string, object> metadata = null,
+        string usage = "off_session",
+        CancellationToken cancellationToken = default);
+
+    Task<Result<SetupIntentResult>> ConfirmSetupIntentAsync(
+        PaymentProvider provider,
+        string setupIntentId,
+        string paymentMethodToken = null,
+        CancellationToken cancellationToken = default);
 }

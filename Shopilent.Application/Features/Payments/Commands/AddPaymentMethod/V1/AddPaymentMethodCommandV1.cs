@@ -6,7 +6,6 @@ public sealed record AddPaymentMethodCommandV1 : ICommand<AddPaymentMethodRespon
 {
     public string Type { get; init; } // "CreditCard", "PayPal"
     public string Provider { get; init; } // "Stripe", "PayPal", "Braintree"
-    public string Token { get; init; }
     public string DisplayName { get; init; }
     public bool IsDefault { get; init; } = false;
     
@@ -20,4 +19,11 @@ public sealed record AddPaymentMethodCommandV1 : ICommand<AddPaymentMethodRespon
     
     // Additional metadata
     public Dictionary<string, object> Metadata { get; init; } = new();
+    
+    // Payment Method Token
+    public string? PaymentMethodToken { get; init; }
+    
+    // 3DS Setup Intent Support
+    public bool RequiresSetupIntent { get; init; } = false;
+    public string? SetupIntentId { get; init; }
 }

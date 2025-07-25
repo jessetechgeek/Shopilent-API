@@ -34,6 +34,9 @@ public static class PaymentsServiceExtensions
         services.AddScoped<CustomerCreatedHandler>();
         services.AddScoped<CustomerUpdatedHandler>();
         services.AddScoped<PaymentMethodAttachedHandler>();
+        services.AddScoped<SetupIntentSucceededHandler>();
+        services.AddScoped<SetupIntentRequiresActionHandler>();
+        services.AddScoped<SetupIntentCanceledHandler>();
         services.AddScoped<StripeWebhookHandlerFactory>();
 
         return services;

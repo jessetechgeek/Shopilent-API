@@ -16,9 +16,6 @@ public class AddPaymentMethodRequestValidatorV1 : Validator<AddPaymentMethodRequ
             .NotEmpty().WithMessage("Payment provider is required.")
             .Must(BeValidPaymentProvider).WithMessage("Invalid payment provider. Valid providers: Stripe, PayPal, Braintree.");
 
-        RuleFor(x => x.Token)
-            .NotEmpty().WithMessage("Payment method token is required.")
-            .MaximumLength(255).WithMessage("Token cannot exceed 255 characters.");
 
         RuleFor(x => x.DisplayName)
             .NotEmpty().WithMessage("Display name is required.")

@@ -532,4 +532,132 @@ internal class StripePaymentProvider : PaymentProviderBase
         return result;
     }
 
+    public override async Task<Result<SetupIntentResult>> CreateSetupIntentAsync(
+        string customerId,
+        string paymentMethodToken = null,
+        Dictionary<string, object> metadata = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            Logger.LogInformation("Creating Stripe setup intent for customer {CustomerId}", customerId);
+
+            var options = new SetupIntentCreateOptions
+            {
+                Customer = customerId,
+                Confirm = !string.IsNullOrEmpty(paymentMethodToken),
+                PaymentMethodTypes = new List<string> { "card" }
+            };
+
+            if (!string.IsNullOrEmpty(paymentMethodToken))
+            {
+                options.PaymentMethod = paymentMethodToken;
+            }
+
+            if (metadata != null)
+            {
+                options.Metadata = ConvertMetadata(metadata);
+            }
+
+            var setupIntent = await _setupIntentService.CreateAsync(options, cancellationToken: cancellationToken);
+
+            Logger.LogInformation("Stripe setup intent created: {SetupIntentId} with status: {Status}",
+                setupIntent.Id, setupIntent.Status);
+
+            var result = await BuildSetupIntentResultAsync(setupIntent);
+            return Result.Success(result);
+        }
+        catch (StripeException stripeEx)
+        {
+            Logger.LogError(stripeEx, "Stripe setup intent creation failed: {ErrorType} - {ErrorMessage}",
+                stripeEx.StripeError?.Type, stripeEx.Message);
+
+            var error = HandleStripeException(stripeEx);
+            return Result.Failure<SetupIntentResult>(error);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Unexpected error creating Stripe setup intent");
+            return Result.Failure<SetupIntentResult>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
+    }
+
+    public override async Task<Result<SetupIntentResult>> ConfirmSetupIntentAsync(
+        string setupIntentId,
+        string paymentMethodToken = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            Logger.LogInformation("Confirming Stripe setup intent {SetupIntentId}", setupIntentId);
+
+            var options = new SetupIntentConfirmOptions();
+
+            if (!string.IsNullOrEmpty(paymentMethodToken))
+            {
+                options.PaymentMethod = paymentMethodToken;
+            }
+
+            var setupIntent =
+                await _setupIntentService.ConfirmAsync(setupIntentId, options, cancellationToken: cancellationToken);
+
+            Logger.LogInformation("Stripe setup intent confirmed: {SetupIntentId} with status: {Status}",
+                setupIntent.Id, setupIntent.Status);
+
+            var result = await BuildSetupIntentResultAsync(setupIntent);
+            return Result.Success(result);
+        }
+        catch (StripeException stripeEx)
+        {
+            Logger.LogError(stripeEx, "Stripe setup intent confirmation failed: {ErrorType} - {ErrorMessage}",
+                stripeEx.StripeError?.Type, stripeEx.Message);
+
+            var error = HandleStripeException(stripeEx);
+            return Result.Failure<SetupIntentResult>(error);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Unexpected error confirming Stripe setup intent");
+            return Result.Failure<SetupIntentResult>(
+                Domain.Payments.Errors.PaymentErrors.ProcessingFailed(ex.Message));
+        }
+    }
+
+    private async Task<SetupIntentResult> BuildSetupIntentResultAsync(SetupIntent setupIntent)
+    {
+        var result = new SetupIntentResult
+        {
+            SetupIntentId = setupIntent.Id,
+            Status = ConvertStripeSetupIntentStatus(setupIntent.Status),
+            ClientSecret = setupIntent.ClientSecret,
+            RequiresAction = setupIntent.Status == "requires_action",
+            PaymentMethodId = setupIntent.PaymentMethodId,
+            CustomerId = setupIntent.CustomerId,
+            Usage = setupIntent.Usage,
+            Metadata = ConvertMetadataToObject(setupIntent.Metadata)
+        };
+
+        // Handle next action type for 3D Secure
+        if (setupIntent.NextAction != null)
+        {
+            result.NextActionType = setupIntent.NextAction.Type;
+        }
+
+        return result;
+    }
+
+    private static PaymentStatus ConvertStripeSetupIntentStatus(string stripeStatus)
+    {
+        return stripeStatus switch
+        {
+            "requires_payment_method" => PaymentStatus.Pending,
+            "requires_confirmation" => PaymentStatus.RequiresConfirmation,
+            "requires_action" => PaymentStatus.RequiresAction,
+            "processing" => PaymentStatus.Processing,
+            "succeeded" => PaymentStatus.Succeeded,
+            "canceled" => PaymentStatus.Canceled,
+            _ => PaymentStatus.Failed
+        };
+    }
 }
