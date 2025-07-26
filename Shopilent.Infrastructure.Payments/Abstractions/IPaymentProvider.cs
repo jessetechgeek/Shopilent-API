@@ -66,7 +66,6 @@ public interface IPaymentProvider
         string customerId,
         string paymentMethodToken = null,
         Dictionary<string, object> metadata = null,
-        string usage = "off_session",
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult(Result.Failure<SetupIntentResult>(
