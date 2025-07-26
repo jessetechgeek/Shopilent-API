@@ -211,7 +211,6 @@ internal class PaymentService : IPaymentService
         string customerId,
         string paymentMethodToken = null,
         Dictionary<string, object> metadata = null,
-        string usage = "off_session",
         CancellationToken cancellationToken = default)
     {
         try
@@ -223,7 +222,7 @@ internal class PaymentService : IPaymentService
                     Domain.Payments.Errors.PaymentErrors.InvalidProvider);
             }
 
-            return await paymentProvider.CreateSetupIntentAsync(customerId, paymentMethodToken, metadata, usage, cancellationToken);
+            return await paymentProvider.CreateSetupIntentAsync(customerId, paymentMethodToken, metadata, cancellationToken);
         }
         catch (Exception ex)
         {

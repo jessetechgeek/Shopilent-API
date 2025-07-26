@@ -113,7 +113,8 @@ internal sealed class
             }
 
             // Handle customer management for providers that support it
-            var customerManagementResult = await HandleCustomerManagementAsync(user, paymentMethod, provider, false, cancellationToken);
+            var customerManagementResult =
+                await HandleCustomerManagementAsync(user, paymentMethod, provider, false, cancellationToken);
             if (customerManagementResult.IsFailure)
             {
                 _logger.LogWarning("Customer management failed: {Error}", customerManagementResult.Error);
@@ -171,17 +172,18 @@ internal sealed class
             }
 
             // Get existing payment methods for this user and provider to check for customer ID
-            var existingPaymentMethods = await _unitOfWork.PaymentMethodReader.GetByUserIdAsync(user.Id, cancellationToken);
+            var existingPaymentMethods =
+                await _unitOfWork.PaymentMethodReader.GetByUserIdAsync(user.Id, cancellationToken);
             var customerIdMetadataKey = "stripe_customer_id";
-            
+
             // Look for existing customer ID in user's payment methods for this provider
             string customerId = null;
             if (existingPaymentMethods?.Any() == true)
             {
                 var existingStripeMethod = existingPaymentMethods
-                    .FirstOrDefault(pm => pm.Provider == provider && 
-                                         pm.Metadata.ContainsKey(customerIdMetadataKey));
-                
+                    .FirstOrDefault(pm => pm.Provider == provider &&
+                                          pm.Metadata.ContainsKey(customerIdMetadataKey));
+
                 if (existingStripeMethod != null)
                 {
                     customerId = existingStripeMethod.Metadata[customerIdMetadataKey]?.ToString();
@@ -191,7 +193,7 @@ internal sealed class
             // If no customer exists, create one
             if (string.IsNullOrEmpty(customerId))
             {
-                _logger.LogInformation("Creating new customer for user {UserId} with provider {Provider}", 
+                _logger.LogInformation("Creating new customer for user {UserId} with provider {Provider}",
                     user.Id, provider);
 
                 var createCustomerResult = await _paymentService.CreateCustomerAsync(
@@ -235,7 +237,8 @@ internal sealed class
                     var errorMessage = attachResult.Error.Message;
                     if (errorMessage.Contains("already been attached") || errorMessage.Contains("already attached"))
                     {
-                        _logger.LogInformation("Payment method {PaymentMethodToken} already attached to customer {CustomerId} - this is expected for setup intent flow", 
+                        _logger.LogInformation(
+                            "Payment method {PaymentMethodToken} already attached to customer {CustomerId} - this is expected for setup intent flow",
                             paymentMethod.Token, customerId);
                     }
                     else
@@ -246,13 +249,15 @@ internal sealed class
                 }
                 else
                 {
-                    _logger.LogInformation("Successfully attached payment method {PaymentMethodId} to customer {CustomerId}", 
+                    _logger.LogInformation(
+                        "Successfully attached payment method {PaymentMethodId} to customer {CustomerId}",
                         paymentMethod.Id, customerId);
                 }
             }
             else
             {
-                _logger.LogInformation("Skipping payment method attachment for setup intent flow - Stripe handles this automatically");
+                _logger.LogInformation(
+                    "Skipping payment method attachment for setup intent flow - Stripe handles this automatically");
             }
 
             return Result.Success();
@@ -338,7 +343,6 @@ internal sealed class
                 customerId,
                 request.PaymentMethodToken,
                 metadata,
-                "off_session", // This allows the card to be used for future off-session payments without authentication
                 cancellationToken);
 
             if (setupIntentResult.IsFailure)
@@ -349,13 +353,26 @@ internal sealed class
 
             var setupIntent = setupIntentResult.Value;
 
-            _logger.LogInformation("Setup intent created successfully: {SetupIntentId} for user {UserId}", 
+            if (setupIntent.Status == PaymentStatus.Succeeded)
+            {
+                //create user payment method
+                var paymentMethodResult =
+                    await CreatePaymentMethodFromConfirmedSetupIntentAsync(request, user, provider, cancellationToken);
+                if (paymentMethodResult.IsFailure)
+                {
+                    _logger.LogWarning("Failed to create payment method from confirmed setup intent: {Error}",
+                        paymentMethodResult.Error);
+                    return Result.Failure<AddPaymentMethodResponseV1>(paymentMethodResult.Error);
+                }
+            }
+
+            _logger.LogInformation("Setup intent created successfully: {SetupIntentId} for user {UserId}",
                 setupIntent.SetupIntentId, user.Id);
 
             // Return response indicating 3DS authentication is required
             return Result.Success(new AddPaymentMethodResponseV1
             {
-                RequiresAuthentication = true,
+                RequiresAuthentication = setupIntent.RequiresAction,
                 SetupIntentId = setupIntent.SetupIntentId,
                 ClientSecret = setupIntent.ClientSecret,
                 NextActionType = setupIntent.NextActionType,
@@ -383,7 +400,7 @@ internal sealed class
     {
         try
         {
-            _logger.LogInformation("Processing setup intent {SetupIntentId} for user {UserId}", 
+            _logger.LogInformation("Processing setup intent {SetupIntentId} for user {UserId}",
                 request.SetupIntentId, user.Id);
 
             // First, try to confirm the setup intent
@@ -397,12 +414,13 @@ internal sealed class
             if (confirmResult.IsFailure)
             {
                 var errorMessage = confirmResult.Error.Message;
-                if (errorMessage.Contains("already succeeded") || errorMessage.Contains("setup_intent_unexpected_state"))
+                if (errorMessage.Contains("already succeeded") ||
+                    errorMessage.Contains("setup_intent_unexpected_state"))
                 {
-                    _logger.LogInformation("Setup intent {SetupIntentId} already succeeded, proceeding with payment method creation", 
+                    _logger.LogInformation(
+                        "Setup intent {SetupIntentId} already succeeded, proceeding with payment method creation",
                         request.SetupIntentId);
-                    
-                    // Create a mock successful result with the existing payment method token
+
                     var mockResult = new SetupIntentResult
                     {
                         SetupIntentId = request.SetupIntentId,
@@ -410,24 +428,24 @@ internal sealed class
                         PaymentMethodId = request.PaymentMethodToken,
                         RequiresAction = false
                     };
-                    
+
                     return await ProcessSuccessfulSetupIntent(mockResult, request, user, provider, cancellationToken);
                 }
                 else
                 {
-                    _logger.LogError("Failed to confirm setup intent {SetupIntentId}: {Error}", 
+                    _logger.LogError("Failed to confirm setup intent {SetupIntentId}: {Error}",
                         request.SetupIntentId, confirmResult.Error);
                     return Result.Failure<AddPaymentMethodResponseV1>(confirmResult.Error);
                 }
             }
 
             var setupIntentResult = confirmResult.Value;
-            
+
             return await ProcessSuccessfulSetupIntent(setupIntentResult, request, user, provider, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error confirming setup intent {SetupIntentId} for user {UserId}", 
+            _logger.LogError(ex, "Error confirming setup intent {SetupIntentId} for user {UserId}",
                 request.SetupIntentId, user.Id);
             return Result.Failure<AddPaymentMethodResponseV1>(
                 Error.Failure(
@@ -448,9 +466,9 @@ internal sealed class
             // Check if the setup intent was successful
             if (setupIntentResult.Status != PaymentStatus.Succeeded)
             {
-                _logger.LogWarning("Setup intent {SetupIntentId} was not successful. Status: {Status}", 
+                _logger.LogWarning("Setup intent {SetupIntentId} was not successful. Status: {Status}",
                     request.SetupIntentId, setupIntentResult.Status);
-                
+
                 // If still requires action, return the authentication requirements
                 if (setupIntentResult.RequiresAction)
                 {
@@ -477,7 +495,7 @@ internal sealed class
             var paymentMethodToken = setupIntentResult.PaymentMethodId;
             if (string.IsNullOrEmpty(paymentMethodToken))
             {
-                _logger.LogError("No payment method ID returned from confirmed setup intent {SetupIntentId}", 
+                _logger.LogError("No payment method ID returned from confirmed setup intent {SetupIntentId}",
                     request.SetupIntentId);
                 return Result.Failure<AddPaymentMethodResponseV1>(
                     Error.Failure(
@@ -486,8 +504,8 @@ internal sealed class
             }
 
             // Create a new command with the confirmed payment method token
-            var confirmedRequest = request with 
-            { 
+            var confirmedRequest = request with
+            {
                 PaymentMethodToken = paymentMethodToken,
                 RequiresSetupIntent = false,
                 SetupIntentId = null,
@@ -495,15 +513,17 @@ internal sealed class
                 Metadata = MergeMetadata(request.Metadata, setupIntentResult.Metadata)
             };
 
-            _logger.LogInformation("Setup intent {SetupIntentId} processed successfully, creating payment method with token {PaymentMethodToken}", 
+            _logger.LogInformation(
+                "Setup intent {SetupIntentId} processed successfully, creating payment method with token {PaymentMethodToken}",
                 request.SetupIntentId, paymentMethodToken);
 
             // Now proceed with the regular payment method creation flow
-            return await CreatePaymentMethodFromConfirmedSetupIntentAsync(confirmedRequest, user, provider, cancellationToken);
+            return await CreatePaymentMethodFromConfirmedSetupIntentAsync(confirmedRequest, user, provider,
+                cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing successful setup intent {SetupIntentId} for user {UserId}", 
+            _logger.LogError(ex, "Error processing successful setup intent {SetupIntentId} for user {UserId}",
                 request.SetupIntentId, user.Id);
             return Result.Failure<AddPaymentMethodResponseV1>(
                 Error.Failure(
@@ -521,7 +541,8 @@ internal sealed class
         try
         {
             // Check if token already exists for this user
-            var existingPaymentMethod = await _unitOfWork.PaymentMethodWriter.GetByTokenAsync(request.PaymentMethodToken, cancellationToken);
+            var existingPaymentMethod =
+                await _unitOfWork.PaymentMethodWriter.GetByTokenAsync(request.PaymentMethodToken, cancellationToken);
             if (existingPaymentMethod != null && existingPaymentMethod.UserId == user.Id)
             {
                 _logger.LogWarning("Payment method with token already exists for user: {UserId}", user.Id);
@@ -558,7 +579,8 @@ internal sealed class
 
             // Handle customer management for providers that support it
             // Note: Skip attachment if this came from a setup intent, as Stripe handles this automatically
-            var customerManagementResult = await HandleCustomerManagementAsync(user, paymentMethod, provider, true, cancellationToken);
+            var customerManagementResult =
+                await HandleCustomerManagementAsync(user, paymentMethod, provider, true, cancellationToken);
             if (customerManagementResult.IsFailure)
             {
                 _logger.LogWarning("Customer management failed: {Error}", customerManagementResult.Error);
@@ -569,7 +591,8 @@ internal sealed class
             await _unitOfWork.PaymentMethodWriter.AddAsync(paymentMethod, cancellationToken);
             await _unitOfWork.SaveEntitiesAsync(cancellationToken);
 
-            _logger.LogInformation("Payment method created successfully from confirmed setup intent: {PaymentMethodId} for user: {UserId}",
+            _logger.LogInformation(
+                "Payment method created successfully from confirmed setup intent: {PaymentMethodId} for user: {UserId}",
                 paymentMethod.Id, user.Id);
 
             // Map to response
@@ -592,7 +615,8 @@ internal sealed class
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating payment method from confirmed setup intent for user: {UserId}", user.Id);
+            _logger.LogError(ex, "Error creating payment method from confirmed setup intent for user: {UserId}",
+                user.Id);
             return Result.Failure<AddPaymentMethodResponseV1>(
                 Error.Failure(
                     code: "PaymentMethod.CreationFromSetupIntentFailed",
@@ -605,7 +629,7 @@ internal sealed class
         Dictionary<string, object> setupIntentMetadata)
     {
         var merged = new Dictionary<string, object>(requestMetadata ?? new Dictionary<string, object>());
-        
+
         if (setupIntentMetadata != null)
         {
             foreach (var kvp in setupIntentMetadata)
@@ -626,17 +650,18 @@ internal sealed class
         try
         {
             // Get existing payment methods for this user and provider to check for customer ID
-            var existingPaymentMethods = await _unitOfWork.PaymentMethodReader.GetByUserIdAsync(user.Id, cancellationToken);
+            var existingPaymentMethods =
+                await _unitOfWork.PaymentMethodReader.GetByUserIdAsync(user.Id, cancellationToken);
             var customerIdMetadataKey = $"{provider.ToString().ToLower()}_customer_id";
-            
+
             // Look for existing customer ID in user's payment methods for this provider
             string customerId = null;
             if (existingPaymentMethods?.Any() == true)
             {
                 var existingProviderMethod = existingPaymentMethods
-                    .FirstOrDefault(pm => pm.Provider == provider && 
-                                         pm.Metadata.ContainsKey(customerIdMetadataKey));
-                
+                    .FirstOrDefault(pm => pm.Provider == provider &&
+                                          pm.Metadata.ContainsKey(customerIdMetadataKey));
+
                 if (existingProviderMethod != null)
                 {
                     customerId = existingProviderMethod.Metadata[customerIdMetadataKey]?.ToString();
@@ -646,7 +671,7 @@ internal sealed class
             // If no customer exists, create one
             if (string.IsNullOrEmpty(customerId))
             {
-                _logger.LogInformation("Creating new customer for user {UserId} with provider {Provider}", 
+                _logger.LogInformation("Creating new customer for user {UserId} with provider {Provider}",
                     user.Id, provider);
 
                 var createCustomerResult = await _paymentService.CreateCustomerAsync(
