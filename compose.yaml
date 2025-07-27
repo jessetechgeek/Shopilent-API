@@ -9,10 +9,11 @@
       - "${API_PORT_1:-9801}:8080"
     depends_on:
       - postgres
-#      - postgres-replica-1
+      - postgres-replica-1
       - redis
       - seq
       - minio
+      - mailhog
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
@@ -22,7 +23,9 @@
       - Redis__ConnectionString=redis:6379
       - Redis__InstanceName=shopilent_
       - S3__ServiceUrl=http://minio:9000
-  
+      - Email__SmtpServer=mailhog
+      - Email__SmtpPort=1025
+      
   client:
     container_name: shopilent-client
     image: shopilent.client
@@ -146,6 +149,14 @@
       - "${SEQ_INGEST_PORT:-5341}:5341"
     volumes:
       - seq_data:/data
+    restart: unless-stopped
+
+  mailhog:
+    container_name: shopilent-mailhog
+    image: mailhog/mailhog:latest
+    ports:
+      - "${MAILHOG_WEB_PORT:-9804}:8025"
+      - "${MAILHOG_SMTP_PORT:-9825}:1025"
     restart: unless-stopped
 
 volumes:
