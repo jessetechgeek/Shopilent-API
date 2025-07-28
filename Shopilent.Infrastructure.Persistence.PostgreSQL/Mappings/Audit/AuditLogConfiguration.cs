@@ -87,7 +87,7 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.Property(al => al.Version)
             .HasColumnName("version")
             .HasDefaultValue(0)
-            .IsRowVersion();
+            .IsConcurrencyToken();
         
         // Relationships
         builder.HasOne<Domain.Identity.User>()

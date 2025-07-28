@@ -161,7 +161,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Version)
             .HasColumnName("version")
             .HasDefaultValue(0)
-            .IsRowVersion();
+            .IsConcurrencyToken();
 
         // Check constraint for email format
         builder.HasCheckConstraint("check_email_format",

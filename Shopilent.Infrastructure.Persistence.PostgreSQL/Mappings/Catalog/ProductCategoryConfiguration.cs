@@ -52,7 +52,7 @@ public class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCate
         builder.Property(c => c.Version)
             .HasColumnName("version")
             .HasDefaultValue(0)
-            .IsRowVersion();
+            .IsConcurrencyToken();
         
         // Indexes
         builder.HasIndex(pc => pc.ProductId);

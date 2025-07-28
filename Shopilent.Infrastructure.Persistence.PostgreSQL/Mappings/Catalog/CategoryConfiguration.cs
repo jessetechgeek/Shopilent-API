@@ -101,6 +101,6 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Version)
             .HasColumnName("version")
             .HasDefaultValue(0)
-            .IsRowVersion();
+            .IsConcurrencyToken();
     }
 }

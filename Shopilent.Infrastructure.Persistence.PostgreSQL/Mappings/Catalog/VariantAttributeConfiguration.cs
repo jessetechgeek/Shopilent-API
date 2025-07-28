@@ -60,7 +60,7 @@ public class VariantAttributeConfiguration : IEntityTypeConfiguration<VariantAtt
         builder.Property(va => va.Version)
             .HasColumnName("version")
             .HasDefaultValue(0)
-            .IsRowVersion();
+            .IsConcurrencyToken();
         
         // Relationships
         builder.HasOne<ProductVariant>()
