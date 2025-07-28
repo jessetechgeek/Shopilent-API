@@ -231,13 +231,24 @@ public class Order : AggregateRoot
         return Result.Success();
     }
 
-    public Result Cancel(string reason = null)
+    public Result Cancel(string reason = null, bool isAdminOrManager = false)
     {
         if (Status == OrderStatus.Cancelled)
             return Result.Success();
 
-        if (Status == OrderStatus.Delivered)
-            return Result.Failure(OrderErrors.InvalidOrderStatus("cancel"));
+        // Role-based cancellation rules
+        if (!isAdminOrManager)
+        {
+            // Customers can only cancel orders that are Pending or Processing
+            if (Status != OrderStatus.Pending && Status != OrderStatus.Processing)
+                return Result.Failure(OrderErrors.InvalidOrderStatus("cancel - only pending or processing orders can be cancelled by customers"));
+        }
+        else
+        {
+            // Admins/Managers can cancel orders up to Shipped status, but not Delivered
+            if (Status == OrderStatus.Delivered)
+                return Result.Failure(OrderErrors.InvalidOrderStatus("cancel - delivered orders cannot be cancelled"));
+        }
 
         var oldStatus = Status;
         Status = OrderStatus.Cancelled;

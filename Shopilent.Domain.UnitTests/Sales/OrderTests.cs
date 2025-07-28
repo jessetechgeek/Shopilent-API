@@ -989,7 +989,7 @@ public class OrderTests
 
         var reason = "Customer request";
 
-        // Act
+        // Act - default behavior (customer)
         var cancelResult = order.Cancel(reason);
 
         // Assert
@@ -1027,7 +1027,7 @@ public class OrderTests
         Assert.True(orderResult.IsSuccess);
         var order = orderResult.Value;
 
-        // Act
+        // Act - default behavior (customer)
         var cancelResult = order.Cancel();
 
         // Assert
@@ -1072,7 +1072,7 @@ public class OrderTests
         Assert.True(deliveredResult.IsSuccess);
         Assert.Equal(OrderStatus.Delivered, order.Status);
 
-        // Act
+        // Act - default behavior (customer)
         var cancelResult = order.Cancel();
 
         // Assert
@@ -1278,5 +1278,207 @@ public class OrderTests
 
         // Expected total: $250 + $10 + $5 = $265
         Assert.Equal(265m, order.Total.Amount);
+    }
+
+    [Fact]
+    public void Cancel_CustomerCancellPendingOrder_ShouldSucceed()
+    {
+        // Arrange
+        var user = CreateTestUser();
+        var shippingAddress = CreateTestAddress(user);
+        var billingAddress = CreateTestAddress(user);
+
+        var subtotalResult = Money.Create(100, "USD");
+        Assert.True(subtotalResult.IsSuccess);
+
+        var taxResult = Money.Create(10, "USD");
+        Assert.True(taxResult.IsSuccess);
+
+        var shippingCostResult = Money.Create(5, "USD");
+        Assert.True(shippingCostResult.IsSuccess);
+
+        var orderResult = Order.Create(
+            user,
+            shippingAddress,
+            billingAddress,
+            subtotalResult.Value,
+            taxResult.Value,
+            shippingCostResult.Value);
+
+        Assert.True(orderResult.IsSuccess);
+        var order = orderResult.Value;
+        Assert.Equal(OrderStatus.Pending, order.Status);
+
+        // Act
+        var cancelResult = order.Cancel("Customer request", isAdminOrManager: false);
+
+        // Assert
+        Assert.True(cancelResult.IsSuccess);
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+    }
+
+    [Fact]
+    public void Cancel_CustomerCancelProcessingOrder_ShouldSucceed()
+    {
+        // Arrange
+        var user = CreateTestUser();
+        var shippingAddress = CreateTestAddress(user);
+        var billingAddress = CreateTestAddress(user);
+
+        var subtotalResult = Money.Create(100, "USD");
+        Assert.True(subtotalResult.IsSuccess);
+
+        var taxResult = Money.Create(10, "USD");
+        Assert.True(taxResult.IsSuccess);
+
+        var shippingCostResult = Money.Create(5, "USD");
+        Assert.True(shippingCostResult.IsSuccess);
+
+        var orderResult = Order.CreatePaidOrder(
+            user,
+            shippingAddress,
+            billingAddress,
+            subtotalResult.Value,
+            taxResult.Value,
+            shippingCostResult.Value);
+
+        Assert.True(orderResult.IsSuccess);
+        var order = orderResult.Value;
+        Assert.Equal(OrderStatus.Processing, order.Status);
+
+        // Act
+        var cancelResult = order.Cancel("Customer request", isAdminOrManager: false);
+
+        // Assert
+        Assert.True(cancelResult.IsSuccess);
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+    }
+
+    [Fact]
+    public void Cancel_CustomerCancelShippedOrder_ShouldFail()
+    {
+        // Arrange
+        var user = CreateTestUser();
+        var shippingAddress = CreateTestAddress(user);
+        var billingAddress = CreateTestAddress(user);
+
+        var subtotalResult = Money.Create(100, "USD");
+        Assert.True(subtotalResult.IsSuccess);
+
+        var taxResult = Money.Create(10, "USD");
+        Assert.True(taxResult.IsSuccess);
+
+        var shippingCostResult = Money.Create(5, "USD");
+        Assert.True(shippingCostResult.IsSuccess);
+
+        var orderResult = Order.CreatePaidOrder(
+            user,
+            shippingAddress,
+            billingAddress,
+            subtotalResult.Value,
+            taxResult.Value,
+            shippingCostResult.Value);
+
+        Assert.True(orderResult.IsSuccess);
+        var order = orderResult.Value;
+
+        var shippedResult = order.MarkAsShipped();
+        Assert.True(shippedResult.IsSuccess);
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+
+        // Act
+        var cancelResult = order.Cancel("Customer request", isAdminOrManager: false);
+
+        // Assert
+        Assert.True(cancelResult.IsFailure);
+        Assert.Equal("Order.InvalidStatus", cancelResult.Error.Code);
+        Assert.Contains("cancel - only pending or processing orders can be cancelled by customers", cancelResult.Error.Message);
+    }
+
+    [Fact]
+    public void Cancel_AdminCancelShippedOrder_ShouldSucceed()
+    {
+        // Arrange
+        var user = CreateTestUser();
+        var shippingAddress = CreateTestAddress(user);
+        var billingAddress = CreateTestAddress(user);
+
+        var subtotalResult = Money.Create(100, "USD");
+        Assert.True(subtotalResult.IsSuccess);
+
+        var taxResult = Money.Create(10, "USD");
+        Assert.True(taxResult.IsSuccess);
+
+        var shippingCostResult = Money.Create(5, "USD");
+        Assert.True(shippingCostResult.IsSuccess);
+
+        var orderResult = Order.CreatePaidOrder(
+            user,
+            shippingAddress,
+            billingAddress,
+            subtotalResult.Value,
+            taxResult.Value,
+            shippingCostResult.Value);
+
+        Assert.True(orderResult.IsSuccess);
+        var order = orderResult.Value;
+
+        var shippedResult = order.MarkAsShipped();
+        Assert.True(shippedResult.IsSuccess);
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+
+        // Act
+        var cancelResult = order.Cancel("Admin cancellation", isAdminOrManager: true);
+
+        // Assert
+        Assert.True(cancelResult.IsSuccess);
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+    }
+
+    [Fact]
+    public void Cancel_AdminCancelDeliveredOrder_ShouldFail()
+    {
+        // Arrange
+        var user = CreateTestUser();
+        var shippingAddress = CreateTestAddress(user);
+        var billingAddress = CreateTestAddress(user);
+
+        var subtotalResult = Money.Create(100, "USD");
+        Assert.True(subtotalResult.IsSuccess);
+
+        var taxResult = Money.Create(10, "USD");
+        Assert.True(taxResult.IsSuccess);
+
+        var shippingCostResult = Money.Create(5, "USD");
+        Assert.True(shippingCostResult.IsSuccess);
+
+        var orderResult = Order.CreatePaidOrder(
+            user,
+            shippingAddress,
+            billingAddress,
+            subtotalResult.Value,
+            taxResult.Value,
+            shippingCostResult.Value);
+
+        Assert.True(orderResult.IsSuccess);
+        var order = orderResult.Value;
+
+        var shippedResult = order.MarkAsShipped();
+        Assert.True(shippedResult.IsSuccess);
+
+        var deliveredResult = order.MarkAsDelivered();
+        Assert.True(deliveredResult.IsSuccess);
+        Assert.Equal(OrderStatus.Delivered, order.Status);
+
+        // Act
+        var cancelResult = order.Cancel("Admin cancellation", isAdminOrManager: true);
+
+        // Assert
+        Assert.True(cancelResult.IsFailure);
+        Assert.Equal("Order.InvalidStatus", cancelResult.Error.Code);
+        Assert.Contains("cancel - delivered orders cannot be cancelled", cancelResult.Error.Message);
     }
 }

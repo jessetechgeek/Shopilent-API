@@ -46,8 +46,9 @@ internal sealed class CancelOrderCommandHandlerV1 : ICommandHandler<CancelOrderC
                     Error.Forbidden("Order.CancelDenied", "You are not authorized to cancel this order"));
             }
 
-            // Attempt to cancel the order using domain logic
-            var cancelResult = order.Cancel(request.Reason);
+            // Attempt to cancel the order using domain logic with role-based permissions
+            var isAdminOrManager = request.IsAdmin || request.IsManager;
+            var cancelResult = order.Cancel(request.Reason, isAdminOrManager);
             
             if (cancelResult.IsFailure)
             {
