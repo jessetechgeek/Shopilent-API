@@ -8,13 +8,10 @@ using Shopilent.Domain.Shipping;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Shopilent.Application.Abstractions.Events;
-using Shopilent.Application.Abstractions.Outbox;
 using Shopilent.Domain.Common;
 using Shopilent.Domain.Common.Events;
 using Shopilent.Domain.Outbox;
-using Shopilent.Infrastructure.Persistence.PostgreSQL.Extensions;
 using Attribute = Shopilent.Domain.Catalog.Attribute;
-using System.Reflection;
 
 namespace Shopilent.Infrastructure.Persistence.PostgreSQL.Context;
 
@@ -118,5 +115,21 @@ public class ApplicationDbContext : DbContext
 
     private void UpdateTimestamps()
     {
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.Entity is Domain.Common.Entity && (
+                e.State == EntityState.Added || 
+                e.State == EntityState.Modified));
+                
+        foreach (var entry in entries)
+        {
+            var now = DateTime.UtcNow;
+            
+            if (entry.State == EntityState.Added)
+            {
+                entry.Property(nameof(Domain.Common.Entity.CreatedAt)).CurrentValue = now;
+            }
+            
+            entry.Property(nameof(Domain.Common.Entity.UpdatedAt)).CurrentValue = now;
+        }
     }
 }

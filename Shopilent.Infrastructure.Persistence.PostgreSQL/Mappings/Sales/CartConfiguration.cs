@@ -75,6 +75,6 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         builder.Property(c => c.Version)
             .HasColumnName("version")
             .HasDefaultValue(0)
-            .IsRowVersion();
+            .IsConcurrencyToken();
     }
 }

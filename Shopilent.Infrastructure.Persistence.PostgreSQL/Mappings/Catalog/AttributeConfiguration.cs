@@ -106,6 +106,6 @@ public class AttributeConfiguration : IEntityTypeConfiguration<Attribute>
         builder.Property(a => a.Version)
             .HasColumnName("version")
             .HasDefaultValue(0)
-            .IsRowVersion();
+            .IsConcurrencyToken();
     }
 }
