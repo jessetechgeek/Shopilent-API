@@ -10,6 +10,7 @@
     depends_on:
       - postgres
       - postgres-replica-1
+      - postgres-replica-2
       - redis
       - seq
       - minio
@@ -20,6 +21,7 @@
       - Seq__ServerUrl=http://seq:5341
       - ConnectionStrings__PostgreSql=Host=postgres;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - ConnectionStrings__PostgreSqlReadReplicas__0=Host=postgres-replica-1;Database=shopilent;Username=postgres;Password=postgres;Port=5432
+      - ConnectionStrings__PostgreSqlReadReplicas__1=Host=postgres-replica-2;Database=shopilent;Username=postgres;Password=postgres;Port=5432
       - Redis__ConnectionString=redis:6379
       - Redis__InstanceName=shopilent_
       - S3__ServiceUrl=http://minio:9000
@@ -72,19 +74,32 @@
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD:-replicator123}
     ports:
       - "${POSTGRES_PORT:-9851}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-primary-init.sh:/docker-entrypoint-initdb.d/01-setup-replication.sh:ro
+    command: >
+      postgres -c wal_level=replica 
+               -c max_wal_senders=3 
+               -c max_replication_slots=3 
+               -c hot_standby=on 
+               -c listen_addresses='*'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   postgres-replica-1:
     container_name: shopilent-postgres-replica-1
     image: postgres:15
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD:-replicator123}
       - POSTGRES_MASTER_HOST=postgres
       - POSTGRES_MASTER_PORT=5432
     ports:
@@ -92,8 +107,54 @@
     volumes:
       - postgres_replica_1_data:/var/lib/postgresql/data
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
+    command: >
+      bash -c "
+      if [ ! -f '/var/lib/postgresql/data/PG_VERSION' ]; then
+        echo 'Initializing replica from primary...';
+        rm -rf /var/lib/postgresql/data/*;
+        PGPASSWORD=\$POSTGRES_REPLICATION_PASSWORD pg_basebackup -h \$POSTGRES_MASTER_HOST -D /var/lib/postgresql/data -U \$POSTGRES_REPLICATION_USER -v -P;
+        touch /var/lib/postgresql/data/standby.signal;
+        echo \"primary_conninfo = 'host=\$POSTGRES_MASTER_HOST port=\$POSTGRES_MASTER_PORT user=\$POSTGRES_REPLICATION_USER password=\$POSTGRES_REPLICATION_PASSWORD'\" > /var/lib/postgresql/data/postgresql.auto.conf;
+        echo \"hot_standby = on\" >> /var/lib/postgresql/data/postgresql.auto.conf;
+        chown -R postgres:postgres /var/lib/postgresql/data;
+        chmod 700 /var/lib/postgresql/data;
+      fi;
+      exec gosu postgres postgres
+      "
+
+  postgres-replica-2:
+    container_name: shopilent-postgres-replica-2
+    image: postgres:15
+    environment:
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD:-replicator123}
+      - POSTGRES_MASTER_HOST=postgres
+      - POSTGRES_MASTER_PORT=5432
+    ports:
+      - "${POSTGRES_REPLICA_PORT_2:-9853}:5432"
+    volumes:
+      - postgres_replica_2_data:/var/lib/postgresql/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      bash -c "
+      if [ ! -f '/var/lib/postgresql/data/PG_VERSION' ]; then
+        echo 'Initializing replica from primary...';
+        rm -rf /var/lib/postgresql/data/*;
+        PGPASSWORD=\$POSTGRES_REPLICATION_PASSWORD pg_basebackup -h \$POSTGRES_MASTER_HOST -D /var/lib/postgresql/data -U \$POSTGRES_REPLICATION_USER -v -P;
+        touch /var/lib/postgresql/data/standby.signal;
+        echo \"primary_conninfo = 'host=\$POSTGRES_MASTER_HOST port=\$POSTGRES_MASTER_PORT user=\$POSTGRES_REPLICATION_USER password=\$POSTGRES_REPLICATION_PASSWORD'\" > /var/lib/postgresql/data/postgresql.auto.conf;
+        echo \"hot_standby = on\" >> /var/lib/postgresql/data/postgresql.auto.conf;
+        chown -R postgres:postgres /var/lib/postgresql/data;
+        chmod 700 /var/lib/postgresql/data;
+      fi;
+      exec gosu postgres postgres
+      "
   
   redis:
     container_name: shopilent-redis
@@ -144,6 +205,7 @@
       - ACCEPT_EULA=Y
       - SEQ_ADMIN_USERNAME=${SEQ_ADMIN_USERNAME}
       - SEQ_ADMIN_PASSWORD=${SEQ_ADMIN_PASSWORD}
+      - SEQ_FIRSTRUN_ADMINPASSWORD=${SEQ_ADMIN_PASSWORD}
     ports:
       - "${SEQ_UI_PORT:-9803}:80"
       - "${SEQ_INGEST_PORT:-5341}:5341"
@@ -164,6 +226,8 @@ volumes:
     name: shopilent_postgres_data
   postgres_replica_1_data:
     name: shopilent_postgres_replica_1_data
+  postgres_replica_2_data:
+    name: shopilent_postgres_replica_2_data
   redis_data:
     name: shopilent_redis_data
   minio_data:

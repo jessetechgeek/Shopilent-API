@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.env = .env
 		compose.yaml = compose.yaml
 		README.md = README.md
+		.env.example = .env.example
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0EA014D9-5D23-4EE2-A0E5-B6A0916000CD}"
@@ -53,6 +54,11 @@ EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "shopilent.client", "Shopilent.Client\shopilent.client.esproj", "{4F4C987E-2EB1-B5D0-1FDE-6E4950B8BA35}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Payments", "Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj", "{544175F3-59A1-4FF8-A41F-4261EC654187}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{5E1874A2-0FE3-463A-9EFF-5115F27C7AF9}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\postgres-primary-init.sh = scripts\postgres-primary-init.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +159,7 @@ Global
 		{2486DD0A-0D5D-2935-825B-9087B050AECC} = {9CF72851-172A-482E-81B4-5113748D4758}
 		{4F4C987E-2EB1-B5D0-1FDE-6E4950B8BA35} = {9CF72851-172A-482E-81B4-5113748D4758}
 		{544175F3-59A1-4FF8-A41F-4261EC654187} = {463540A1-2D10-4BA8-B838-31CD0C03B9D7}
+		{5E1874A2-0FE3-463A-9EFF-5115F27C7AF9} = {BAD6D0A2-1DE0-4588-877F-2027B0786731}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {704BEEEA-8630-404F-BEAB-1F9DE6F66368}
