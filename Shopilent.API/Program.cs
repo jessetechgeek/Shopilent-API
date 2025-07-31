@@ -11,6 +11,7 @@ using Shopilent.Infrastructure.Logging.Configuration;
 using Shopilent.Infrastructure.Payments.Extensions;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Configuration.Extensions;
 using Shopilent.Infrastructure.S3ObjectStorage.Extensions;
+using Shopilent.Infrastructure.Search.Meilisearch.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddPostgresPersistence(builder.Configuration);
 builder.Services.AddCacheServices(builder.Configuration);
 builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddPaymentServices(builder.Configuration);
+builder.Services.AddMeilisearch(builder.Configuration);
 
 builder.Services.AddMediatR(cfg =>
 {

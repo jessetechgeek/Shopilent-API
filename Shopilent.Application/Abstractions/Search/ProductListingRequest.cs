@@ -1,6 +1,6 @@
-namespace Shopilent.API.Endpoints.Catalog.Products.GetPaginatedProducts.V1;
+namespace Shopilent.Application.Abstractions.Search;
 
-public class GetPaginatedProductsRequestV1
+public class ProductListingRequest
 {
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 10;
@@ -8,7 +8,6 @@ public class GetPaginatedProductsRequestV1
     public bool SortDescending { get; init; } = false;
     public Guid? CategoryId { get; init; }
     public bool IsActiveOnly { get; init; } = true;
-    
     public string SearchQuery { get; init; } = "";
     public Dictionary<string, string[]> AttributeFilters { get; init; } = new();
     public decimal? PriceMin { get; init; }

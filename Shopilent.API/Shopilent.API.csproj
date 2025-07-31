@@ -34,6 +34,7 @@
       <ProjectReference Include="..\Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure.S3ObjectStorage\Shopilent.Infrastructure.S3ObjectStorage.csproj" />
+      <ProjectReference Include="..\Shopilent.Infrastructure.Search.Meilisearch\Shopilent.Infrastructure.Search.Meilisearch.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure\Shopilent.Infrastructure.csproj" />
     </ItemGroup>
 

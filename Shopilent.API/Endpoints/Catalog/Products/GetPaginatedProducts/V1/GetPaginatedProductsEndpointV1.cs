@@ -47,7 +47,13 @@ public class GetPaginatedProductsEndpointV1 :
             SortColumn = req.SortColumn,
             SortDescending = req.SortDescending,
             CategoryId = req.CategoryId,
-            IsActiveOnly = req.IsActiveOnly
+            IsActiveOnly = req.IsActiveOnly,
+            SearchQuery = req.SearchQuery,
+            AttributeFilters = req.AttributeFilters,
+            PriceMin = req.PriceMin,
+            PriceMax = req.PriceMax,
+            CategoryIds = req.CategoryIds,
+            InStockOnly = req.InStockOnly
         };
 
         // Send query to mediator
