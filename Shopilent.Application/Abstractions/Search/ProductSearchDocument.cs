@@ -1,9 +1,10 @@
 using Shopilent.Domain.Catalog;
+using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Catalog.Enums;
 
 namespace Shopilent.Application.Abstractions.Search;
 
-public class ProductSearchDocument
+public partial class ProductSearchDocument
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = "";
@@ -61,8 +62,8 @@ public class ProductSearchDocument
             
             Attributes = attributes.Select(pa => new ProductSearchAttribute
             {
-                Name = "Attribute", // Will need to be loaded from navigation or DTO
-                DisplayName = "Attribute",
+                Name = $"Attribute_{pa.AttributeId}", // Using AttributeId as placeholder
+                DisplayName = $"Attribute_{pa.AttributeId}",
                 Value = pa.Values.ContainsKey("value") ? pa.Values["value"]?.ToString() ?? "" : "",
                 Type = "String",
                 Filterable = true
@@ -75,7 +76,17 @@ public class ProductSearchDocument
                 Price = v.Price?.Amount ?? product.BasePrice?.Amount ?? 0,
                 Stock = v.StockQuantity,
                 IsActive = v.IsActive,
-                Attributes = [] // Will need to be loaded from navigation or DTO
+                Attributes = v.VariantAttributes?.Select(va => new ProductSearchVariantAttribute
+                {
+                    Name = $"VariantAttribute_{va.AttributeId}",
+                    Value = va.Value.ContainsKey("value") ? va.Value["value"]?.ToString() ?? "" : ""
+                }).ToArray() ?? [],
+                Images = v.Images?.Select(img => new ProductSearchImage
+                {
+                    Url = img.ImageKey,
+                    AltText = img.AltText ?? "",
+                    Order = img.DisplayOrder
+                }).ToArray() ?? []
             }).ToArray(),
             
             Images = images.Select((img, index) => new ProductSearchImage
@@ -93,6 +104,86 @@ public class ProductSearchDocument
             PriceRange = priceRange,
             AttributeFilters = attributeFilters,
             CategoryIds = categories.Select(pc => pc.CategoryId).ToArray(),
+            VariantSKUs = variants.Where(v => !string.IsNullOrEmpty(v.Sku)).Select(v => v.Sku!).ToArray(),
+            HasStock = hasStock,
+            TotalStock = totalStock
+        };
+    }
+
+    public static ProductSearchDocument FromProductDto(ProductDetailDto productDto)
+    {
+        var variants = productDto.Variants?.ToArray() ?? [];
+        var categories = productDto.Categories?.ToArray() ?? [];
+        var attributes = productDto.Attributes?.ToArray() ?? [];
+        var images = productDto.Images?.ToArray() ?? [];
+
+        var priceRange = CalculatePriceRangeFromDto(productDto.BasePrice, variants);
+        var attributeFilters = BuildAttributeFiltersFromDto(attributes, variants);
+        var totalStock = variants.Sum(v => v.StockQuantity);
+        var hasStock = variants.Any(v => v.StockQuantity > 0);
+
+        return new ProductSearchDocument
+        {
+            Id = productDto.Id,
+            Name = productDto.Name,
+            Description = productDto.Description ?? "",
+            SKU = productDto.Sku ?? "",
+            Slug = productDto.Slug ?? "",
+            BasePrice = productDto.BasePrice,
+            
+            Categories = categories.Select(c => new ProductSearchCategory
+            {
+                Id = c.Id,
+                Name = c.Name ?? "Category",
+                Slug = c.Slug ?? "",
+                ParentId = c.ParentId,
+                HierarchyPath = c.Name ?? "Category"
+            }).ToArray(),
+            
+            Attributes = attributes.Select(pa => new ProductSearchAttribute
+            {
+                Name = pa.AttributeName ?? "Unknown",
+                DisplayName = pa.AttributeDisplayName ?? pa.AttributeName ?? "Unknown",
+                Value = pa.Values.ContainsKey("value") ? pa.Values["value"]?.ToString() ?? "" : "",
+                Type = "String", // TODO: Add type to ProductAttributeDto
+                Filterable = true // TODO: Add filterable to ProductAttributeDto
+            }).ToArray(),
+            
+            Variants = variants.Select(v => new ProductSearchVariant
+            {
+                Id = v.Id,
+                SKU = v.Sku ?? "",
+                Price = v.Price,
+                Stock = v.StockQuantity,
+                IsActive = v.IsActive,
+                Attributes = v.Attributes?.Select(va => new ProductSearchVariantAttribute
+                {
+                    Name = va.AttributeName ?? "Unknown",
+                    Value = va.Value.ContainsKey("value") ? va.Value["value"]?.ToString() ?? "" : ""
+                }).ToArray() ?? [],
+                Images = v.Images?.Select(img => new ProductSearchImage
+                {
+                    Url = img.ImageKey ?? "",
+                    AltText = img.AltText ?? "",
+                    Order = img.DisplayOrder
+                }).ToArray() ?? []
+            }).ToArray(),
+            
+            Images = images.Select(img => new ProductSearchImage
+            {
+                Url = img.ImageKey ?? "",
+                AltText = img.AltText ?? "",
+                Order = img.DisplayOrder
+            }).ToArray(),
+            
+            Status = "Active",
+            IsActive = productDto.IsActive,
+            CreatedAt = productDto.CreatedAt,
+            UpdatedAt = productDto.UpdatedAt,
+            
+            PriceRange = priceRange,
+            AttributeFilters = attributeFilters,
+            CategoryIds = categories.Select(c => c.Id).ToArray(),
             VariantSKUs = variants.Where(v => !string.IsNullOrEmpty(v.Sku)).Select(v => v.Sku!).ToArray(),
             HasStock = hasStock,
             TotalStock = totalStock
@@ -127,7 +218,7 @@ public class ProductSearchDocument
                 var value = attr.Values["value"]?.ToString();
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var key = "Attribute_" + attr.AttributeId; // Using AttributeId as key for now
+                    var key = $"Attribute_{attr.AttributeId}"; // Using AttributeId as key for now
                     if (!filters.ContainsKey(key))
                         filters[key] = [];
                     
@@ -171,6 +262,7 @@ public class ProductSearchVariant
     public int Stock { get; init; }
     public bool IsActive { get; init; }
     public ProductSearchVariantAttribute[] Attributes { get; init; } = [];
+    public ProductSearchImage[] Images { get; init; } = [];
 }
 
 public class ProductSearchVariantAttribute
@@ -190,4 +282,79 @@ public class ProductSearchPriceRange
 {
     public decimal Min { get; init; }
     public decimal Max { get; init; }
+}
+
+// Helper methods for DTO-based document creation
+partial class ProductSearchDocument
+{
+    private static ProductSearchPriceRange CalculatePriceRangeFromDto(decimal basePrice, ProductVariantDto[] variants)
+    {
+        var prices = new List<decimal> { basePrice };
+        
+        if (variants.Length > 0)
+        {
+            prices.AddRange(variants.Select(v => v.Price));
+        }
+
+        return new ProductSearchPriceRange
+        {
+            Min = prices.Min(),
+            Max = prices.Max()
+        };
+    }
+
+    private static Dictionary<string, string[]> BuildAttributeFiltersFromDto(ProductAttributeDto[] attributes, ProductVariantDto[] variants)
+    {
+        var filters = new Dictionary<string, string[]>();
+
+        // Process product attributes
+        foreach (var attr in attributes)
+        {
+            if (attr.Values.ContainsKey("value"))
+            {
+                var value = attr.Values["value"]?.ToString();
+                if (!string.IsNullOrEmpty(value))
+                {
+                    var key = attr.AttributeName ?? $"Attribute_{attr.AttributeId}";
+                    if (!filters.ContainsKey(key))
+                        filters[key] = [];
+                    
+                    var values = filters[key].ToList();
+                    if (!values.Contains(value))
+                        values.Add(value);
+                    
+                    filters[key] = values.ToArray();
+                }
+            }
+        }
+
+        // Process variant attributes
+        foreach (var variant in variants)
+        {
+            if (variant.Attributes != null)
+            {
+                foreach (var attr in variant.Attributes)
+                {
+                    if (attr.Value.ContainsKey("value"))
+                    {
+                        var value = attr.Value["value"]?.ToString();
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            var key = attr.AttributeName ?? $"VariantAttribute_{attr.AttributeId}";
+                            if (!filters.ContainsKey(key))
+                                filters[key] = [];
+                            
+                            var values = filters[key].ToList();
+                            if (!values.Contains(value))
+                                values.Add(value);
+                            
+                            filters[key] = values.ToArray();
+                        }
+                    }
+                }
+            }
+        }
+
+        return filters;
+    }
 }

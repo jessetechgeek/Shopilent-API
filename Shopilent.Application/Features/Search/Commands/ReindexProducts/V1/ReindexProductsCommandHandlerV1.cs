@@ -54,10 +54,10 @@ internal sealed class
             var searchDocuments = new List<ProductSearchDocument>();
             foreach (var productDto in productDtoList)
             {
-                var product = await _unitOfWork.ProductWriter.GetByIdAsync(productDto.Id, cancellationToken);
+                var product = await _unitOfWork.ProductReader.GetDetailByIdAsync(productDto.Id, cancellationToken);
                 if (product != null)
                 {
-                    searchDocuments.Add(ProductSearchDocument.FromProduct(product));
+                    searchDocuments.Add(ProductSearchDocument.FromProductDto(product));
                 }
             }
 

@@ -29,14 +29,14 @@ internal sealed class ProductCreatedSearchEventHandler : INotificationHandler<Do
 
         try
         {
-            var product = await _unitOfWork.ProductWriter.GetByIdAsync(domainEvent.ProductId, cancellationToken);
-            if (product is null)
+            var productDto = await _unitOfWork.ProductReader.GetDetailByIdAsync(domainEvent.ProductId, cancellationToken);
+            if (productDto is null)
             {
                 _logger.LogWarning("Product {ProductId} not found for search indexing", domainEvent.ProductId);
                 return;
             }
 
-            var searchDocument = ProductSearchDocument.FromProduct(product);
+            var searchDocument = ProductSearchDocument.FromProductDto(productDto);
             var result = await _searchService.IndexProductAsync(searchDocument, cancellationToken);
 
             if (result.IsFailure)

@@ -316,6 +316,7 @@ public class ProductVariant : AggregateRoot
         if (_images.Count == 0 || (image.IsDefault && !_images.Any(i => i.IsDefault)))
         {
             _images.Add(image);
+            AddDomainEvent(new ProductVariantUpdatedEvent(ProductId, Id));
             return Result.Success();
         }
 
@@ -329,6 +330,7 @@ public class ProductVariant : AggregateRoot
         }
 
         _images.Add(image);
+        AddDomainEvent(new ProductVariantUpdatedEvent(ProductId, Id));
         return Result.Success();
     }
 
@@ -346,6 +348,7 @@ public class ProductVariant : AggregateRoot
             _images.First().SetAsDefault();
         }
 
+        AddDomainEvent(new ProductVariantUpdatedEvent(ProductId, Id));
         return Result.Success();
     }
 
@@ -360,6 +363,7 @@ public class ProductVariant : AggregateRoot
         }
 
         image.SetAsDefault();
+        AddDomainEvent(new ProductVariantUpdatedEvent(ProductId, Id));
         return Result.Success();
     }
 
@@ -373,6 +377,7 @@ public class ProductVariant : AggregateRoot
             image.UpdateDisplayOrder(order);
         }
 
+        AddDomainEvent(new ProductVariantUpdatedEvent(ProductId, Id));
         return Result.Success();
     }
 }
