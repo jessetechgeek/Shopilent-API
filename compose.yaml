@@ -72,7 +72,7 @@
 
   postgres:
     container_name: shopilent-postgres
-    image: postgres:15
+    image: postgres:17.5
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -99,7 +99,7 @@
 
   postgres-replica-1:
     container_name: shopilent-postgres-replica-1
-    image: postgres:15
+    image: postgres:17.5
     environment:
       - POSTGRES_REPLICATION_USER=replicator
       - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD:-replicator123}
@@ -130,7 +130,7 @@
 
   postgres-replica-2:
     container_name: shopilent-postgres-replica-2
-    image: postgres:15
+    image: postgres:17.5
     environment:
       - POSTGRES_REPLICATION_USER=replicator
       - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD:-replicator123}
@@ -161,7 +161,7 @@
   
   redis:
     container_name: shopilent-redis
-    image: redis:8-alpine
+    image: redis:8.0.3-alpine
     ports:
       - "${REDIS_PORT:-9856}:6379"
     volumes:
@@ -189,13 +189,13 @@
 
   minio-createbuckets:
     container_name: shopilent-minio-createbuckets
-    image: minio/mc
+    image: minio/mc:RELEASE.2025-07-21T05-28-08Z
     depends_on:
       - minio
     entrypoint: >
       /bin/sh -c "
       sleep 10 &&
-      /usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
       /usr/bin/mc mb myminio/${S3_BUCKET_NAME} &&
       /usr/bin/mc anonymous set public myminio/${S3_BUCKET_NAME}
       "
@@ -226,7 +226,7 @@
 
   meilisearch:
     container_name: shopilent-meilisearch
-    image: getmeili/meilisearch:v1.8
+    image: getmeili/meilisearch:v1.15.2
     ports:
       - "${MEILISEARCH_PORT}:7700"
     environment:
@@ -246,7 +246,7 @@ volumes:
   redis_data:
     name: shopilent_redis_data
   minio_data:
-    name: shopilen_minio_data
+    name: shopilent_minio_data
   seq_data:
     name: shopilent_seq_data
   meilisearch_data:
