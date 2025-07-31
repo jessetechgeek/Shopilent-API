@@ -15,9 +15,29 @@ public sealed record GetPaginatedProductsQueryV1 :
     public bool SortDescending { get; init; } = false;
     public Guid? CategoryId { get; init; }
     public bool IsActiveOnly { get; init; } = true;
+    
+    public string SearchQuery { get; init; } = "";
+    public Dictionary<string, string[]> AttributeFilters { get; init; } = new();
+    public decimal? PriceMin { get; init; }
+    public decimal? PriceMax { get; init; }
+    public Guid[] CategoryIds { get; init; } = [];
+    public bool InStockOnly { get; init; } = false;
 
     public string CacheKey =>
-        $"products-page-{PageNumber}-size-{PageSize}-sort-{SortColumn}-{SortDescending}-category-{CategoryId}-active-{IsActiveOnly}";
+        $"products-page-{PageNumber}-size-{PageSize}-sort-{SortColumn}-{SortDescending}-category-{CategoryId}-active-{IsActiveOnly}-search-{SearchQuery.GetHashCode()}-filters-{GetAttributeFiltersHash()}-price-{PriceMin}-{PriceMax}-categories-{string.Join(",", CategoryIds)}-stock-{InStockOnly}";
 
     public TimeSpan? Expiration => TimeSpan.FromMinutes(15); // Products change more frequently than categories
+    
+    private int GetAttributeFiltersHash()
+    {
+        if (!AttributeFilters.Any()) return 0;
+        
+        var hash = 17;
+        foreach (var (key, values) in AttributeFilters.OrderBy(x => x.Key))
+        {
+            hash = hash * 23 + key.GetHashCode();
+            hash = hash * 23 + string.Join(",", values.OrderBy(x => x)).GetHashCode();
+        }
+        return hash;
+    }
 }
