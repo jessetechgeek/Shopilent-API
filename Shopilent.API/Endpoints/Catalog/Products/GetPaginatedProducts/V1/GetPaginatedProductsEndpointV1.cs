@@ -39,7 +39,8 @@ public class GetPaginatedProductsEndpointV1 :
             return;
         }
 
-        // Create query
+        var attributeFilters = ParseAttributeFiltersFromQuery();
+
         var query = new GetPaginatedProductsQueryV1
         {
             PageNumber = req.PageNumber,
@@ -49,14 +50,13 @@ public class GetPaginatedProductsEndpointV1 :
             CategoryId = req.CategoryId,
             IsActiveOnly = req.IsActiveOnly,
             SearchQuery = req.SearchQuery,
-            AttributeFilters = req.AttributeFilters,
+            AttributeFilters = attributeFilters,
             PriceMin = req.PriceMin,
             PriceMax = req.PriceMax,
             CategoryIds = req.CategoryIds,
             InStockOnly = req.InStockOnly
         };
 
-        // Send query to mediator
         var result = await _mediator.Send(query, ct);
 
         if (result.IsFailure)
@@ -75,7 +75,6 @@ public class GetPaginatedProductsEndpointV1 :
             return;
         }
 
-        // Map the paginated result to response model
         var paginatedResult = result.Value;
         var response = new GetPaginatedProductsResponseV1
         {
@@ -88,11 +87,50 @@ public class GetPaginatedProductsEndpointV1 :
             HasNextPage = paginatedResult.HasNextPage
         };
 
-        // Return successful response
         var apiResponse = ApiResponse<GetPaginatedProductsResponseV1>.Success(
             response,
             "Products retrieved successfully");
 
         await SendAsync(apiResponse, StatusCodes.Status200OK, ct);
+    }
+
+    private Dictionary<string, string[]> ParseAttributeFiltersFromQuery()
+    {
+        var attributeFilters = new Dictionary<string, string[]>();
+        
+        try
+        {
+            foreach (var kvp in HttpContext.Request.Query)
+            {
+                var key = kvp.Key;
+                var values = kvp.Value.ToArray();
+
+                if (key.StartsWith("attributeFilters[") && key.Contains("][") && key.EndsWith("]"))
+                {
+                    var start = key.IndexOf('[') + 1;
+                    var end = key.IndexOf("][");
+                    if (start > 0 && end > start)
+                    {
+                        var attributeName = key.Substring(start, end - start);
+                        
+                        if (!string.IsNullOrEmpty(attributeName))
+                        {
+                            if (!attributeFilters.ContainsKey(attributeName))
+                                attributeFilters[attributeName] = Array.Empty<string>();
+
+                            var existingValues = attributeFilters[attributeName].ToList();
+                            existingValues.AddRange(values.Where(v => !string.IsNullOrEmpty(v) && !existingValues.Contains(v)));
+                            attributeFilters[attributeName] = existingValues.ToArray();
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            return new Dictionary<string, string[]>();
+        }
+
+        return attributeFilters;
     }
 }

@@ -1,4 +1,3 @@
-using Shopilent.Domain.Catalog;
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Catalog.Enums;
 
@@ -29,86 +28,9 @@ public partial class ProductSearchDocument
     public string[] VariantSKUs { get; init; } = [];
     public bool HasStock { get; init; }
     public int TotalStock { get; init; }
+    
+    public Dictionary<string, string[]> FlatAttributes { get; init; } = new();
 
-    public static ProductSearchDocument FromProduct(Product product)
-    {
-        var variants = product.Variants?.ToArray() ?? [];
-        var categories = product.Categories?.ToArray() ?? [];
-        var attributes = product.Attributes?.ToArray() ?? [];
-        var images = product.Images?.ToArray() ?? [];
-
-        var priceRange = CalculatePriceRange(product.BasePrice, variants);
-        var attributeFilters = BuildAttributeFilters(attributes, variants);
-        var totalStock = variants.Sum(v => v.StockQuantity);
-        var hasStock = variants.Any(v => v.StockQuantity > 0);
-
-        return new ProductSearchDocument
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description ?? "",
-            SKU = product.Sku ?? "",
-            Slug = product.Slug?.Value ?? "",
-            BasePrice = product.BasePrice?.Amount ?? 0,
-            
-            Categories = categories.Select(pc => new ProductSearchCategory
-            {
-                Id = pc.CategoryId,
-                Name = "Category", // Will need to be loaded from navigation or DTO
-                Slug = "",
-                ParentId = null,
-                HierarchyPath = "Category"
-            }).ToArray(),
-            
-            Attributes = attributes.Select(pa => new ProductSearchAttribute
-            {
-                Name = $"Attribute_{pa.AttributeId}", // Using AttributeId as placeholder
-                DisplayName = $"Attribute_{pa.AttributeId}",
-                Value = pa.Values.ContainsKey("value") ? pa.Values["value"]?.ToString() ?? "" : "",
-                Type = "String",
-                Filterable = true
-            }).ToArray(),
-            
-            Variants = variants.Select(v => new ProductSearchVariant
-            {
-                Id = v.Id,
-                SKU = v.Sku ?? "",
-                Price = v.Price?.Amount ?? product.BasePrice?.Amount ?? 0,
-                Stock = v.StockQuantity,
-                IsActive = v.IsActive,
-                Attributes = v.VariantAttributes?.Select(va => new ProductSearchVariantAttribute
-                {
-                    Name = $"VariantAttribute_{va.AttributeId}",
-                    Value = va.Value.ContainsKey("value") ? va.Value["value"]?.ToString() ?? "" : ""
-                }).ToArray() ?? [],
-                Images = v.Images?.Select(img => new ProductSearchImage
-                {
-                    Url = img.ImageKey,
-                    AltText = img.AltText ?? "",
-                    Order = img.DisplayOrder
-                }).ToArray() ?? []
-            }).ToArray(),
-            
-            Images = images.Select((img, index) => new ProductSearchImage
-            {
-                Url = img.ImageKey, // Using ImageKey as URL for now
-                AltText = img.AltText ?? "",
-                Order = img.DisplayOrder
-            }).ToArray(),
-            
-            Status = "Active", // Product doesn't have Status enum, using IsActive
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt,
-            
-            PriceRange = priceRange,
-            AttributeFilters = attributeFilters,
-            CategoryIds = categories.Select(pc => pc.CategoryId).ToArray(),
-            VariantSKUs = variants.Where(v => !string.IsNullOrEmpty(v.Sku)).Select(v => v.Sku!).ToArray(),
-            HasStock = hasStock,
-            TotalStock = totalStock
-        };
-    }
 
     public static ProductSearchDocument FromProductDto(ProductDetailDto productDto)
     {
@@ -186,54 +108,12 @@ public partial class ProductSearchDocument
             CategoryIds = categories.Select(c => c.Id).ToArray(),
             VariantSKUs = variants.Where(v => !string.IsNullOrEmpty(v.Sku)).Select(v => v.Sku!).ToArray(),
             HasStock = hasStock,
-            TotalStock = totalStock
+            TotalStock = totalStock,
+            
+            FlatAttributes = BuildFlatAttributesFromDto(attributes, variants)
         };
     }
 
-    private static ProductSearchPriceRange CalculatePriceRange(Domain.Sales.ValueObjects.Money? basePrice, ProductVariant[] variants)
-    {
-        var basePriceAmount = basePrice?.Amount ?? 0;
-        var prices = new List<decimal> { basePriceAmount };
-        
-        if (variants.Length > 0)
-        {
-            prices.AddRange(variants.Where(v => v.Price != null).Select(v => v.Price!.Amount));
-        }
-
-        return new ProductSearchPriceRange
-        {
-            Min = prices.Min(),
-            Max = prices.Max()
-        };
-    }
-
-    private static Dictionary<string, string[]> BuildAttributeFilters(ProductAttribute[] attributes, ProductVariant[] variants)
-    {
-        var filters = new Dictionary<string, string[]>();
-
-        foreach (var attr in attributes)
-        {
-            if (attr.Values.ContainsKey("value"))
-            {
-                var value = attr.Values["value"]?.ToString();
-                if (!string.IsNullOrEmpty(value))
-                {
-                    var key = $"Attribute_{attr.AttributeId}"; // Using AttributeId as key for now
-                    if (!filters.ContainsKey(key))
-                        filters[key] = [];
-                    
-                    var values = filters[key].ToList();
-                    if (!values.Contains(value))
-                        values.Add(value);
-                    
-                    filters[key] = values.ToArray();
-                }
-            }
-        }
-
-        // Note: Variant attributes would need similar handling but requires navigation properties
-        return filters;
-    }
 }
 
 public class ProductSearchCategory
@@ -284,7 +164,6 @@ public class ProductSearchPriceRange
     public decimal Max { get; init; }
 }
 
-// Helper methods for DTO-based document creation
 partial class ProductSearchDocument
 {
     private static ProductSearchPriceRange CalculatePriceRangeFromDto(decimal basePrice, ProductVariantDto[] variants)
@@ -307,7 +186,6 @@ partial class ProductSearchDocument
     {
         var filters = new Dictionary<string, string[]>();
 
-        // Process product attributes
         foreach (var attr in attributes)
         {
             if (attr.Values.ContainsKey("value"))
@@ -328,7 +206,6 @@ partial class ProductSearchDocument
             }
         }
 
-        // Process variant attributes
         foreach (var variant in variants)
         {
             if (variant.Attributes != null)
@@ -356,5 +233,76 @@ partial class ProductSearchDocument
         }
 
         return filters;
+    }
+
+    private static Dictionary<string, string[]> BuildFlatAttributesFromDto(ProductAttributeDto[] attributes, ProductVariantDto[] variants)
+    {
+        var flatAttributes = new Dictionary<string, string[]>();
+
+        foreach (var attr in attributes)
+        {
+            var attributeName = attr.AttributeName?.ToLowerInvariant();
+            if (!string.IsNullOrEmpty(attributeName) && attr.Values?.Any() == true)
+            {
+                string value = null;
+                
+                if (attr.Values.ContainsKey("value"))
+                    value = attr.Values["value"]?.ToString();
+                else if (attr.Values.ContainsKey("Value"))
+                    value = attr.Values["Value"]?.ToString();
+                else if (attr.Values.ContainsKey(attributeName))
+                    value = attr.Values[attributeName]?.ToString();
+                else
+                    value = attr.Values.FirstOrDefault().Value?.ToString();
+                
+                if (!string.IsNullOrEmpty(value))
+                {
+                    flatAttributes[attributeName] = new[] { value };
+                }
+            }
+        }
+
+        foreach (var variant in variants)
+        {
+            if (variant.Attributes != null)
+            {
+                foreach (var variantAttr in variant.Attributes)
+                {
+                    var attributeName = variantAttr.AttributeName?.ToLowerInvariant();
+                    if (!string.IsNullOrEmpty(attributeName) && variantAttr.Value?.Any() == true)
+                    {
+                        string value = null;
+                        
+                        if (variantAttr.Value.ContainsKey("value"))
+                            value = variantAttr.Value["value"]?.ToString();
+                        else if (variantAttr.Value.ContainsKey("Value"))
+                            value = variantAttr.Value["Value"]?.ToString();
+                        else if (variantAttr.Value.ContainsKey(attributeName))
+                            value = variantAttr.Value[attributeName]?.ToString();
+                        else
+                            value = variantAttr.Value.FirstOrDefault().Value?.ToString();
+                        
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            if (!flatAttributes.ContainsKey(attributeName))
+                            {
+                                flatAttributes[attributeName] = new[] { value };
+                            }
+                            else
+                            {
+                                var existingValues = flatAttributes[attributeName].ToList();
+                                if (!existingValues.Contains(value))
+                                {
+                                    existingValues.Add(value);
+                                    flatAttributes[attributeName] = existingValues.ToArray();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return flatAttributes;
     }
 }

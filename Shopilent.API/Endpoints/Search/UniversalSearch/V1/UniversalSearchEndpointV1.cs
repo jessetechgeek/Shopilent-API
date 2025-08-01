@@ -38,10 +38,13 @@ public class UniversalSearchEndpointV1 : Endpoint<UniversalSearchRequestV1, ApiR
             return;
         }
 
+        // Parse attribute filters from query string manually since FastEndpoints doesn't handle complex nested parameters
+        var attributeFilters = ParseAttributeFiltersFromQuery();
+
         var query = new UniversalSearchQueryV1(
             req.Query,
             req.CategoryIds,
-            req.AttributeFilters,
+            attributeFilters,
             req.PriceMin,
             req.PriceMax,
             req.InStockOnly,
@@ -88,5 +91,49 @@ public class UniversalSearchEndpointV1 : Endpoint<UniversalSearchRequestV1, ApiR
             "Search completed successfully");
 
         await SendAsync(apiResponse, StatusCodes.Status200OK, ct);
+    }
+
+    private Dictionary<string, string[]> ParseAttributeFiltersFromQuery()
+    {
+        var attributeFilters = new Dictionary<string, string[]>();
+        
+        try
+        {
+            // Parse query string manually to handle complex nested parameters like attributeFilters[brand][0]=Dell
+            foreach (var kvp in HttpContext.Request.Query)
+            {
+                var key = kvp.Key;
+                var values = kvp.Value.ToArray();
+
+                // Look for attributeFilters[attributeName][index] pattern
+                if (key.StartsWith("attributeFilters[") && key.Contains("][") && key.EndsWith("]"))
+                {
+                    // Extract attribute name from attributeFilters[attributeName][index]
+                    var start = key.IndexOf('[') + 1;
+                    var end = key.IndexOf("][");
+                    if (start > 0 && end > start)
+                    {
+                        var attributeName = key.Substring(start, end - start);
+                        
+                        if (!string.IsNullOrEmpty(attributeName))
+                        {
+                            if (!attributeFilters.ContainsKey(attributeName))
+                                attributeFilters[attributeName] = Array.Empty<string>();
+
+                            var existingValues = attributeFilters[attributeName].ToList();
+                            existingValues.AddRange(values.Where(v => !string.IsNullOrEmpty(v) && !existingValues.Contains(v)));
+                            attributeFilters[attributeName] = existingValues.ToArray();
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // If parsing fails, return empty dictionary to avoid breaking the search
+            return new Dictionary<string, string[]>();
+        }
+
+        return attributeFilters;
     }
 }

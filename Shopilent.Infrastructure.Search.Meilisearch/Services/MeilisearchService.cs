@@ -2,12 +2,12 @@ using Meilisearch;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shopilent.Application.Abstractions.Search;
-
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Common.Models;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Infrastructure.Search.Meilisearch.Settings;
 using System.Text.Json;
+using Index = Meilisearch.Index;
 
 namespace Shopilent.Infrastructure.Search.Meilisearch.Services;
 
@@ -32,7 +32,6 @@ public class MeilisearchService : ISearchService
         {
             var index = _client.Index(_settings.Indexes.Products);
             
-            // Configure searchable attributes
             await index.UpdateSearchableAttributesAsync(new[]
             {
                 "name",
@@ -43,20 +42,30 @@ public class MeilisearchService : ISearchService
                 "attributes.value"
             });
 
-            // Configure filterable attributes
-            await index.UpdateFilterableAttributesAsync(new[]
+            var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
+            var systemFilterableAttrs = new HashSet<string>
             {
                 "category_ids",
-                "attributes.name",
-                "attributes.value",
                 "price_range.min",
-                "price_range.max",
+                "price_range.max", 
                 "has_stock",
                 "is_active",
                 "status"
-            });
+            };
+            
+            foreach (var attr in currentFilterableAttrs ?? [])
+            {
+                systemFilterableAttrs.Add(attr);
+            }
+            
+            var missingSystemAttrs = new[] { "category_ids", "price_range.min", "price_range.max", "has_stock", "is_active", "status" }
+                .Where(attr => !currentFilterableAttrs?.Contains(attr) == true);
+            
+            if (missingSystemAttrs.Any())
+            {
+                await index.UpdateFilterableAttributesAsync(systemFilterableAttrs.ToArray());
+            }
 
-            // Configure sortable attributes
             await index.UpdateSortableAttributesAsync(new[]
             {
                 "name",
@@ -66,7 +75,6 @@ public class MeilisearchService : ISearchService
                 "total_stock"
             });
 
-            // Configure displayed attributes (all by default)
             await index.UpdateDisplayedAttributesAsync(new[]
             {
                 "*"
@@ -92,6 +100,42 @@ public class MeilisearchService : ISearchService
             });
             
             var documentDict = JsonSerializer.Deserialize<Dictionary<string, object>>(documentJson);
+            
+            var newAttributeNames = new List<string>();
+            if (documentDict?.ContainsKey("flat_attributes") == true && documentDict["flat_attributes"] is JsonElement flatAttributesElement)
+            {
+                if (flatAttributesElement.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var property in flatAttributesElement.EnumerateObject())
+                    {
+                        newAttributeNames.Add(property.Name);
+                        
+                        if (property.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            var values = property.Value.EnumerateArray().Select(v => v.GetString()).Where(v => !string.IsNullOrEmpty(v)).ToArray();
+                            if (values.Length > 0)
+                            {
+                                documentDict[property.Name] = values;
+                            }
+                        }
+                        else if (property.Value.ValueKind == JsonValueKind.String)
+                        {
+                            var value = property.Value.GetString();
+                            if (!string.IsNullOrEmpty(value))
+                            {
+                                documentDict[property.Name] = new[] { value };
+                            }
+                        }
+                    }
+                }
+                documentDict.Remove("flat_attributes");
+            }
+            
+            if (newAttributeNames.Any())
+            {
+                await EnsureAttributesAreFilterableAsync(index, newAttributeNames);
+            }
+            
             await index.AddDocumentsAsync(new[] { documentDict }, "id");
             
             _logger.LogDebug("Product {ProductId} indexed successfully", document.Id);
@@ -115,17 +159,59 @@ public class MeilisearchService : ISearchService
             var index = _client.Index(_settings.Indexes.Products);
             var batches = documentList.Chunk(_settings.BatchSize);
 
+            var allNewAttributeNames = new HashSet<string>();
+            
             foreach (var batch in batches)
             {
-                var documentsJson = batch.Select(doc => JsonSerializer.Serialize(doc, new JsonSerializerOptions
+                var documentDicts = new List<Dictionary<string, object>>();
+                
+                foreach (var doc in batch)
                 {
-                    PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-                })).ToArray();
+                    var documentJson = JsonSerializer.Serialize(doc, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+                    });
+                    
+                    var documentDict = JsonSerializer.Deserialize<Dictionary<string, object>>(documentJson);
+                    
+                    if (documentDict?.ContainsKey("flat_attributes") == true && documentDict["flat_attributes"] is JsonElement flatAttributesElement)
+                    {
+                        if (flatAttributesElement.ValueKind == JsonValueKind.Object)
+                        {
+                            foreach (var property in flatAttributesElement.EnumerateObject())
+                            {
+                                allNewAttributeNames.Add(property.Name);
+                                
+                                if (property.Value.ValueKind == JsonValueKind.Array)
+                                {
+                                    var values = property.Value.EnumerateArray().Select(v => v.GetString()).Where(v => !string.IsNullOrEmpty(v)).ToArray();
+                                    if (values.Length > 0)
+                                    {
+                                        documentDict[property.Name] = values;
+                                    }
+                                }
+                                else if (property.Value.ValueKind == JsonValueKind.String)
+                                {
+                                    var value = property.Value.GetString();
+                                    if (!string.IsNullOrEmpty(value))
+                                    {
+                                        documentDict[property.Name] = new[] { value };
+                                    }
+                                }
+                            }
+                        }
+                        documentDict.Remove("flat_attributes");
+                    }
+                    
+                    documentDicts.Add(documentDict);
+                }
                 
-                var documentDicts = documentsJson.Select(json => 
-                    JsonSerializer.Deserialize<Dictionary<string, object>>(json)).ToArray();
-                
-                await index.AddDocumentsAsync(documentDicts, "id");
+                await index.AddDocumentsAsync(documentDicts.ToArray(), "id");
+            }
+            
+            if (allNewAttributeNames.Any())
+            {
+                await EnsureAttributesAreFilterableAsync(index, allNewAttributeNames);
             }
 
             _logger.LogInformation("Indexed {Count} products successfully", documentList.Count);
@@ -165,15 +251,13 @@ public class MeilisearchService : ISearchService
             searchParams.Offset = (request.PageNumber - 1) * request.PageSize;
             searchParams.Filter = BuildSearchFilters(request);
             searchParams.Sort = BuildSortParameters(request.SortBy, request.SortDescending);
-            // Note: Facets may not be available in Meilisearch 0.16.0
-            // searchParams.Facets = new[] { "category_ids", "attributes.name", "attributes.value" };
 
             var searchResult = await index.SearchAsync<Dictionary<string, object>>(request.Query, searchParams);
             
             var items = searchResult.Hits.Select(hit => MapToProductSearchResult(hit)).ToArray();
-            var facets = new SearchFacets(); // MapFacets(searchResult.Facets); - Facets may not be available in this version
+            var facets = new SearchFacets();
             
-            var totalHits = searchResult.Hits.Count(); // Use hits count as fallback
+            var totalHits = searchResult.Hits.Count();
             var response = new SearchResponse<ProductSearchResultDto>
             {
                 Items = items,
@@ -271,8 +355,9 @@ public class MeilisearchService : ISearchService
             {
                 if (values.Length > 0)
                 {
+                    var flatAttributeName = attributeName.ToLowerInvariant();
                     var attributeFilter = string.Join(" OR ", values.Select(value => 
-                        $"(attributes.name = \"{attributeName}\" AND attributes.value = \"{value}\")"));
+                        $"{flatAttributeName} = \"{value}\""));
                     filters.Add($"({attributeFilter})");
                 }
             }
@@ -346,8 +431,6 @@ public class MeilisearchService : ISearchService
             IsActive = searchResult.IsActive,
             CreatedAt = searchResult.CreatedAt,
             UpdatedAt = searchResult.UpdatedAt,
-            // Note: Categories and Variants would need to be added to ProductDto if needed
-            // For now, returning basic product information
         };
     }
 
@@ -363,7 +446,6 @@ public class MeilisearchService : ISearchService
         {
             if (facetName == "category_ids")
             {
-                // Process category facets - we only have IDs, names would need to be looked up
                 foreach (var (categoryId, count) in facetValues)
                 {
                     if (Guid.TryParse(categoryId, out var id))
@@ -371,7 +453,7 @@ public class MeilisearchService : ISearchService
                         categoryFacets.Add(new CategoryFacet
                         {
                             Id = id,
-                            Name = categoryId, // Using ID as name for now - could be enhanced to lookup actual names
+                            Name = categoryId,
                             Count = (int)count
                         });
                     }
@@ -379,7 +461,6 @@ public class MeilisearchService : ISearchService
             }
             else if (facetName == "attributes.name")
             {
-                // Group attribute values by name
                 if (facets.ContainsKey("attributes.value"))
                 {
                     var attributeValues = facets["attributes.value"];
@@ -404,7 +485,30 @@ public class MeilisearchService : ISearchService
         {
             Categories = categoryFacets.ToArray(),
             Attributes = attributeFacets.ToArray(),
-            PriceRange = new PriceRangeFacet() // Calculate from facets if needed
+            PriceRange = new PriceRangeFacet()
         };
+    }
+
+    private async Task EnsureAttributesAreFilterableAsync(Index index, IEnumerable<string> attributeNames)
+    {
+        try
+        {
+            var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
+            var currentAttrsSet = new HashSet<string>(currentFilterableAttrs ?? []);
+            var newAttrs = attributeNames.Where(attr => !currentAttrsSet.Contains(attr)).ToList();
+            
+            if (newAttrs.Any())
+            {
+                currentAttrsSet.UnionWith(newAttrs);
+                await index.UpdateFilterableAttributesAsync(currentAttrsSet.ToArray());
+                _logger.LogDebug("Added {Count} new filterable attributes: {Attributes}", 
+                    newAttrs.Count, string.Join(", ", newAttrs));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to update filterable attributes for: {Attributes}", 
+                string.Join(", ", attributeNames));
+        }
     }
 }
