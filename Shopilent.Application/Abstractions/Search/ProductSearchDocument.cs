@@ -257,7 +257,7 @@ partial class ProductSearchDocument
                 
                 if (!string.IsNullOrEmpty(value))
                 {
-                    flatAttributes[attributeName] = new[] { value };
+                    flatAttributes[$"attr-{attributeName}"] = new[] { value };
                 }
             }
         }
@@ -284,17 +284,18 @@ partial class ProductSearchDocument
                         
                         if (!string.IsNullOrEmpty(value))
                         {
-                            if (!flatAttributes.ContainsKey(attributeName))
+                            var prefixedAttributeName = $"attr-{attributeName}";
+                            if (!flatAttributes.ContainsKey(prefixedAttributeName))
                             {
-                                flatAttributes[attributeName] = new[] { value };
+                                flatAttributes[prefixedAttributeName] = new[] { value };
                             }
                             else
                             {
-                                var existingValues = flatAttributes[attributeName].ToList();
+                                var existingValues = flatAttributes[prefixedAttributeName].ToList();
                                 if (!existingValues.Contains(value))
                                 {
                                     existingValues.Add(value);
-                                    flatAttributes[attributeName] = existingValues.ToArray();
+                                    flatAttributes[prefixedAttributeName] = existingValues.ToArray();
                                 }
                             }
                         }
