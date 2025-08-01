@@ -1,6 +1,7 @@
 using FastEndpoints;
 using MediatR;
 using Shopilent.API.Common.Models;
+using Shopilent.API.Common.Services;
 using Shopilent.Application.Features.Search.Queries.UniversalSearch.V1;
 using Shopilent.Domain.Common.Errors;
 
@@ -9,10 +10,12 @@ namespace Shopilent.API.Endpoints.Search.UniversalSearch.V1;
 public class UniversalSearchEndpointV1 : Endpoint<UniversalSearchRequestV1, ApiResponse<UniversalSearchResponseV1>>
 {
     private readonly ISender _sender;
+    private readonly IFilterEncodingService _filterEncodingService;
 
-    public UniversalSearchEndpointV1(ISender sender)
+    public UniversalSearchEndpointV1(ISender sender, IFilterEncodingService filterEncodingService)
     {
         _sender = sender;
+        _filterEncodingService = filterEncodingService;
     }
 
     public override void Configure()
@@ -38,21 +41,31 @@ public class UniversalSearchEndpointV1 : Endpoint<UniversalSearchRequestV1, ApiR
             return;
         }
 
-        // Parse attribute filters from query string manually since FastEndpoints doesn't handle complex nested parameters
-        var attributeFilters = ParseAttributeFiltersFromQuery();
+        var filtersResult = _filterEncodingService.DecodeFilters(req.FiltersBase64);
+        if (filtersResult.IsFailure)
+        {
+            var errorResponse = ApiResponse<UniversalSearchResponseV1>.Failure(
+                filtersResult.Error.Message,
+                StatusCodes.Status400BadRequest);
+
+            await SendAsync(errorResponse, errorResponse.StatusCode, ct);
+            return;
+        }
+
+        var filters = filtersResult.Value;
 
         var query = new UniversalSearchQueryV1(
-            req.Query,
-            req.CategoryIds,
-            attributeFilters,
-            req.PriceMin,
-            req.PriceMax,
-            req.InStockOnly,
-            req.ActiveOnly,
-            req.PageNumber,
-            req.PageSize,
-            req.SortBy,
-            req.SortDescending);
+            filters.SearchQuery,
+            filters.CategoryIds,
+            filters.AttributeFilters,
+            filters.PriceMin,
+            filters.PriceMax,
+            filters.InStockOnly,
+            filters.ActiveOnly,
+            filters.PageNumber,
+            filters.PageSize,
+            filters.SortBy,
+            filters.SortDescending);
 
         var result = await _sender.Send(query, ct);
 
@@ -93,47 +106,4 @@ public class UniversalSearchEndpointV1 : Endpoint<UniversalSearchRequestV1, ApiR
         await SendAsync(apiResponse, StatusCodes.Status200OK, ct);
     }
 
-    private Dictionary<string, string[]> ParseAttributeFiltersFromQuery()
-    {
-        var attributeFilters = new Dictionary<string, string[]>();
-        
-        try
-        {
-            // Parse query string manually to handle complex nested parameters like attributeFilters[brand][0]=Dell
-            foreach (var kvp in HttpContext.Request.Query)
-            {
-                var key = kvp.Key;
-                var values = kvp.Value.ToArray();
-
-                // Look for attributeFilters[attributeName][index] pattern
-                if (key.StartsWith("attributeFilters[") && key.Contains("][") && key.EndsWith("]"))
-                {
-                    // Extract attribute name from attributeFilters[attributeName][index]
-                    var start = key.IndexOf('[') + 1;
-                    var end = key.IndexOf("][");
-                    if (start > 0 && end > start)
-                    {
-                        var attributeName = key.Substring(start, end - start);
-                        
-                        if (!string.IsNullOrEmpty(attributeName))
-                        {
-                            if (!attributeFilters.ContainsKey(attributeName))
-                                attributeFilters[attributeName] = Array.Empty<string>();
-
-                            var existingValues = attributeFilters[attributeName].ToList();
-                            existingValues.AddRange(values.Where(v => !string.IsNullOrEmpty(v) && !existingValues.Contains(v)));
-                            attributeFilters[attributeName] = existingValues.ToArray();
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception)
-        {
-            // If parsing fails, return empty dictionary to avoid breaking the search
-            return new Dictionary<string, string[]>();
-        }
-
-        return attributeFilters;
-    }
 }

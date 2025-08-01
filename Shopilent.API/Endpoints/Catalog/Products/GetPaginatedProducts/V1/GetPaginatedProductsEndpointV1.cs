@@ -1,6 +1,7 @@
 using FastEndpoints;
 using MediatR;
 using Shopilent.API.Common.Models;
+using Shopilent.API.Common.Services;
 using Shopilent.Application.Features.Catalog.Queries.GetPaginatedProducts.V1;
 using Shopilent.Domain.Common.Errors;
 
@@ -10,10 +11,12 @@ public class GetPaginatedProductsEndpointV1 :
     Endpoint<GetPaginatedProductsRequestV1, ApiResponse<GetPaginatedProductsResponseV1>>
 {
     private readonly IMediator _mediator;
+    private readonly IFilterEncodingService _filterEncodingService;
 
-    public GetPaginatedProductsEndpointV1(IMediator mediator)
+    public GetPaginatedProductsEndpointV1(IMediator mediator, IFilterEncodingService filterEncodingService)
     {
         _mediator = mediator;
+        _filterEncodingService = filterEncodingService;
     }
 
     public override void Configure()
@@ -39,22 +42,33 @@ public class GetPaginatedProductsEndpointV1 :
             return;
         }
 
-        var attributeFilters = ParseAttributeFiltersFromQuery();
+        var filtersResult = _filterEncodingService.DecodeFilters(req.FiltersBase64);
+        if (filtersResult.IsFailure)
+        {
+            var errorResponse = ApiResponse<GetPaginatedProductsResponseV1>.Failure(
+                filtersResult.Error.Message,
+                StatusCodes.Status400BadRequest);
+
+            await SendAsync(errorResponse, errorResponse.StatusCode, ct);
+            return;
+        }
+
+        var filters = filtersResult.Value;
 
         var query = new GetPaginatedProductsQueryV1
         {
-            PageNumber = req.PageNumber,
-            PageSize = req.PageSize,
-            SortColumn = req.SortColumn,
-            SortDescending = req.SortDescending,
-            CategoryId = req.CategoryId,
-            IsActiveOnly = req.IsActiveOnly,
-            SearchQuery = req.SearchQuery,
-            AttributeFilters = attributeFilters,
-            PriceMin = req.PriceMin,
-            PriceMax = req.PriceMax,
-            CategoryIds = req.CategoryIds,
-            InStockOnly = req.InStockOnly
+            PageNumber = filters.PageNumber,
+            PageSize = filters.PageSize,
+            SortColumn = filters.SortColumn,
+            SortDescending = filters.SortDescending,
+            CategoryId = filters.CategoryId,
+            IsActiveOnly = filters.ActiveOnly,
+            SearchQuery = filters.SearchQuery,
+            AttributeFilters = filters.AttributeFilters,
+            PriceMin = filters.PriceMin,
+            PriceMax = filters.PriceMax,
+            CategoryIds = filters.CategoryIds,
+            InStockOnly = filters.InStockOnly
         };
 
         var result = await _mediator.Send(query, ct);
@@ -94,43 +108,4 @@ public class GetPaginatedProductsEndpointV1 :
         await SendAsync(apiResponse, StatusCodes.Status200OK, ct);
     }
 
-    private Dictionary<string, string[]> ParseAttributeFiltersFromQuery()
-    {
-        var attributeFilters = new Dictionary<string, string[]>();
-        
-        try
-        {
-            foreach (var kvp in HttpContext.Request.Query)
-            {
-                var key = kvp.Key;
-                var values = kvp.Value.ToArray();
-
-                if (key.StartsWith("attributeFilters[") && key.Contains("][") && key.EndsWith("]"))
-                {
-                    var start = key.IndexOf('[') + 1;
-                    var end = key.IndexOf("][");
-                    if (start > 0 && end > start)
-                    {
-                        var attributeName = key.Substring(start, end - start);
-                        
-                        if (!string.IsNullOrEmpty(attributeName))
-                        {
-                            if (!attributeFilters.ContainsKey(attributeName))
-                                attributeFilters[attributeName] = Array.Empty<string>();
-
-                            var existingValues = attributeFilters[attributeName].ToList();
-                            existingValues.AddRange(values.Where(v => !string.IsNullOrEmpty(v) && !existingValues.Contains(v)));
-                            attributeFilters[attributeName] = existingValues.ToArray();
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception)
-        {
-            return new Dictionary<string, string[]>();
-        }
-
-        return attributeFilters;
-    }
 }

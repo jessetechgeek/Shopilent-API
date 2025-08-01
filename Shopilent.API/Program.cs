@@ -3,6 +3,7 @@ using FastEndpoints;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
+using Shopilent.API.Common.Services;
 using Shopilent.Application.Extensions;
 using Shopilent.Infrastructure.Cache.Redis.Extensions;
 using Shopilent.Infrastructure.Extensions;
@@ -26,9 +27,11 @@ builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddPaymentServices(builder.Configuration);
 builder.Services.AddMeilisearch(builder.Configuration);
 
+builder.Services.AddSingleton<IFilterEncodingService, FilterEncodingService>();
+
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly); // Register API assembly
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
 builder.Services.AddFastEndpoints();
