@@ -39,7 +39,8 @@ public class MeilisearchService : ISearchService
                 "sku",
                 "variant_skus",
                 "categories.name",
-                "attributes.value"
+                "attributes.value",
+                "attr-*"
             });
 
             var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
@@ -355,7 +356,7 @@ public class MeilisearchService : ISearchService
             {
                 if (values.Length > 0)
                 {
-                    var flatAttributeName = attributeName.ToLowerInvariant();
+                    var flatAttributeName = $"attr-{attributeName.ToLowerInvariant()}";
                     var attributeFilter = string.Join(" OR ", values.Select(value => 
                         $"{flatAttributeName} = \"{value}\""));
                     filters.Add($"({attributeFilter})");
