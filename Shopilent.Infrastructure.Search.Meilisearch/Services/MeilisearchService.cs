@@ -2,6 +2,7 @@ using Meilisearch;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shopilent.Application.Abstractions.Search;
+using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Common.Models;
 using Shopilent.Domain.Common.Results;
@@ -16,13 +17,16 @@ public class MeilisearchService : ISearchService
     private readonly MeilisearchClient _client;
     private readonly MeilisearchSettings _settings;
     private readonly ILogger<MeilisearchService> _logger;
+    private readonly IUnitOfWork _unitOfWork;
 
     public MeilisearchService(
         IOptions<MeilisearchSettings> settings,
-        ILogger<MeilisearchService> logger)
+        ILogger<MeilisearchService> logger,
+        IUnitOfWork unitOfWork)
     {
         _settings = settings.Value;
         _logger = logger;
+        _unitOfWork = unitOfWork;
         _client = new MeilisearchClient(_settings.Url, _settings.ApiKey);
     }
 
@@ -204,7 +208,8 @@ public class MeilisearchService : ISearchService
                         documentDict.Remove("flat_attributes");
                     }
                     
-                    documentDicts.Add(documentDict);
+                    if (documentDict != null)
+                        documentDicts.Add(documentDict);
                 }
                 
                 await index.AddDocumentsAsync(documentDicts.ToArray(), "id");
@@ -253,10 +258,21 @@ public class MeilisearchService : ISearchService
             searchParams.Filter = BuildSearchFilters(request);
             searchParams.Sort = BuildSortParameters(request.SortBy, request.SortDescending);
 
+            var facetsToAggregate = new List<string> { "category_ids" };
+            
+            var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
+            if (currentFilterableAttrs != null)
+            {
+                var attributeFacets = currentFilterableAttrs.Where(attr => attr.StartsWith("attr-")).ToArray();
+                facetsToAggregate.AddRange(attributeFacets);
+            }
+            
+            searchParams.Facets = facetsToAggregate.ToArray();
+
             var searchResult = await index.SearchAsync<Dictionary<string, object>>(request.Query, searchParams);
             
             var items = searchResult.Hits.Select(hit => MapToProductSearchResult(hit)).ToArray();
-            var facets = new SearchFacets();
+            var facets = await MapFacetsAsync(searchResult.FacetDistribution, items, cancellationToken);
             
             var totalHits = searchResult.Hits.Count();
             var response = new SearchResponse<ProductSearchResultDto>
@@ -304,7 +320,7 @@ public class MeilisearchService : ISearchService
 
             var searchResult = await SearchProductsAsync(searchRequest, cancellationToken);
             if (searchResult.IsFailure)
-                return Result.Failure<PaginatedResult<ProductDto>>(searchResult.Error);
+                return Result.Failure<PaginatedResult<ProductDto>>(searchResult.Error!);
 
             var products = searchResult.Value.Items.Select(MapToProductDto).ToArray();
             
@@ -435,13 +451,43 @@ public class MeilisearchService : ISearchService
         };
     }
 
-    private SearchFacets MapFacets(IDictionary<string, IDictionary<string, long>>? facets)
+    private async Task<SearchFacets> MapFacetsAsync(IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? facets, ProductSearchResultDto[] items, CancellationToken cancellationToken = default)
     {
         if (facets == null)
             return new SearchFacets();
 
         var categoryFacets = new List<CategoryFacet>();
         var attributeFacets = new List<AttributeFacet>();
+        decimal priceMin = 0, priceMax = 0;
+
+        var categoryIds = new List<Guid>();
+        foreach (var (facetName, facetValues) in facets)
+        {
+            if (facetName == "category_ids")
+            {
+                foreach (var (categoryId, _) in facetValues)
+                {
+                    if (Guid.TryParse(categoryId, out var id))
+                    {
+                        categoryIds.Add(id);
+                    }
+                }
+            }
+        }
+
+        var categoryLookup = new Dictionary<Guid, string>();
+        if (categoryIds.Any())
+        {
+            try
+            {
+                var categories = await _unitOfWork.CategoryReader.GetByIdsAsync(categoryIds, cancellationToken);
+                categoryLookup = categories.ToDictionary(c => c.Id, c => c.Name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to lookup category names for facets, using IDs");
+            }
+        }
 
         foreach (var (facetName, facetValues) in facets)
         {
@@ -451,34 +497,43 @@ public class MeilisearchService : ISearchService
                 {
                     if (Guid.TryParse(categoryId, out var id))
                     {
+                        var categoryName = categoryLookup.TryGetValue(id, out var name) ? name : $"Category {categoryId}";
                         categoryFacets.Add(new CategoryFacet
                         {
                             Id = id,
-                            Name = categoryId,
-                            Count = (int)count
+                            Name = categoryName,
+                            Count = count
                         });
                     }
                 }
             }
-            else if (facetName == "attributes.name")
+            else if (facetName.StartsWith("attr-"))
             {
-                if (facets.ContainsKey("attributes.value"))
+                var attributeName = facetName.Substring(5);
+                var attributeValueFacets = facetValues.Select(kv => new AttributeValueFacet
                 {
-                    var attributeValues = facets["attributes.value"];
-                    var groupedAttributes = facetValues.GroupBy(kv => kv.Key)
-                        .Select(g => new AttributeFacet
-                        {
-                            Name = g.Key,
-                            Values = attributeValues.Where(av => av.Key.Contains(g.Key))
-                                .Select(av => new AttributeValueFacet
-                                {
-                                    Value = av.Key,
-                                    Count = (int)av.Value
-                                }).ToArray()
-                        });
-                    
-                    attributeFacets.AddRange(groupedAttributes);
+                    Value = kv.Key,
+                    Count = kv.Value
+                }).ToArray();
+
+                if (attributeValueFacets.Length > 0)
+                {
+                    attributeFacets.Add(new AttributeFacet
+                    {
+                        Name = attributeName,
+                        Values = attributeValueFacets
+                    });
                 }
+            }
+        }
+
+        if (items.Length > 0)
+        {
+            var prices = items.Select(item => item.BasePrice).Where(price => price > 0).ToArray();
+            if (prices.Length > 0)
+            {
+                priceMin = prices.Min();
+                priceMax = prices.Max();
             }
         }
 
@@ -486,7 +541,11 @@ public class MeilisearchService : ISearchService
         {
             Categories = categoryFacets.ToArray(),
             Attributes = attributeFacets.ToArray(),
-            PriceRange = new PriceRangeFacet()
+            PriceRange = new PriceRangeFacet
+            {
+                Min = priceMin,
+                Max = priceMax
+            }
         };
     }
 
