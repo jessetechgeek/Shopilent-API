@@ -12,6 +12,5 @@ public class ProductListingRequest
     public Dictionary<string, string[]> AttributeFilters { get; init; } = new();
     public decimal? PriceMin { get; init; }
     public decimal? PriceMax { get; init; }
-    public Guid[] CategoryIds { get; init; } = [];
     public bool InStockOnly { get; init; } = false;
 }
