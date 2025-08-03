@@ -61,13 +61,12 @@ public class GetPaginatedProductsEndpointV1 :
             PageSize = filters.PageSize,
             SortColumn = filters.SortColumn,
             SortDescending = filters.SortDescending,
-            CategoryId = filters.CategoryId,
             IsActiveOnly = filters.ActiveOnly,
             SearchQuery = filters.SearchQuery,
             AttributeFilters = filters.AttributeFilters,
             PriceMin = filters.PriceMin,
             PriceMax = filters.PriceMax,
-            CategoryIds = filters.CategoryIds,
+            CategorySlugs = filters.CategorySlugs,
             InStockOnly = filters.InStockOnly
         };
 

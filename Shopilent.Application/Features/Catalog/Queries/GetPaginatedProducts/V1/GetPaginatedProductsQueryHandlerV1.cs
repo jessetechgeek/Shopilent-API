@@ -29,7 +29,7 @@ internal sealed class GetPaginatedProductsQueryHandlerV1 :
             var searchRequest = new SearchRequest
             {
                 Query = request.SearchQuery ?? "",
-                CategoryIds = request.CategoryIds,
+                CategorySlugs = request.CategorySlugs,
                 AttributeFilters = request.AttributeFilters,
                 PriceMin = request.PriceMin,
                 PriceMax = request.PriceMax,

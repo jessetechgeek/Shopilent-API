@@ -56,7 +56,7 @@ public class UniversalSearchEndpointV1 : Endpoint<UniversalSearchRequestV1, ApiR
 
         var query = new UniversalSearchQueryV1(
             filters.SearchQuery,
-            filters.CategoryIds,
+            filters.CategorySlugs,
             filters.AttributeFilters,
             filters.PriceMin,
             filters.PriceMax,

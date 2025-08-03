@@ -37,6 +37,27 @@ public class GetPaginatedProductsRequestValidatorV1 : Validator<GetPaginatedProd
 
         var filterEncodingService = new FilterEncodingService();
         var result = filterEncodingService.DecodeFilters(base64String);
-        return result.IsSuccess;
+        
+        if (result.IsFailure)
+            return false;
+            
+        var filters = result.Value;
+        if (filters.CategorySlugs?.Any() == true)
+        {
+            foreach (var slug in filters.CategorySlugs)
+            {
+                if (!IsValidSlugFormat(slug))
+                    return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private bool IsValidSlugFormat(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return false;
+        return System.Text.RegularExpressions.Regex.IsMatch(slug, @"^[a-z0-9]+(-[a-z0-9]+)*$");
     }
 }

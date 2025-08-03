@@ -6,7 +6,7 @@ namespace Shopilent.Application.Features.Search.Queries.UniversalSearch.V1;
 
 public record UniversalSearchQueryV1(
     string Query = "",
-    Guid[] CategoryIds = default!,
+    string[] CategorySlugs = default!,
     Dictionary<string, string[]> AttributeFilters = default!,
     decimal? PriceMin = null,
     decimal? PriceMax = null,
@@ -18,5 +18,5 @@ public record UniversalSearchQueryV1(
     bool SortDescending = false
 ) : IQuery<SearchResponse<ProductSearchResultDto>>
 {
-    public UniversalSearchQueryV1() : this("", Array.Empty<Guid>(), new Dictionary<string, string[]>()) { }
+    public UniversalSearchQueryV1() : this("", Array.Empty<string>(), new Dictionary<string, string[]>()) { }
 }

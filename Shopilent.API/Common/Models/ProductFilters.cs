@@ -7,8 +7,8 @@ public class ProductFilters
     [JsonPropertyName("attributeFilters")]
     public Dictionary<string, string[]> AttributeFilters { get; init; } = new();
 
-    [JsonPropertyName("categoryIds")]
-    public Guid[] CategoryIds { get; init; } = [];
+    [JsonPropertyName("categorySlugs")]
+    public string[] CategorySlugs { get; init; } = [];
 
     [JsonPropertyName("priceMin")]
     public decimal? PriceMin { get; init; }
@@ -36,9 +36,6 @@ public class ProductFilters
 
     [JsonPropertyName("sortDescending")]
     public bool SortDescending { get; init; } = false;
-
-    [JsonPropertyName("categoryId")]
-    public Guid? CategoryId { get; init; }
 
     [JsonPropertyName("sortColumn")]
     public string SortColumn { get; init; } = "Name";

@@ -12,18 +12,17 @@ public sealed record GetPaginatedProductsQueryV1 :
     public int PageSize { get; init; } = 10;
     public string SortColumn { get; init; } = "Name";
     public bool SortDescending { get; init; } = false;
-    public Guid? CategoryId { get; init; }
     public bool IsActiveOnly { get; init; } = true;
     
     public string SearchQuery { get; init; } = "";
     public Dictionary<string, string[]> AttributeFilters { get; init; } = new();
     public decimal? PriceMin { get; init; }
     public decimal? PriceMax { get; init; }
-    public Guid[] CategoryIds { get; init; } = [];
+    public string[] CategorySlugs { get; init; } = [];
     public bool InStockOnly { get; init; } = false;
 
     public string CacheKey =>
-        $"products-page-{PageNumber}-size-{PageSize}-sort-{SortColumn}-{SortDescending}-category-{CategoryId}-active-{IsActiveOnly}-search-{SearchQuery.GetHashCode()}-filters-{GetAttributeFiltersHash()}-price-{PriceMin}-{PriceMax}-categories-{string.Join(",", CategoryIds)}-stock-{InStockOnly}";
+        $"products-page-{PageNumber}-size-{PageSize}-sort-{SortColumn}-{SortDescending}-active-{IsActiveOnly}-search-{SearchQuery.GetHashCode()}-filters-{GetAttributeFiltersHash()}-price-{PriceMin}-{PriceMax}-categories-{string.Join(",", CategorySlugs)}-stock-{InStockOnly}";
 
     public TimeSpan? Expiration => TimeSpan.FromMinutes(15);
     

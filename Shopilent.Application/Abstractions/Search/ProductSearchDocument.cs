@@ -25,6 +25,7 @@ public partial class ProductSearchDocument
     public ProductSearchPriceRange PriceRange { get; init; } = new();
     public Dictionary<string, string[]> AttributeFilters { get; init; } = new();
     public Guid[] CategoryIds { get; init; } = [];
+    public string[] CategorySlugs { get; init; } = [];
     public string[] VariantSKUs { get; init; } = [];
     public bool HasStock { get; init; }
     public int TotalStock { get; init; }
@@ -106,6 +107,7 @@ public partial class ProductSearchDocument
             PriceRange = priceRange,
             AttributeFilters = attributeFilters,
             CategoryIds = categories.Select(c => c.Id).ToArray(),
+            CategorySlugs = categories.Where(c => !string.IsNullOrEmpty(c.Slug)).Select(c => c.Slug!).ToArray(),
             VariantSKUs = variants.Where(v => !string.IsNullOrEmpty(v.Sku)).Select(v => v.Sku!).ToArray(),
             HasStock = hasStock,
             TotalStock = totalStock,
