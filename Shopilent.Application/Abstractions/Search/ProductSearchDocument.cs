@@ -87,7 +87,10 @@ public partial class ProductSearchDocument
                 Images = v.Images?.Select(img => new ProductSearchImage
                 {
                     Url = img.ImageKey ?? "",
+                    ImageKey = img.ImageKey ?? "",
+                    ThumbnailKey = img.ThumbnailKey ?? "",
                     AltText = img.AltText ?? "",
+                    IsDefault = img.IsDefault,
                     Order = img.DisplayOrder
                 }).ToArray() ?? []
             }).ToArray(),
@@ -95,7 +98,10 @@ public partial class ProductSearchDocument
             Images = images.Select(img => new ProductSearchImage
             {
                 Url = img.ImageKey ?? "",
+                ImageKey = img.ImageKey ?? "",
+                ThumbnailKey = img.ThumbnailKey ?? "",
                 AltText = img.AltText ?? "",
+                IsDefault = img.IsDefault,
                 Order = img.DisplayOrder
             }).ToArray(),
             
@@ -156,7 +162,10 @@ public class ProductSearchVariantAttribute
 public class ProductSearchImage
 {
     public string Url { get; init; } = "";
+    public string ImageKey { get; init; } = "";
+    public string ThumbnailKey { get; init; } = "";
     public string AltText { get; init; } = "";
+    public bool IsDefault { get; init; }
     public int Order { get; init; }
 }
 
