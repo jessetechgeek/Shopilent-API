@@ -89,16 +89,17 @@ public class GetPaginatedProductsEndpointV1 :
             return;
         }
 
-        var paginatedResult = result.Value;
+        var searchResult = result.Value;
         var response = new GetPaginatedProductsResponseV1
         {
-            Items = paginatedResult.Items,
-            PageNumber = paginatedResult.PageNumber,
-            PageSize = paginatedResult.PageSize,
-            TotalCount = paginatedResult.TotalCount,
-            TotalPages = paginatedResult.TotalPages,
-            HasPreviousPage = paginatedResult.HasPreviousPage,
-            HasNextPage = paginatedResult.HasNextPage
+            Items = searchResult.Items,
+            Facets = searchResult.Facets,
+            PageNumber = searchResult.PageNumber,
+            PageSize = searchResult.PageSize,
+            TotalCount = searchResult.TotalCount,
+            TotalPages = searchResult.TotalPages,
+            HasPreviousPage = searchResult.HasPreviousPage,
+            HasNextPage = searchResult.HasNextPage
         };
 
         var apiResponse = ApiResponse<GetPaginatedProductsResponseV1>.Success(
