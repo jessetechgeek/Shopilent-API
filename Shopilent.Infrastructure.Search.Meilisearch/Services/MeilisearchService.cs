@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Shopilent.Application.Abstractions.Search;
 using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Catalog.DTOs;
-using Shopilent.Domain.Common.Models;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Infrastructure.Search.Meilisearch.Settings;
 using System.Text.Json;
@@ -50,7 +49,7 @@ public class MeilisearchService : ISearchService
             var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
             var systemFilterableAttrs = new HashSet<string>
             {
-                "category_ids",
+                "category_slugs",
                 "price_range.min",
                 "price_range.max", 
                 "has_stock",
@@ -63,7 +62,7 @@ public class MeilisearchService : ISearchService
                 systemFilterableAttrs.Add(attr);
             }
             
-            var missingSystemAttrs = new[] { "category_ids", "price_range.min", "price_range.max", "has_stock", "is_active", "status" }
+            var missingSystemAttrs = new[] { "category_slugs", "price_range.min", "price_range.max", "has_stock", "is_active", "status" }
                 .Where(attr => !currentFilterableAttrs?.Contains(attr) == true);
             
             if (missingSystemAttrs.Any())
@@ -258,7 +257,7 @@ public class MeilisearchService : ISearchService
             searchParams.Filter = BuildSearchFilters(request);
             searchParams.Sort = BuildSortParameters(request.SortBy, request.SortDescending);
 
-            var facetsToAggregate = new List<string> { "category_ids" };
+            var facetsToAggregate = new List<string> { "category_slugs" };
             
             var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
             if (currentFilterableAttrs != null)
@@ -298,48 +297,6 @@ public class MeilisearchService : ISearchService
         }
     }
 
-    public async Task<Shopilent.Domain.Common.Results.Result<PaginatedResult<ProductDto>>> GetProductsAsync(ProductListingRequest request, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var searchRequest = new SearchRequest
-            {
-                Query = request.SearchQuery,
-                CategoryIds = request.CategoryIds.Length > 0 ? request.CategoryIds : 
-                             request.CategoryId.HasValue ? new[] { request.CategoryId.Value } : [],
-                AttributeFilters = request.AttributeFilters,
-                PriceMin = request.PriceMin,
-                PriceMax = request.PriceMax,
-                InStockOnly = request.InStockOnly,
-                ActiveOnly = request.IsActiveOnly,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
-                SortBy = MapSortColumn(request.SortColumn),
-                SortDescending = request.SortDescending
-            };
-
-            var searchResult = await SearchProductsAsync(searchRequest, cancellationToken);
-            if (searchResult.IsFailure)
-                return Result.Failure<PaginatedResult<ProductDto>>(searchResult.Error!);
-
-            var products = searchResult.Value.Items.Select(MapToProductDto).ToArray();
-            
-            var paginatedResult = PaginatedResult<ProductDto>.Create(
-                products,
-                searchResult.Value.TotalCount,
-                searchResult.Value.PageNumber,
-                searchResult.Value.PageSize);
-
-            return Result.Success(paginatedResult);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to get products listing");
-            return Result.Failure<PaginatedResult<ProductDto>>(
-                Domain.Common.Errors.Error.Failure("Search.GetProductsFailed", "Failed to get products listing"));
-        }
-    }
-
     public async Task<bool> IsHealthyAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -360,9 +317,9 @@ public class MeilisearchService : ISearchService
         if (request.ActiveOnly)
             filters.Add("is_active = true");
 
-        if (request.CategoryIds.Length > 0)
+        if (request.CategorySlugs.Length > 0)
         {
-            var categoryFilter = string.Join(" OR ", request.CategoryIds.Select(id => $"category_ids = \"{id}\""));
+            var categoryFilter = string.Join(" OR ", request.CategorySlugs.Select(slug => $"category_slugs = \"{slug}\""));
             filters.Add($"({categoryFilter})");
         }
 
@@ -460,48 +417,58 @@ public class MeilisearchService : ISearchService
         var attributeFacets = new List<AttributeFacet>();
         decimal priceMin = 0, priceMax = 0;
 
-        var categoryIds = new List<Guid>();
+        var categorySlugs = new List<string>();
         foreach (var (facetName, facetValues) in facets)
         {
-            if (facetName == "category_ids")
+            if (facetName == "category_slugs")
             {
-                foreach (var (categoryId, _) in facetValues)
+                foreach (var (categorySlug, _) in facetValues)
                 {
-                    if (Guid.TryParse(categoryId, out var id))
+                    if (!string.IsNullOrEmpty(categorySlug))
                     {
-                        categoryIds.Add(id);
+                        categorySlugs.Add(categorySlug);
                     }
                 }
             }
         }
 
-        var categoryLookup = new Dictionary<Guid, string>();
-        if (categoryIds.Any())
+        var categoryLookup = new Dictionary<string, (Guid Id, string Name)>();
+        if (categorySlugs.Any())
         {
             try
             {
-                var categories = await _unitOfWork.CategoryReader.GetByIdsAsync(categoryIds, cancellationToken);
-                categoryLookup = categories.ToDictionary(c => c.Id, c => c.Name);
+                foreach (var slug in categorySlugs)
+                {
+                    var category = await _unitOfWork.CategoryReader.GetBySlugAsync(slug, cancellationToken);
+                    if (category != null)
+                    {
+                        categoryLookup[slug] = (category.Id, category.Name);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to lookup category names for facets, using IDs");
+                _logger.LogWarning(ex, "Failed to lookup category data for facets, using slugs");
             }
         }
 
         foreach (var (facetName, facetValues) in facets)
         {
-            if (facetName == "category_ids")
+            if (facetName == "category_slugs")
             {
-                foreach (var (categoryId, count) in facetValues)
+                foreach (var (categorySlug, count) in facetValues)
                 {
-                    if (Guid.TryParse(categoryId, out var id))
+                    if (!string.IsNullOrEmpty(categorySlug))
                     {
-                        var categoryName = categoryLookup.TryGetValue(id, out var name) ? name : $"Category {categoryId}";
+                        var (id, name) = categoryLookup.TryGetValue(categorySlug, out var categoryData) 
+                            ? categoryData 
+                            : (Guid.Empty, categorySlug.Replace("-", " ").Replace("_", " "));
+                        
                         categoryFacets.Add(new CategoryFacet
                         {
                             Id = id,
-                            Name = categoryName,
+                            Name = name,
+                            Slug = categorySlug,
                             Count = count
                         });
                     }

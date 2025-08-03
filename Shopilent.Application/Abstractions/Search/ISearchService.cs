@@ -16,7 +16,5 @@ public interface ISearchService
     
     Task<Result<SearchResponse<ProductSearchResultDto>>> SearchProductsAsync(SearchRequest request, CancellationToken cancellationToken = default);
     
-    Task<Result<PaginatedResult<ProductDto>>> GetProductsAsync(ProductListingRequest request, CancellationToken cancellationToken = default);
-    
     Task<bool> IsHealthyAsync(CancellationToken cancellationToken = default);
 }

@@ -30,7 +30,7 @@ internal sealed class UniversalSearchQueryHandlerV1 : IQueryHandler<UniversalSea
             var searchRequest = new SearchRequest
             {
                 Query = request.Query,
-                CategoryIds = request.CategoryIds,
+                CategorySlugs = request.CategorySlugs,
                 AttributeFilters = request.AttributeFilters,
                 PriceMin = request.PriceMin,
                 PriceMax = request.PriceMax,
