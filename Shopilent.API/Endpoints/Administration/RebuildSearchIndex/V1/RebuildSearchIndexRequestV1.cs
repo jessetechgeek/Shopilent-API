@@ -1,6 +1,6 @@
-namespace Shopilent.API.Endpoints.Search.SearchSetup.V1;
+namespace Shopilent.API.Endpoints.Administration.RebuildSearchIndex.V1;
 
-public class SearchSetupRequestV1
+public class RebuildSearchIndexRequestV1
 {
     public bool InitializeIndexes { get; init; } = true;
     public bool IndexProducts { get; init; } = true;

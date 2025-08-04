@@ -5,34 +5,34 @@ using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Application.Abstractions.Search;
 using Shopilent.Domain.Common.Results;
 
-namespace Shopilent.Application.Features.Search.Commands.SearchSetup.V1;
+namespace Shopilent.Application.Features.Administration.Commands.RebuildSearchIndex.V1;
 
-internal sealed class SearchSetupCommandHandlerV1 : ICommandHandler<SearchSetupCommandV1, SearchSetupResponseV1>
+internal sealed class RebuildSearchIndexCommandHandlerV1 : ICommandHandler<RebuildSearchIndexCommandV1, RebuildSearchIndexResponseV1>
 {
     private readonly ISearchService _searchService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<SearchSetupCommandHandlerV1> _logger;
+    private readonly ILogger<RebuildSearchIndexCommandHandlerV1> _logger;
 
-    public SearchSetupCommandHandlerV1(
+    public RebuildSearchIndexCommandHandlerV1(
         ISearchService searchService,
         IUnitOfWork unitOfWork,
-        ILogger<SearchSetupCommandHandlerV1> logger)
+        ILogger<RebuildSearchIndexCommandHandlerV1> logger)
     {
         _searchService = searchService;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    public async Task<Result<SearchSetupResponseV1>> Handle(
-        SearchSetupCommandV1 request,
+    public async Task<Result<RebuildSearchIndexResponseV1>> Handle(
+        RebuildSearchIndexCommandV1 request,
         CancellationToken cancellationToken)
     {
         var stopwatch = Stopwatch.StartNew();
-        var response = new SearchSetupResponseV1 { CompletedAt = DateTime.UtcNow };
+        var response = new RebuildSearchIndexResponseV1 { CompletedAt = DateTime.UtcNow };
 
         try
         {
-            _logger.LogInformation("Starting search setup - Initialize: {Initialize}, Index: {Index}, Force: {Force}",
+            _logger.LogInformation("Starting search index rebuild - Initialize: {Initialize}, Index: {Index}, Force: {Force}",
                 request.InitializeIndexes, request.IndexProducts, request.ForceReindex);
 
             if (request.InitializeIndexes)
@@ -75,10 +75,10 @@ internal sealed class SearchSetupCommandHandlerV1 : ICommandHandler<SearchSetupC
                         stopwatch.Stop();
 
                         response.IsSuccess = false;
-                        response.Message = $"Search setup partially completed. Index initialization: {(response.IndexesInitialized ? "Success" : "Skipped")}. Product indexing failed: {indexResult.Error.Message}";
+                        response.Message = $"Search index rebuild partially completed. Index initialization: {(response.IndexesInitialized ? "Success" : "Skipped")}. Product indexing failed: {indexResult.Error.Message}";
                         response.Duration = stopwatch.Elapsed;
 
-                        return Result.Failure<SearchSetupResponseV1>(indexResult.Error);
+                        return Result.Failure<RebuildSearchIndexResponseV1>(indexResult.Error);
                     }
 
                     response.ProductsIndexed = searchDocuments.Count;
@@ -95,10 +95,10 @@ internal sealed class SearchSetupCommandHandlerV1 : ICommandHandler<SearchSetupC
                 messageParts.Add($"{response.ProductsIndexed} products indexed");
 
             response.IsSuccess = true;
-            response.Message = $"Search setup completed successfully: {string.Join(", ", messageParts)}";
+            response.Message = $"Search index rebuild completed successfully: {string.Join(", ", messageParts)}";
             response.Duration = stopwatch.Elapsed;
 
-            _logger.LogInformation("Search setup completed successfully in {Duration}ms - Indexes: {Indexes}, Products: {Products}",
+            _logger.LogInformation("Search index rebuild completed successfully in {Duration}ms - Indexes: {Indexes}, Products: {Products}",
                 stopwatch.ElapsedMilliseconds, response.IndexesInitialized, response.ProductsIndexed);
 
             return Result.Success(response);
@@ -106,14 +106,14 @@ internal sealed class SearchSetupCommandHandlerV1 : ICommandHandler<SearchSetupC
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogError(ex, "Unexpected error during search setup");
+            _logger.LogError(ex, "Unexpected error during search index rebuild");
 
             response.IsSuccess = false;
-            response.Message = $"Search setup failed: {ex.Message}";
+            response.Message = $"Search index rebuild failed: {ex.Message}";
             response.Duration = stopwatch.Elapsed;
 
-            return Result.Failure<SearchSetupResponseV1>(
-                Domain.Common.Errors.Error.Failure("Search.SetupFailed", response.Message));
+            return Result.Failure<RebuildSearchIndexResponseV1>(
+                Domain.Common.Errors.Error.Failure("Search.RebuildFailed", response.Message));
         }
     }
 }
