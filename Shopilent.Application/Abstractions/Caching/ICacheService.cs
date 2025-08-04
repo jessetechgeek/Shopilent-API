@@ -16,4 +16,5 @@ public interface ICacheService
     
     Task RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default);
 
+    Task<int> ClearAllAsync(CancellationToken cancellationToken = default);
 }

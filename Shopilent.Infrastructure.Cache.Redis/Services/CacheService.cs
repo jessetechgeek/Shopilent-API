@@ -153,6 +153,20 @@ internal class CacheService : ICacheService
             await _cache.RemoveAsync(keyName, cancellationToken);
         }
     }
+
+    public async Task<int> ClearAllAsync(CancellationToken cancellationToken = default)
+    {
+        var server = _redis.GetServer(_redis.GetEndPoints().First());
+        var keys = server.Keys(pattern: _redisSettings.Value.InstanceName + "*").ToList();
+
+        foreach (var key in keys)
+        {
+            var keyName = key.ToString().Replace(_redisSettings.Value.InstanceName, "");
+            await _cache.RemoveAsync(keyName, cancellationToken);
+        }
+
+        return keys.Count;
+    }
     
     private void NormalizeDictionaryProperties<T>(T obj)
     {
