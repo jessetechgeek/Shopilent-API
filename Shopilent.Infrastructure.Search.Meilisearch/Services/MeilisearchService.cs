@@ -34,7 +34,7 @@ public class MeilisearchService : ISearchService
         try
         {
             var index = _client.Index(_settings.Indexes.Products);
-            
+
             await index.UpdateSearchableAttributesAsync(new[]
             {
                 "name",
@@ -44,30 +44,46 @@ public class MeilisearchService : ISearchService
                 "categories.name",
                 "attributes.value",
                 "attr-*"
-            });
+            }, cancellationToken);
 
-            var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
+            string[] currentFilterableAttrs = null;
+            try
+            {
+                var attrs = await index.GetFilterableAttributesAsync(cancellationToken);
+                currentFilterableAttrs = attrs?.ToArray() ?? [];
+                _logger.LogDebug("Retrieved {Count} existing filterable attributes", currentFilterableAttrs.Length);
+            }
+            catch (Exception ex) when (ex.Message.Contains("index_not_found") ||
+                                       ex.Message.Contains("Index") && ex.Message.Contains("not found"))
+            {
+                _logger.LogInformation("Index is newly created, using default filterable attributes");
+                currentFilterableAttrs = [];
+            }
+
             var systemFilterableAttrs = new HashSet<string>
             {
                 "category_slugs",
                 "price_range.min",
-                "price_range.max", 
+                "price_range.max",
                 "has_stock",
                 "is_active",
                 "status"
             };
-            
+
             foreach (var attr in currentFilterableAttrs ?? [])
             {
                 systemFilterableAttrs.Add(attr);
             }
-            
-            var missingSystemAttrs = new[] { "category_slugs", "price_range.min", "price_range.max", "has_stock", "is_active", "status" }
+
+            var missingSystemAttrs = new[]
+                    { "category_slugs", "price_range.min", "price_range.max", "has_stock", "is_active", "status" }
                 .Where(attr => !currentFilterableAttrs?.Contains(attr) == true);
-            
-            if (missingSystemAttrs.Any())
+
+            if (missingSystemAttrs.Any() || currentFilterableAttrs?.Length == 0)
             {
-                await index.UpdateFilterableAttributesAsync(systemFilterableAttrs.ToArray());
+                _logger.LogInformation("Updating filterable attributes: {Attributes}",
+                    string.Join(", ", systemFilterableAttrs));
+                await index.UpdateFilterableAttributesAsync(systemFilterableAttrs.ToArray(), cancellationToken);
             }
 
             await index.UpdateSortableAttributesAsync(new[]
@@ -77,12 +93,12 @@ public class MeilisearchService : ISearchService
                 "created_at",
                 "updated_at",
                 "total_stock"
-            });
+            }, cancellationToken);
 
             await index.UpdateDisplayedAttributesAsync(new[]
             {
                 "*"
-            });
+            }, cancellationToken);
 
             _logger.LogInformation("Meilisearch indexes initialized successfully");
         }
@@ -93,7 +109,8 @@ public class MeilisearchService : ISearchService
         }
     }
 
-    public async Task<Result> IndexProductAsync(ProductSearchDocument document, CancellationToken cancellationToken = default)
+    public async Task<Result> IndexProductAsync(ProductSearchDocument document,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -102,21 +119,23 @@ public class MeilisearchService : ISearchService
             {
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
             });
-            
+
             var documentDict = JsonSerializer.Deserialize<Dictionary<string, object>>(documentJson);
-            
+
             var newAttributeNames = new List<string>();
-            if (documentDict?.ContainsKey("flat_attributes") == true && documentDict["flat_attributes"] is JsonElement flatAttributesElement)
+            if (documentDict?.ContainsKey("flat_attributes") == true &&
+                documentDict["flat_attributes"] is JsonElement flatAttributesElement)
             {
                 if (flatAttributesElement.ValueKind == JsonValueKind.Object)
                 {
                     foreach (var property in flatAttributesElement.EnumerateObject())
                     {
                         newAttributeNames.Add(property.Name);
-                        
+
                         if (property.Value.ValueKind == JsonValueKind.Array)
                         {
-                            var values = property.Value.EnumerateArray().Select(v => v.GetString()).Where(v => !string.IsNullOrEmpty(v)).ToArray();
+                            var values = property.Value.EnumerateArray().Select(v => v.GetString())
+                                .Where(v => !string.IsNullOrEmpty(v)).ToArray();
                             if (values.Length > 0)
                             {
                                 documentDict[property.Name] = values;
@@ -132,16 +151,17 @@ public class MeilisearchService : ISearchService
                         }
                     }
                 }
+
                 documentDict.Remove("flat_attributes");
             }
-            
+
             if (newAttributeNames.Any())
             {
                 await EnsureAttributesAreFilterableAsync(index, newAttributeNames);
             }
-            
-            await index.AddDocumentsAsync(new[] { documentDict }, "id");
-            
+
+            await index.AddDocumentsAsync(new[] { documentDict }, "id", cancellationToken);
+
             _logger.LogDebug("Product {ProductId} indexed successfully", document.Id);
             return Result.Success();
         }
@@ -152,7 +172,8 @@ public class MeilisearchService : ISearchService
         }
     }
 
-    public async Task<Result> IndexProductsAsync(IEnumerable<ProductSearchDocument> documents, CancellationToken cancellationToken = default)
+    public async Task<Result> IndexProductsAsync(IEnumerable<ProductSearchDocument> documents,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -164,31 +185,33 @@ public class MeilisearchService : ISearchService
             var batches = documentList.Chunk(_settings.BatchSize);
 
             var allNewAttributeNames = new HashSet<string>();
-            
+
             foreach (var batch in batches)
             {
                 var documentDicts = new List<Dictionary<string, object>>();
-                
+
                 foreach (var doc in batch)
                 {
                     var documentJson = JsonSerializer.Serialize(doc, new JsonSerializerOptions
                     {
                         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
                     });
-                    
+
                     var documentDict = JsonSerializer.Deserialize<Dictionary<string, object>>(documentJson);
-                    
-                    if (documentDict?.ContainsKey("flat_attributes") == true && documentDict["flat_attributes"] is JsonElement flatAttributesElement)
+
+                    if (documentDict?.ContainsKey("flat_attributes") == true &&
+                        documentDict["flat_attributes"] is JsonElement flatAttributesElement)
                     {
                         if (flatAttributesElement.ValueKind == JsonValueKind.Object)
                         {
                             foreach (var property in flatAttributesElement.EnumerateObject())
                             {
                                 allNewAttributeNames.Add(property.Name);
-                                
+
                                 if (property.Value.ValueKind == JsonValueKind.Array)
                                 {
-                                    var values = property.Value.EnumerateArray().Select(v => v.GetString()).Where(v => !string.IsNullOrEmpty(v)).ToArray();
+                                    var values = property.Value.EnumerateArray().Select(v => v.GetString())
+                                        .Where(v => !string.IsNullOrEmpty(v)).ToArray();
                                     if (values.Length > 0)
                                     {
                                         documentDict[property.Name] = values;
@@ -204,16 +227,17 @@ public class MeilisearchService : ISearchService
                                 }
                             }
                         }
+
                         documentDict.Remove("flat_attributes");
                     }
-                    
+
                     if (documentDict != null)
                         documentDicts.Add(documentDict);
                 }
-                
+
                 await index.AddDocumentsAsync(documentDicts.ToArray(), "id");
             }
-            
+
             if (allNewAttributeNames.Any())
             {
                 await EnsureAttributesAreFilterableAsync(index, allNewAttributeNames);
@@ -225,7 +249,8 @@ public class MeilisearchService : ISearchService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to index products batch");
-            return Result.Failure(Domain.Common.Errors.Error.Failure("Search.BatchIndexFailed", "Failed to index products batch"));
+            return Result.Failure(
+                Domain.Common.Errors.Error.Failure("Search.BatchIndexFailed", "Failed to index products batch"));
         }
     }
 
@@ -235,18 +260,20 @@ public class MeilisearchService : ISearchService
         {
             var index = _client.Index(_settings.Indexes.Products);
             await index.DeleteOneDocumentAsync(productId.ToString());
-            
+
             _logger.LogDebug("Product {ProductId} deleted from search index", productId);
             return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to delete product {ProductId} from search index", productId);
-            return Result.Failure(Domain.Common.Errors.Error.Failure("Search.DeleteFailed", "Failed to delete product from search index"));
+            return Result.Failure(Domain.Common.Errors.Error.Failure("Search.DeleteFailed",
+                "Failed to delete product from search index"));
         }
     }
 
-    public async Task<Shopilent.Domain.Common.Results.Result<SearchResponse<ProductSearchResultDto>>> SearchProductsAsync(SearchRequest request, CancellationToken cancellationToken = default)
+    public async Task<Shopilent.Domain.Common.Results.Result<SearchResponse<ProductSearchResultDto>>>
+        SearchProductsAsync(SearchRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -258,21 +285,21 @@ public class MeilisearchService : ISearchService
             searchParams.Sort = BuildSortParameters(request.SortBy, request.SortDescending);
 
             var facetsToAggregate = new List<string> { "category_slugs" };
-            
+
             var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
             if (currentFilterableAttrs != null)
             {
                 var attributeFacets = currentFilterableAttrs.Where(attr => attr.StartsWith("attr-")).ToArray();
                 facetsToAggregate.AddRange(attributeFacets);
             }
-            
+
             searchParams.Facets = facetsToAggregate.ToArray();
 
             var searchResult = await index.SearchAsync<Dictionary<string, object>>(request.Query, searchParams);
-            
+
             var items = searchResult.Hits.Select(hit => MapToProductSearchResult(hit)).ToArray();
             var facets = await MapFacetsAsync(searchResult.FacetDistribution, items, cancellationToken);
-            
+
             var totalHits = searchResult.Hits.Count();
             var response = new SearchResponse<ProductSearchResultDto>
             {
@@ -330,7 +357,7 @@ public class MeilisearchService : ISearchService
                 if (values.Length > 0)
                 {
                     var flatAttributeName = $"attr-{attributeName.ToLowerInvariant()}";
-                    var attributeFilter = string.Join(" OR ", values.Select(value => 
+                    var attributeFilter = string.Join(" OR ", values.Select(value =>
                         $"{flatAttributeName} = \"{value}\""));
                     filters.Add($"({attributeFilter})");
                 }
@@ -388,7 +415,7 @@ public class MeilisearchService : ISearchService
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             PropertyNameCaseInsensitive = true
         });
-        
+
         return result ?? new ProductSearchResultDto();
     }
 
@@ -408,7 +435,9 @@ public class MeilisearchService : ISearchService
         };
     }
 
-    private async Task<SearchFacets> MapFacetsAsync(IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? facets, ProductSearchResultDto[] items, CancellationToken cancellationToken = default)
+    private async Task<SearchFacets> MapFacetsAsync(
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? facets, ProductSearchResultDto[] items,
+        CancellationToken cancellationToken = default)
     {
         if (facets == null)
             return new SearchFacets();
@@ -460,10 +489,10 @@ public class MeilisearchService : ISearchService
                 {
                     if (!string.IsNullOrEmpty(categorySlug))
                     {
-                        var (id, name) = categoryLookup.TryGetValue(categorySlug, out var categoryData) 
-                            ? categoryData 
+                        var (id, name) = categoryLookup.TryGetValue(categorySlug, out var categoryData)
+                            ? categoryData
                             : (Guid.Empty, categorySlug.Replace("-", " ").Replace("_", " "));
-                        
+
                         categoryFacets.Add(new CategoryFacet
                         {
                             Id = id,
@@ -523,18 +552,18 @@ public class MeilisearchService : ISearchService
             var currentFilterableAttrs = await index.GetFilterableAttributesAsync();
             var currentAttrsSet = new HashSet<string>(currentFilterableAttrs ?? []);
             var newAttrs = attributeNames.Where(attr => !currentAttrsSet.Contains(attr)).ToList();
-            
+
             if (newAttrs.Any())
             {
                 currentAttrsSet.UnionWith(newAttrs);
                 await index.UpdateFilterableAttributesAsync(currentAttrsSet.ToArray());
-                _logger.LogDebug("Added {Count} new filterable attributes: {Attributes}", 
+                _logger.LogDebug("Added {Count} new filterable attributes: {Attributes}",
                     newAttrs.Count, string.Join(", ", newAttrs));
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to update filterable attributes for: {Attributes}", 
+            _logger.LogWarning(ex, "Failed to update filterable attributes for: {Attributes}",
                 string.Join(", ", attributeNames));
         }
     }
