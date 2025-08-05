@@ -1,10 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <UserSecretsId>aca58440-5cca-4621-ada1-6e32f9c93750</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,11 +34,6 @@
       <ProjectReference Include="..\Shopilent.Infrastructure.S3ObjectStorage\Shopilent.Infrastructure.S3ObjectStorage.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure.Search.Meilisearch\Shopilent.Infrastructure.Search.Meilisearch.csproj" />
       <ProjectReference Include="..\Shopilent.Infrastructure\Shopilent.Infrastructure.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Endpoints\Catalog\Attributes\" />
-      <Folder Include="Endpoints\Catalog\Categories\" />
     </ItemGroup>
 
 </Project>

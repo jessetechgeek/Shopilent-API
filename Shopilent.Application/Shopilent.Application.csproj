@@ -1,37 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Shopilent.Domain\Shopilent.Domain.csproj" />
+        <ProjectReference Include="..\Shopilent.Domain\Shopilent.Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Common\Behaviors\" />
-      <Folder Include="Common\Interfaces\Services\" />
-      <Folder Include="Features\Audit\Commands\" />
-      <Folder Include="Features\Audit\Queries\" />
-      <Folder Include="Features\Identity\Commands\Password\V1\" />
-      <Folder Include="Features\Identity\Queries\" />
-      <Folder Include="Features\Payments\Commands\" />
-      <Folder Include="Features\Payments\Queries\" />
-      <Folder Include="Features\Sales\Commands\" />
-      <Folder Include="Features\Sales\Queries\" />
-      <Folder Include="Features\Shipping\Commands\" />
-      <Folder Include="Features\Shipping\Queries\" />
+        <Folder Include="Features\Audit\Commands\"/>
+        <Folder Include="Features\Audit\Queries\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentValidation" Version="11.11.0" />
-      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
-      <PackageReference Include="MediatR" Version="12.4.1" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.3" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
-      <PackageReference Include="Serilog" Version="4.2.0" />
+        <PackageReference Include="FluentValidation" Version="11.11.0"/>
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0"/>
+        <PackageReference Include="MediatR" Version="12.4.1"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3"/>
+        <PackageReference Include="Serilog" Version="4.2.0"/>
     </ItemGroup>
-
 </Project>
