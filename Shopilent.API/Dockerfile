@@ -7,6 +7,7 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Directory.Build.props", "./"]
 COPY ["Shopilent.API/Shopilent.API.csproj", "Shopilent.API/"]
 RUN dotnet restore "Shopilent.API/Shopilent.API.csproj"
 COPY . .
