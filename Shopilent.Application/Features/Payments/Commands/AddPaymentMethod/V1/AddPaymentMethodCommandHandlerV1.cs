@@ -23,6 +23,7 @@ internal sealed class
     private readonly IPaymentService _paymentService;
     private readonly ILogger<AddPaymentMethodCommandHandlerV1> _logger;
 
+
     public AddPaymentMethodCommandHandlerV1(
         IUnitOfWork unitOfWork,
         ICurrentUserContext currentUserContext,
@@ -171,54 +172,30 @@ internal sealed class
                 return Result.Success();
             }
 
-            // Get existing payment methods for this user and provider to check for customer ID
-            var existingPaymentMethods =
-                await _unitOfWork.PaymentMethodReader.GetByUserIdAsync(user.Id, cancellationToken);
             var customerIdMetadataKey = "stripe_customer_id";
 
-            // Look for existing customer ID in user's payment methods for this provider
-            string customerId = null;
-            if (existingPaymentMethods?.Any() == true)
-            {
-                var existingStripeMethod = existingPaymentMethods
-                    .FirstOrDefault(pm => pm.Provider == provider &&
-                                          pm.Metadata.ContainsKey(customerIdMetadataKey));
+            // Always use Stripe as source of truth with idempotency keys to prevent race conditions
+            _logger.LogInformation("Getting or creating customer for user {UserId} with provider {Provider}",
+                user.Id, provider);
 
-                if (existingStripeMethod != null)
+            var createCustomerResult = await _paymentService.GetOrCreateCustomerAsync(
+                provider,
+                user.Id.ToString(),
+                user.Email.Value,
+                new Dictionary<string, object>
                 {
-                    customerId = existingStripeMethod.Metadata[customerIdMetadataKey]?.ToString();
-                }
-            }
+                    ["full_name"] = $"{user.FullName.FirstName} {user.FullName.LastName}"
+                },
+                cancellationToken);
 
-            // If no customer exists, create one
-            if (string.IsNullOrEmpty(customerId))
+            if (createCustomerResult.IsFailure)
             {
-                _logger.LogInformation("Creating new customer for user {UserId} with provider {Provider}",
-                    user.Id, provider);
-
-                var createCustomerResult = await _paymentService.CreateCustomerAsync(
-                    provider,
-                    user.Id.ToString(),
-                    user.Email.Value,
-                    new Dictionary<string, object>
-                    {
-                        ["full_name"] = $"{user.FullName.FirstName} {user.FullName.LastName}"
-                    },
-                    cancellationToken);
-
-                if (createCustomerResult.IsFailure)
-                {
-                    _logger.LogError("Failed to create customer: {Error}", createCustomerResult.Error);
-                    return Result.Failure(createCustomerResult.Error);
-                }
-
-                customerId = createCustomerResult.Value;
-                _logger.LogInformation("Created customer {CustomerId} for user {UserId}", customerId, user.Id);
+                _logger.LogError("Failed to get or create customer: {Error}", createCustomerResult.Error);
+                return Result.Failure(createCustomerResult.Error);
             }
-            else
-            {
-                _logger.LogInformation("Using existing customer {CustomerId} for user {UserId}", customerId, user.Id);
-            }
+
+            var customerId = createCustomerResult.Value;
+            _logger.LogInformation("Customer resolved: {CustomerId} for user {UserId}", customerId, user.Id);
 
             // Store customer ID in payment method metadata
             paymentMethod.UpdateMetadata(customerIdMetadataKey, customerId);
@@ -319,8 +296,17 @@ internal sealed class
         {
             _logger.LogInformation("Creating setup intent for 3DS authentication for user {UserId}", user.Id);
 
-            // Get or create customer ID for the provider
-            var customerIdResult = await GetOrCreateCustomerIdAsync(user, provider, cancellationToken);
+            // Get or create customer ID for the provider using idempotency approach
+            var customerIdResult = await _paymentService.GetOrCreateCustomerAsync(
+                provider,
+                user.Id.ToString(),
+                user.Email.Value,
+                new Dictionary<string, object>
+                {
+                    ["full_name"] = $"{user.FullName.FirstName} {user.FullName.LastName}"
+                },
+                cancellationToken);
+
             if (customerIdResult.IsFailure)
             {
                 return Result.Failure<AddPaymentMethodResponseV1>(customerIdResult.Error);
@@ -642,71 +628,5 @@ internal sealed class
         return merged;
     }
 
-    private async Task<Result<string>> GetOrCreateCustomerIdAsync(
-        Domain.Identity.User user,
-        PaymentProvider provider,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Get existing payment methods for this user and provider to check for customer ID
-            var existingPaymentMethods =
-                await _unitOfWork.PaymentMethodReader.GetByUserIdAsync(user.Id, cancellationToken);
-            var customerIdMetadataKey = $"{provider.ToString().ToLower()}_customer_id";
 
-            // Look for existing customer ID in user's payment methods for this provider
-            string customerId = null;
-            if (existingPaymentMethods?.Any() == true)
-            {
-                var existingProviderMethod = existingPaymentMethods
-                    .FirstOrDefault(pm => pm.Provider == provider &&
-                                          pm.Metadata.ContainsKey(customerIdMetadataKey));
-
-                if (existingProviderMethod != null)
-                {
-                    customerId = existingProviderMethod.Metadata[customerIdMetadataKey]?.ToString();
-                }
-            }
-
-            // If no customer exists, create one
-            if (string.IsNullOrEmpty(customerId))
-            {
-                _logger.LogInformation("Creating new customer for user {UserId} with provider {Provider}",
-                    user.Id, provider);
-
-                var createCustomerResult = await _paymentService.CreateCustomerAsync(
-                    provider,
-                    user.Id.ToString(),
-                    user.Email.Value,
-                    new Dictionary<string, object>
-                    {
-                        ["full_name"] = $"{user.FullName.FirstName} {user.FullName.LastName}"
-                    },
-                    cancellationToken);
-
-                if (createCustomerResult.IsFailure)
-                {
-                    _logger.LogError("Failed to create customer: {Error}", createCustomerResult.Error);
-                    return Result.Failure<string>(createCustomerResult.Error);
-                }
-
-                customerId = createCustomerResult.Value;
-                _logger.LogInformation("Created customer {CustomerId} for user {UserId}", customerId, user.Id);
-            }
-            else
-            {
-                _logger.LogInformation("Using existing customer {CustomerId} for user {UserId}", customerId, user.Id);
-            }
-
-            return Result.Success(customerId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting or creating customer ID for user {UserId}", user.Id);
-            return Result.Failure<string>(
-                Error.Failure(
-                    code: "PaymentMethod.CustomerIdFailed",
-                    message: $"Failed to get or create customer ID: {ex.Message}"));
-        }
-    }
 }

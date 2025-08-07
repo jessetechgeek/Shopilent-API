@@ -230,7 +230,7 @@ internal class StripePaymentProvider : PaymentProviderBase
         return "https://your-app.com/payment/return";
     }
 
-    public override async Task<Result<string>> CreateCustomerAsync(
+    public override async Task<Result<string>> GetOrCreateCustomerAsync(
         string userId,
         string email,
         Dictionary<string, object> metadata = null,
@@ -238,7 +238,7 @@ internal class StripePaymentProvider : PaymentProviderBase
     {
         try
         {
-            Logger.LogInformation("Creating Stripe customer for user {UserId}", userId);
+            Logger.LogInformation("Creating or retrieving Stripe customer for user {UserId} using idempotency", userId);
 
             var options = new CustomerCreateOptions
             {
@@ -257,15 +257,24 @@ internal class StripePaymentProvider : PaymentProviderBase
                 }
             }
 
-            var customer = await _customerService.CreateAsync(options, cancellationToken: cancellationToken);
+            var requestOptions = new RequestOptions
+            {
+                IdempotencyKey = $"customer_create_{userId}"
+            };
 
-            Logger.LogInformation("Stripe customer created: {CustomerId} for user {UserId}", customer.Id, userId);
+            var customer = await _customerService.CreateAsync(
+                options,
+                requestOptions,
+                cancellationToken);
+
+            Logger.LogInformation("Stripe customer resolved: {CustomerId} for user {UserId}", customer.Id, userId);
 
             return Result.Success(customer.Id);
         }
         catch (StripeException stripeEx)
         {
-            Logger.LogError(stripeEx, "Stripe customer creation failed: {ErrorMessage}", stripeEx.Message);
+            Logger.LogError(stripeEx, "Stripe customer creation failed: {ErrorType} - {ErrorMessage}",
+                stripeEx.StripeError?.Type, stripeEx.Message);
             return Result.Failure<string>(
                 Domain.Payments.Errors.PaymentErrors.ProcessingFailed(stripeEx.Message));
         }

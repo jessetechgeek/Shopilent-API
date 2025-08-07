@@ -33,7 +33,7 @@ public abstract class PaymentProviderBase : IPaymentProvider
         string transactionId,
         CancellationToken cancellationToken = default);
 
-    public virtual Task<Result<string>> CreateCustomerAsync(
+    public virtual Task<Result<string>> GetOrCreateCustomerAsync(
         string userId,
         string email,
         Dictionary<string, object> metadata = null,

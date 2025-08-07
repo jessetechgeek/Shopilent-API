@@ -117,7 +117,7 @@ internal class PaymentService : IPaymentService
         }
     }
 
-    public async Task<Result<string>> CreateCustomerAsync(
+    public async Task<Result<string>> GetOrCreateCustomerAsync(
         PaymentProvider provider,
         string userId,
         string email,
@@ -133,7 +133,7 @@ internal class PaymentService : IPaymentService
                     Domain.Payments.Errors.PaymentErrors.InvalidProvider);
             }
 
-            return await paymentProvider.CreateCustomerAsync(userId, email, metadata, cancellationToken);
+            return await paymentProvider.GetOrCreateCustomerAsync(userId, email, metadata, cancellationToken);
         }
         catch (Exception ex)
         {
