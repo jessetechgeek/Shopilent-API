@@ -1,4 +1,4 @@
-namespace Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Catalog.Read;
+namespace Shopilent.Infrastructure.Persistence.PostgreSQL.Dtos.Catalog;
 
 internal class AttributeDtoWithJsonString
 {

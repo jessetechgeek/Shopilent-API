@@ -7,6 +7,7 @@ using Shopilent.Domain.Catalog.Enums;
 using Shopilent.Domain.Catalog.Repositories.Read;
 using Shopilent.Domain.Common.Models;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Abstractions;
+using Shopilent.Infrastructure.Persistence.PostgreSQL.Dtos.Catalog;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Common.Read;
 using Attribute = Shopilent.Domain.Catalog.Attribute;
 

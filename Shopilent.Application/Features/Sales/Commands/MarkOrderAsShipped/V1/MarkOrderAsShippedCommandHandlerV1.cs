@@ -40,7 +40,7 @@ internal sealed class MarkOrderAsShippedCommandHandlerV1 : ICommandHandler<MarkO
             var result = order.MarkAsShipped(request.TrackingNumber);
             if (result.IsFailure)
             {
-                _logger.LogWarning("Failed to mark order as shipped. OrderId: {OrderId}, Error: {Error}", 
+                _logger.LogWarning("Failed to mark order as shipped. OrderId: {OrderId}, Error: {Error}",
                     request.OrderId, result.Error);
                 return result;
             }
@@ -51,17 +51,19 @@ internal sealed class MarkOrderAsShippedCommandHandlerV1 : ICommandHandler<MarkO
                 order.SetAuditInfo(_currentUserContext.UserId);
             }
 
+            await _unitOfWork.OrderWriter.UpdateAsync(order, cancellationToken);
             // Save changes
             await _unitOfWork.SaveEntitiesAsync(cancellationToken);
 
-            _logger.LogInformation("Order marked as shipped successfully. OrderId: {OrderId}, TrackingNumber: {TrackingNumber}", 
+            _logger.LogInformation(
+                "Order marked as shipped successfully. OrderId: {OrderId}, TrackingNumber: {TrackingNumber}",
                 request.OrderId, request.TrackingNumber);
 
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error marking order as shipped. OrderId: {OrderId}, TrackingNumber: {TrackingNumber}", 
+            _logger.LogError(ex, "Error marking order as shipped. OrderId: {OrderId}, TrackingNumber: {TrackingNumber}",
                 request.OrderId, request.TrackingNumber);
 
             return Result.Failure(
