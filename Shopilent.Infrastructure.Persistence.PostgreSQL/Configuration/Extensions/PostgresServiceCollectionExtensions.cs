@@ -1,8 +1,10 @@
 using System.Data;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Shopilent.Infrastructure.Persistence.PostgreSQL.Dapper.TypeHandlers;
 using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Audit.Repositories.Read;
 using Shopilent.Domain.Audit.Repositories.Write;
@@ -50,6 +52,9 @@ public static class PostgresServiceCollectionExtensions
         };
         services.AddSingleton(connectionConfig);
 
+        // Register Dapper type handlers for automatic JSONB conversion
+        SqlMapper.AddTypeHandler(new JsonDictionaryTypeHandler());
+
         services.AddScoped<AuditSaveChangesInterceptor>();
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
@@ -77,6 +82,7 @@ public static class PostgresServiceCollectionExtensions
         AddReadRepositories(services);
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         // Register health checks
         services.AddHealthChecks(configuration);
 
