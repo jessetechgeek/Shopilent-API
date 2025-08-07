@@ -9,23 +9,23 @@ namespace Shopilent.Infrastructure.Payments.Abstractions;
 public interface IPaymentProvider
 {
     PaymentProvider Provider { get; }
-    
+
     Task<Result<PaymentResult>> ProcessPaymentAsync(
         PaymentRequest request,
         CancellationToken cancellationToken = default);
-    
+
     Task<Result<string>> RefundPaymentAsync(
         string transactionId,
         Money amount = null,
         string reason = null,
         CancellationToken cancellationToken = default);
-    
+
     Task<Result<PaymentStatus>> GetPaymentStatusAsync(
         string transactionId,
         CancellationToken cancellationToken = default);
-    
+
     // Customer management methods - optional for providers that support it
-    Task<Result<string>> CreateCustomerAsync(
+    Task<Result<string>> GetOrCreateCustomerAsync(
         string userId,
         string email,
         Dictionary<string, object> metadata = null,
@@ -36,7 +36,7 @@ public interface IPaymentProvider
                 code: "CustomerManagement.NotSupported",
                 message: $"Customer management is not supported by {Provider} provider")));
     }
-    
+
     Task<Result<string>> AttachPaymentMethodToCustomerAsync(
         string paymentMethodToken,
         string customerId,
@@ -44,10 +44,10 @@ public interface IPaymentProvider
     {
         return Task.FromResult(Result.Failure<string>(
             Domain.Common.Errors.Error.Failure(
-                code: "CustomerManagement.NotSupported", 
+                code: "CustomerManagement.NotSupported",
                 message: $"Payment method attachment is not supported by {Provider} provider")));
     }
-    
+
     // Webhook processing method - optional for providers that support it
     Task<Result<WebhookResult>> ProcessWebhookAsync(
         string webhookPayload,
@@ -60,7 +60,7 @@ public interface IPaymentProvider
                 code: "Webhook.NotSupported",
                 message: $"Webhook processing is not supported by {Provider} provider")));
     }
-    
+
     // Setup intent methods - optional for providers that support it
     Task<Result<SetupIntentResult>> CreateSetupIntentAsync(
         string customerId,
@@ -73,7 +73,7 @@ public interface IPaymentProvider
                 code: "SetupIntent.NotSupported",
                 message: $"Setup intent is not supported by {Provider} provider")));
     }
-    
+
     Task<Result<SetupIntentResult>> ConfirmSetupIntentAsync(
         string setupIntentId,
         string paymentMethodToken = null,

@@ -26,7 +26,7 @@ public interface IPaymentService
         CancellationToken cancellationToken = default);
 
     // Customer management methods
-    Task<Result<string>> CreateCustomerAsync(
+    Task<Result<string>> GetOrCreateCustomerAsync(
         PaymentProvider provider,
         string userId,
         string email,
