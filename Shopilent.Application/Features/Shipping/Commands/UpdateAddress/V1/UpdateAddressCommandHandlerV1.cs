@@ -55,11 +55,11 @@ internal sealed class UpdateAddressCommandHandlerV1 : ICommandHandler<UpdateAddr
             // Create postal address value object
             var postalAddressResult = PostalAddress.Create(
                 request.AddressLine1,
-                request.AddressLine2,
                 request.City,
                 request.State,
+                request.Country,
                 request.PostalCode,
-                request.Country);
+                request.AddressLine2);
 
             if (postalAddressResult.IsFailure)
             {

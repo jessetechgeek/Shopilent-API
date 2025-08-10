@@ -73,11 +73,13 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 
         builder.Property(al => al.IpAddress)
             .HasColumnName("ip_address")
-            .HasColumnType("varchar(45)");
+            .HasColumnType("varchar(45)")
+            .IsRequired(false);
 
         builder.Property(al => al.UserAgent)
             .HasColumnName("user_agent")
-            .HasColumnType("text");
+            .HasColumnType("text")
+            .IsRequired(false);
 
         builder.Property(al => al.AppVersion)
             .HasColumnName("app_version")
@@ -88,7 +90,7 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
             .HasColumnName("version")
             .HasDefaultValue(0)
             .IsConcurrencyToken();
-        
+
         // Relationships
         builder.HasOne<Domain.Identity.User>()
             .WithMany()
