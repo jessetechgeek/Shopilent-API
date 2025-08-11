@@ -73,11 +73,11 @@ public class AuthenticationService : IAuthenticationService
                     if (loginFailureResult.IsFailure)
                     {
                         _logger.LogWarning("Account locked due to failed login attempts: {Email}", email.Value);
-                        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                        await _unitOfWork.SaveChangesAsync(cancellationToken);
                         return Result.Failure<AuthTokenResponse>(loginFailureResult.Error);
                     }
 
-                    await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
                     return Result.Failure<AuthTokenResponse>(UserErrors.InvalidCredentials);
                 }
 
@@ -98,7 +98,7 @@ public class AuthenticationService : IAuthenticationService
                 await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
 
                 // Save all changes in a single operation
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Commit the transaction
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -198,7 +198,7 @@ public class AuthenticationService : IAuthenticationService
 
                 // Save user
                 await _unitOfWork.UserWriter.AddAsync(user, cancellationToken);
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Generate tokens
                 var accessToken = _jwtService.GenerateAccessToken(user);
@@ -212,7 +212,7 @@ public class AuthenticationService : IAuthenticationService
 
                 // Update user with refresh token
                 await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Send verification email
                 // await _emailService.SendEmailVerificationAsync(email.Value, user.EmailVerificationToken);
@@ -299,7 +299,7 @@ public class AuthenticationService : IAuthenticationService
                 await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
 
                 // Save changes
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Commit transaction
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -365,7 +365,7 @@ public class AuthenticationService : IAuthenticationService
                     return result;
 
                 // Save changes
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Commit transaction
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -450,7 +450,7 @@ public class AuthenticationService : IAuthenticationService
             // Generate new verification token
             user.GenerateEmailVerificationToken();
             await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Send verification email
             // await _emailService.SendEmailVerificationAsync(email.Value, user.EmailVerificationToken);
@@ -497,7 +497,7 @@ public class AuthenticationService : IAuthenticationService
 
                 // Save changes
                 await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Commit transaction
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -539,7 +539,7 @@ public class AuthenticationService : IAuthenticationService
             // Generate password reset token
             user.GeneratePasswordResetToken();
             await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Send password reset email
             // await _emailService.SendPasswordResetAsync(email.Value, user.PasswordResetToken);
@@ -601,7 +601,7 @@ public class AuthenticationService : IAuthenticationService
 
                 // Save changes
                 await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Commit transaction
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -667,7 +667,7 @@ public class AuthenticationService : IAuthenticationService
 
                 // Save changes
                 await _unitOfWork.UserWriter.UpdateAsync(user, cancellationToken);
-                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Commit transaction
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
