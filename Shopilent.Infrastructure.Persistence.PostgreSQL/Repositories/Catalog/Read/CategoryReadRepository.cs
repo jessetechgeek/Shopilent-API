@@ -20,7 +20,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
     public override async Task<CategoryDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 name AS Name,
                 description AS Description,
@@ -40,7 +40,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
     public override async Task<IReadOnlyList<CategoryDto>> ListAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 name AS Name,
                 description AS Description,
@@ -61,7 +61,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
     public async Task<CategoryDto> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 name AS Name,
                 description AS Description,
@@ -81,7 +81,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
     public async Task<IReadOnlyList<CategoryDto>> GetRootCategoriesAsync(CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 name AS Name,
                 description AS Description,
@@ -104,7 +104,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
         CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 name AS Name,
                 description AS Description,
@@ -128,8 +128,8 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
     {
         const string sql = @"
             WITH RECURSIVE category_path AS (
-                SELECT 
-                    id, 
+                SELECT
+                    id,
                     name,
                     description,
                     parent_id,
@@ -141,11 +141,11 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
                     updated_at
                 FROM categories
                 WHERE id = @CategoryId
-                
+
                 UNION ALL
-                
-                SELECT 
-                    c.id, 
+
+                SELECT
+                    c.id,
                     c.name,
                     c.description,
                     c.parent_id,
@@ -158,7 +158,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
                 FROM categories c
                 JOIN category_path cp ON c.id = cp.parent_id
             )
-            SELECT 
+            SELECT
                 id AS Id,
                 name AS Name,
                 description AS Description,
@@ -211,7 +211,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
         var idArray = ids.ToArray();
 
         const string sql = @"
-        SELECT 
+        SELECT
             id AS Id,
             name AS Name,
             description AS Description,
@@ -231,139 +231,6 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
         return categoryDtos.ToList();
     }
 
-    public override async Task<DataTableResult<CategoryDto>> GetDataTableAsync(
-        DataTableRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            if (request == null)
-                return new DataTableResult<CategoryDto>(0, "Invalid request");
-
-            // Base query with join to get parent name and product count
-            var selectSql = new StringBuilder(@"
-                SELECT 
-                    c.id AS Id,
-                    c.name AS Name,
-                    c.description AS Description,
-                    c.parent_id AS ParentId,
-                    c.slug AS Slug,
-                    c.level AS Level,
-                    c.path AS Path,
-                    c.is_active AS IsActive,
-                    c.created_at AS CreatedAt,
-                    c.updated_at AS UpdatedAt,
-                    parent.name AS ParentName,
-                    (SELECT COUNT(*) FROM product_categories pc WHERE pc.category_id = c.id) AS ProductCount
-                FROM categories c
-                LEFT JOIN categories parent ON c.parent_id = parent.id");
-
-            // Base count query
-            const string countSql = "SELECT COUNT(*) FROM categories";
-
-            // Where clause for filtering
-            var whereClause = new StringBuilder();
-            var parameters = new DynamicParameters();
-
-            // Apply global search if provided
-            if (!string.IsNullOrEmpty(request.Search?.Value))
-            {
-                whereClause.Append(" WHERE (");
-                whereClause.Append("c.name ILIKE @SearchValue OR ");
-                whereClause.Append("c.description ILIKE @SearchValue OR ");
-                whereClause.Append("c.slug ILIKE @SearchValue OR ");
-                whereClause.Append("parent.name ILIKE @SearchValue");
-                whereClause.Append(")");
-                parameters.Add("SearchValue", $"%{request.Search.Value}%");
-            }
-
-            // Build ORDER BY clause
-            var orderByClause = new StringBuilder(" ORDER BY ");
-
-            if (request.Order != null && request.Order.Any())
-            {
-                for (int i = 0; i < request.Order.Count; i++)
-                {
-                    if (i > 0) orderByClause.Append(", ");
-
-                    var order = request.Order[i];
-                    if (order.Column < request.Columns.Count)
-                    {
-                        var column = request.Columns[order.Column];
-                        if (column.Orderable)
-                        {
-                            // Map column names to database columns
-                            var dbColumn = column.Data.ToLower() switch
-                            {
-                                "name" => "c.name",
-                                "parentname" => "parent.name",
-                                "productcount" => "ProductCount",
-                                "level" => "c.level",
-                                "isactive" => "c.is_active",
-                                "createdat" => "c.created_at",
-                                _ => "c.name" // Default
-                            };
-
-                            orderByClause.Append($"{dbColumn} {(order.IsDescending ? "DESC" : "ASC")}");
-                        }
-                        else
-                        {
-                            orderByClause.Append("c.name ASC");
-                        }
-                    }
-                    else
-                    {
-                        orderByClause.Append("c.name ASC");
-                    }
-                }
-            }
-            else
-            {
-                orderByClause.Append("c.name ASC");
-            }
-
-            // Pagination
-            var paginationClause = " LIMIT @Length OFFSET @Start";
-            parameters.Add("Length", request.Length);
-            parameters.Add("Start", request.Start);
-
-            // Build final queries
-            var finalCountSql = countSql + whereClause.ToString();
-            var finalSelectSql = selectSql.ToString() + whereClause.ToString() + orderByClause.ToString() +
-                                 paginationClause;
-
-            // Execute queries
-            var totalCount = await Connection.ExecuteScalarAsync<int>(countSql);
-            var filteredCount = whereClause.Length > 0
-                ? await Connection.ExecuteScalarAsync<int>(finalCountSql, parameters)
-                : totalCount;
-
-            var data = await Connection.QueryAsync<CategoryDetailDto>(finalSelectSql, parameters);
-
-            // Convert to base CategoryDto list
-            var result = data.Select(detail => new CategoryDto
-            {
-                Id = detail.Id,
-                Name = detail.Name,
-                Description = detail.Description,
-                ParentId = detail.ParentId,
-                Slug = detail.Slug,
-                Level = detail.Level,
-                Path = detail.Path,
-                IsActive = detail.IsActive,
-                CreatedAt = detail.CreatedAt,
-                UpdatedAt = detail.UpdatedAt
-            }).ToList();
-
-            return new DataTableResult<CategoryDto>(request.Draw, totalCount, filteredCount, result);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error executing CategoryDto DataTable query");
-            return new DataTableResult<CategoryDto>(request.Draw, $"Error: {ex.Message}");
-        }
-    }
-
     // Add method to get categories with details (product count and parent name)
     public async Task<DataTableResult<CategoryDetailDto>> GetCategoryDetailDataTableAsync(
         DataTableRequest request,
@@ -376,7 +243,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
 
             // Base query with join to get parent name and product count
             var selectSql = new StringBuilder(@"
-                SELECT 
+                SELECT
                     c.id AS Id,
                     c.name AS Name,
                     c.description AS Description,
@@ -488,7 +355,7 @@ public class CategoryReadRepository : AggregateReadRepositoryBase<Category, Cate
         CancellationToken cancellationToken)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 c.id AS Id,
                 c.name AS Name,
                 c.description AS Description,

@@ -60,7 +60,7 @@ public class UserPasswordChangedEventHandler : INotificationHandler<DomainEventN
                     }
                     
                     // Save changes to persist token revocations
-                    await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
                 }
                 
                 // Send notification email

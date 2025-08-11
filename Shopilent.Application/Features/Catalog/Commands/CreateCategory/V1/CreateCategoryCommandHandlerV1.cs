@@ -83,7 +83,7 @@ internal sealed class
             await _unitOfWork.CategoryWriter.AddAsync(category, cancellationToken);
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Create response
             var response = new CreateCategoryResponseV1

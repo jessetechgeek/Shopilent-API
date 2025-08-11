@@ -75,7 +75,7 @@ public class UpdateCategoryStatusCommandTests : TestBase
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Once);
     }
     
@@ -116,7 +116,7 @@ public class UpdateCategoryStatusCommandTests : TestBase
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Once);
     }
     
@@ -146,7 +146,7 @@ public class UpdateCategoryStatusCommandTests : TestBase
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Never);
     }
     
@@ -187,7 +187,7 @@ public class UpdateCategoryStatusCommandTests : TestBase
         
         // Verify the category was saved (even though no real change occurred)
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Once);
     }
     
@@ -214,9 +214,9 @@ public class UpdateCategoryStatusCommandTests : TestBase
             .Setup(repo => repo.GetByIdAsync(categoryId, CancellationToken))
             .ReturnsAsync(category);
             
-        // Make SaveEntitiesAsync throw an exception
+        // Make SaveChangesAsync throw an exception
         Fixture.MockUnitOfWork
-            .Setup(uow => uow.SaveEntitiesAsync(CancellationToken))
+            .Setup(uow => uow.SaveChangesAsync(CancellationToken))
             .ThrowsAsync(new Exception("Test exception"));
             
         // Act

@@ -131,9 +131,6 @@ public class TestFixture
         // Setup default save changes to return success
         MockUnitOfWork.Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
-        
-        MockUnitOfWork.Setup(uow => uow.SaveEntitiesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
             
         // Set up basic CurrentUserContext behaviors
         MockCurrentUserContext.Setup(ctx => ctx.UserId).Returns((Guid?)null);

@@ -63,7 +63,7 @@ public class PaymentRefundedEventHandler : INotificationHandler<DomainEventNotif
                         await _unitOfWork.OrderWriter.UpdateAsync(order, cancellationToken);
 
                         // Save changes to persist the updates
-                        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                        await _unitOfWork.SaveChangesAsync(cancellationToken);
                     }
                     else
                     {

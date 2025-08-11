@@ -108,7 +108,7 @@ public class AuditSaveChangesInterceptor : SaveChangesInterceptor
 
                 case EntityState.Modified:
                     entry.Entity.IncrementVersion();
-                   
+
                     var oldValues = GetOriginalValues(entry);
                     var currentValues = GetEntityValues(entry);
                     CreateAuditLog(context, entityType, entry.Entity.Id, AuditAction.Update, user,

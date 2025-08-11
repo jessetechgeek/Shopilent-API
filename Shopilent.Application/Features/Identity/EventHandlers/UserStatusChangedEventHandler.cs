@@ -89,7 +89,7 @@ public class UserStatusChangedEventHandler : INotificationHandler<DomainEventNot
                         }
                         
                         // Save changes to persist token revocations
-                        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                        await _unitOfWork.SaveChangesAsync(cancellationToken);
                     }
                 }
             }

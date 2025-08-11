@@ -130,7 +130,7 @@ public class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookComm
                     break;
             }
 
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation("Successfully processed webhook event {EventType} for transaction {TransactionId}",

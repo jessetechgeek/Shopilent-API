@@ -348,7 +348,7 @@ internal sealed class UpdateProductCommandHandlerV1 : ICommandHandler<UpdateProd
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Get updated category IDs
             var categoryIds = product.Categories.Select(pc => pc.CategoryId).ToList();

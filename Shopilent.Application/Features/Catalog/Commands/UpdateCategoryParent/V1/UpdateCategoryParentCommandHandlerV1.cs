@@ -68,7 +68,7 @@ internal sealed class UpdateCategoryParentCommandHandlerV1 : ICommandHandler<Upd
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Get parent name if applicable
             string parentName = null;

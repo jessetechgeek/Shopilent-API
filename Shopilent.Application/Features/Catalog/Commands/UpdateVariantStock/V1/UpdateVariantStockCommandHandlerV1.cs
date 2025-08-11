@@ -49,7 +49,7 @@ internal sealed class UpdateVariantStockCommandHandlerV1 : ICommandHandler<Updat
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Create response
             var response = new UpdateVariantStockResponseV1

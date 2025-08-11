@@ -53,7 +53,7 @@ internal sealed class UpdateCartItemQuantityCommandHandlerV1 : ICommandHandler<U
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Cart item quantity updated successfully. CartId: {CartId}, ItemId: {ItemId}, Quantity: {Quantity}, UserId: {UserId}", 
                 cart.Id, request.CartItemId, request.Quantity, cart.UserId);

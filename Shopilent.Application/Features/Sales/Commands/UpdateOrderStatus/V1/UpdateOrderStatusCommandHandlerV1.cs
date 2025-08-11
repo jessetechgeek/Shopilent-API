@@ -69,7 +69,7 @@ internal sealed class UpdateOrderStatusCommandHandlerV1 : ICommandHandler<Update
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Order status updated successfully. Order ID: {OrderId}, New Status: {Status}", 
                 order.Id, request.Status);

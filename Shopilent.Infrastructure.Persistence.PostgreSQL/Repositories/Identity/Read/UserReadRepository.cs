@@ -19,7 +19,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
     public override async Task<UserDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 email AS Email,
                 first_name AS FirstName,
@@ -41,7 +41,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
     public override async Task<IReadOnlyList<UserDto>> ListAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 email AS Email,
                 first_name AS FirstName,
@@ -63,7 +63,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
     public async Task<UserDetailDto> GetDetailByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string userSql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 email AS Email,
                 first_name AS FirstName,
@@ -90,7 +90,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
         {
             // Load addresses
             const string addressesSql = @"
-                SELECT 
+                SELECT
                     id AS Id,
                     user_id AS UserId,
                     address_line1 AS AddressLine1,
@@ -112,7 +112,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
 
             // Load refresh tokens
             const string tokensSql = @"
-                SELECT 
+                SELECT
                     id AS Id,
                     user_id AS UserId,
                     token AS Token,
@@ -137,7 +137,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
     public async Task<UserDto> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 email AS Email,
                 first_name AS FirstName,
@@ -156,22 +156,10 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
         return await Connection.QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
     }
 
-    public async Task<User> GetUserByCredentialsAsync(string email, string passwordHash,
-        CancellationToken cancellationToken = default)
-    {
-        const string sql = @"
-            SELECT * FROM users
-            WHERE email = @Email
-            AND password_hash = @PasswordHash
-            AND is_active = true";
-
-        return await Connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email, PasswordHash = passwordHash });
-    }
-
     public async Task<UserDto> GetByRefreshTokenAsync(string token, CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 u.id AS Id,
                 u.email AS Email,
                 u.first_name AS FirstName,
@@ -197,7 +185,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
         CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 email AS Email,
                 first_name AS FirstName,
@@ -220,7 +208,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
     public async Task<UserDto> GetByPasswordResetTokenAsync(string token, CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 email AS Email,
                 first_name AS FirstName,
@@ -268,7 +256,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
     public async Task<IReadOnlyList<UserDto>> GetByRoleAsync(string role, CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 email AS Email,
                 first_name AS FirstName,
@@ -298,7 +286,7 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
         var idArray = ids.ToArray();
 
         const string sql = @"
-        SELECT 
+        SELECT
             id AS Id,
             email AS Email,
             first_name AS FirstName,

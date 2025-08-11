@@ -116,7 +116,7 @@ internal sealed class CreateAddressCommandHandlerV1 : ICommandHandler<CreateAddr
             // Save the address
             var savedAddress = await _unitOfWork.AddressWriter.AddAsync(addressResult.Value, cancellationToken);
 
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
 
             _logger.LogInformation("Address created successfully with ID: {AddressId} for user: {UserId}",

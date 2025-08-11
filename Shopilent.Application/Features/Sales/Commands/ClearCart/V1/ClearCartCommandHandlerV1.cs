@@ -79,7 +79,7 @@ internal sealed class ClearCartCommandHandlerV1 : ICommandHandler<ClearCartComma
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Cart {CartId} successfully cleared for user {UserId}",
                 cart.Id, cart.UserId ?? Guid.Empty);

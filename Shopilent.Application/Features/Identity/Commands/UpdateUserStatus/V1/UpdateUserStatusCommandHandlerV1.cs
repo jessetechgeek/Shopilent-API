@@ -66,7 +66,7 @@ internal sealed class UpdateUserStatusCommandHandlerV1 : ICommandHandler<UpdateU
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("User status updated successfully. ID: {UserId}, IsActive: {IsActive}", 
                 user.Id, request.IsActive);
