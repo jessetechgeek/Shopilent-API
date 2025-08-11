@@ -60,7 +60,7 @@ internal sealed class UpdateVariantStatusCommandHandlerV1 : ICommandHandler<Upda
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Variant status updated successfully. ID: {VariantId}, IsActive: {IsActive}", 
                 variant.Id, request.IsActive);

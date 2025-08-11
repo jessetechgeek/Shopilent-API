@@ -61,7 +61,7 @@ internal sealed class DeleteAddressCommandHandlerV1 : ICommandHandler<DeleteAddr
             await _unitOfWork.AddressWriter.DeleteAsync(address, cancellationToken);
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Address deleted successfully with ID: {AddressId} for user: {UserId}",
                 address.Id, _currentUserContext.UserId);

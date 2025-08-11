@@ -53,7 +53,7 @@ internal sealed class MarkOrderAsShippedCommandHandlerV1 : ICommandHandler<MarkO
 
             await _unitOfWork.OrderWriter.UpdateAsync(order, cancellationToken);
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Order marked as shipped successfully. OrderId: {OrderId}, TrackingNumber: {TrackingNumber}",

@@ -129,13 +129,6 @@ public class UnitOfWork : IUnitOfWork
         return await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
-    {
-        // Handle domain events if needed before saving
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        return true;
-    }
-
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         _transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);

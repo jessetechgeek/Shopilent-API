@@ -27,7 +27,7 @@ public class CategoryWriteRepository : AggregateWriteRepositoryBase<Category>, I
         return await DbContext.Categories
             .Include(c => c.Children)
             .Include(c => c.ProductCategories)
-            .FirstOrDefaultAsync(c => EF.Property<string>(c, "Slug.Value") == slug, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Slug.Value == slug, cancellationToken);
     }
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null,

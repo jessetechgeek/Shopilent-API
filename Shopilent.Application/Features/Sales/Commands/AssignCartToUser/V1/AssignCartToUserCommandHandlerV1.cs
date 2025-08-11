@@ -91,7 +91,7 @@ internal sealed class AssignCartToUserCommandHandlerV1 : ICommandHandler<AssignC
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Cart {CartId} successfully assigned to user {UserId}", 
                 request.CartId, userId);

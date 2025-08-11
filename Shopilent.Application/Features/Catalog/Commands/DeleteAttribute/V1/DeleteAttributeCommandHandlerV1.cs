@@ -49,7 +49,7 @@ internal sealed class DeleteAttributeCommandHandlerV1 : ICommandHandler<DeleteAt
             await _unitOfWork.AttributeWriter.DeleteAsync(attribute, cancellationToken);
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Attribute deleted successfully with ID: {AttributeId}", attribute.Id);
 

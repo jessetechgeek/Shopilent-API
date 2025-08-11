@@ -87,7 +87,7 @@ public class DeleteCategoryCommandTests : TestBase
             
         // Verify the changes were saved
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Once);
     }
     
@@ -121,7 +121,7 @@ public class DeleteCategoryCommandTests : TestBase
             
         // Verify the changes were not saved
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Never);
     }
     
@@ -172,7 +172,7 @@ public class DeleteCategoryCommandTests : TestBase
             
         // Verify the changes were not saved
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Never);
     }
     
@@ -228,7 +228,7 @@ public class DeleteCategoryCommandTests : TestBase
             
         // Verify the changes were not saved
         Fixture.MockUnitOfWork.Verify(
-            uow => uow.SaveEntitiesAsync(CancellationToken), 
+            uow => uow.SaveChangesAsync(CancellationToken), 
             Times.Never);
     }
     

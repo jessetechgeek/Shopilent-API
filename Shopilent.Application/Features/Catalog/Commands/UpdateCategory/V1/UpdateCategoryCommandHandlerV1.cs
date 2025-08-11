@@ -80,7 +80,7 @@ internal sealed class UpdateCategoryCommandHandlerV1 : ICommandHandler<UpdateCat
             }
 
             // Save changes
-            await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Create response
             var response = new UpdateCategoryResponseV1
