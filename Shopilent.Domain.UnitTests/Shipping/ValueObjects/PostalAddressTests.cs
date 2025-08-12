@@ -25,14 +25,14 @@ public class PostalAddressTests
             addressLine2);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
-        Assert.Equal(addressLine1, address.AddressLine1);
-        Assert.Equal(addressLine2, address.AddressLine2);
-        Assert.Equal(city, address.City);
-        Assert.Equal(state, address.State);
-        Assert.Equal(country, address.Country);
-        Assert.Equal(postalCode, address.PostalCode);
+        address.AddressLine1.Should().Be(addressLine1);
+        address.AddressLine2.Should().Be(addressLine2);
+        address.City.Should().Be(city);
+        address.State.Should().Be(state);
+        address.Country.Should().Be(country);
+        address.PostalCode.Should().Be(postalCode);
     }
 
     [Fact]
@@ -54,14 +54,14 @@ public class PostalAddressTests
             postalCode);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
-        Assert.Equal(addressLine1, address.AddressLine1);
-        Assert.Null(address.AddressLine2);
-        Assert.Equal(city, address.City);
-        Assert.Equal(state, address.State);
-        Assert.Equal(country, address.Country);
-        Assert.Equal(postalCode, address.PostalCode);
+        address.AddressLine1.Should().Be(addressLine1);
+        address.AddressLine2.Should().BeNull();
+        address.City.Should().Be(city);
+        address.State.Should().Be(state);
+        address.Country.Should().Be(country);
+        address.PostalCode.Should().Be(postalCode);
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class PostalAddressTests
             postalCode);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Address.AddressLine1Required", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Address.AddressLine1Required");
     }
 
     [Fact]
@@ -106,8 +106,8 @@ public class PostalAddressTests
             postalCode);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Address.CityRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Address.CityRequired");
     }
 
     [Fact]
@@ -129,8 +129,8 @@ public class PostalAddressTests
             postalCode);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Address.StateRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Address.StateRequired");
     }
 
     [Fact]
@@ -152,8 +152,8 @@ public class PostalAddressTests
             postalCode);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Address.CountryRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Address.CountryRequired");
     }
 
     [Fact]
@@ -175,8 +175,8 @@ public class PostalAddressTests
             postalCode);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Address.PostalCodeRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Address.PostalCodeRequired");
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public class PostalAddressTests
         var addressLine2 = "Apt 4B";
 
         var result = PostalAddress.Create(addressLine1, city, state, country, postalCode, addressLine2);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
         var expected = "123 Main St, Apt 4B, Anytown, State 12345, Country";
 
@@ -199,7 +199,7 @@ public class PostalAddressTests
         var toStringResult = address.ToString();
 
         // Assert
-        Assert.Equal(expected, toStringResult);
+        toStringResult.Should().Be(expected);
     }
 
     [Fact]
@@ -213,7 +213,7 @@ public class PostalAddressTests
         var postalCode = "12345";
 
         var result = PostalAddress.Create(addressLine1, city, state, country, postalCode);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
         var expected = "123 Main St, Anytown, State 12345, Country";
 
@@ -221,7 +221,7 @@ public class PostalAddressTests
         var toStringResult = address.ToString();
 
         // Assert
-        Assert.Equal(expected, toStringResult);
+        toStringResult.Should().Be(expected);
     }
 
     [Fact]
@@ -231,16 +231,16 @@ public class PostalAddressTests
         var address1Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345", "Apt 4B");
         var address2Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345", "Apt 4B");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
 
         // Act & Assert
-        Assert.True(address1.Equals(address2));
-        Assert.True(address1 == address2);
-        Assert.False(address1 != address2);
+        address1.Equals(address2).Should().BeTrue();
+        (address1 == address2).Should().BeTrue();
+        (address1 != address2).Should().BeFalse();
     }
 
     [Fact]
@@ -250,16 +250,16 @@ public class PostalAddressTests
         var address1Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345");
         var address2Result = PostalAddress.Create("456 Oak Ave", "Anytown", "State", "Country", "12345");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
 
         // Act & Assert
-        Assert.False(address1.Equals(address2));
-        Assert.False(address1 == address2);
-        Assert.True(address1 != address2);
+        address1.Equals(address2).Should().BeFalse();
+        (address1 == address2).Should().BeFalse();
+        (address1 != address2).Should().BeTrue();
     }
 
     [Fact]
@@ -269,16 +269,16 @@ public class PostalAddressTests
         var address1Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345");
         var address2Result = PostalAddress.Create("123 Main St", "Othertown", "State", "Country", "12345");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
 
         // Act & Assert
-        Assert.False(address1.Equals(address2));
-        Assert.False(address1 == address2);
-        Assert.True(address1 != address2);
+        address1.Equals(address2).Should().BeFalse();
+        (address1 == address2).Should().BeFalse();
+        (address1 != address2).Should().BeTrue();
     }
 
     [Fact]
@@ -288,16 +288,16 @@ public class PostalAddressTests
         var address1Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345");
         var address2Result = PostalAddress.Create("123 Main St", "Anytown", "OtherState", "Country", "12345");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
 
         // Act & Assert
-        Assert.False(address1.Equals(address2));
-        Assert.False(address1 == address2);
-        Assert.True(address1 != address2);
+        address1.Equals(address2).Should().BeFalse();
+        (address1 == address2).Should().BeFalse();
+        (address1 != address2).Should().BeTrue();
     }
 
     [Fact]
@@ -307,16 +307,16 @@ public class PostalAddressTests
         var address1Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345");
         var address2Result = PostalAddress.Create("123 Main St", "Anytown", "State", "OtherCountry", "12345");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
 
         // Act & Assert
-        Assert.False(address1.Equals(address2));
-        Assert.False(address1 == address2);
-        Assert.True(address1 != address2);
+        address1.Equals(address2).Should().BeFalse();
+        (address1 == address2).Should().BeFalse();
+        (address1 != address2).Should().BeTrue();
     }
 
     [Fact]
@@ -326,16 +326,16 @@ public class PostalAddressTests
         var address1Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345");
         var address2Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "67890");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
 
         // Act & Assert
-        Assert.False(address1.Equals(address2));
-        Assert.False(address1 == address2);
-        Assert.True(address1 != address2);
+        address1.Equals(address2).Should().BeFalse();
+        (address1 == address2).Should().BeFalse();
+        (address1 != address2).Should().BeTrue();
     }
 
     [Fact]
@@ -345,16 +345,16 @@ public class PostalAddressTests
         var address1Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345", "Apt 4B");
         var address2Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345", "Suite 100");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
 
         // Act & Assert
-        Assert.False(address1.Equals(address2));
-        Assert.False(address1 == address2);
-        Assert.True(address1 != address2);
+        address1.Equals(address2).Should().BeFalse();
+        (address1 == address2).Should().BeFalse();
+        (address1 != address2).Should().BeTrue();
     }
 
     [Fact]
@@ -365,16 +365,16 @@ public class PostalAddressTests
         var address2Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345");
         var address3Result = PostalAddress.Create("123 Main St", "Anytown", "State", "Country", "12345", "Apt 4B");
         
-        Assert.True(address1Result.IsSuccess);
-        Assert.True(address2Result.IsSuccess);
-        Assert.True(address3Result.IsSuccess);
+        address1Result.IsSuccess.Should().BeTrue();
+        address2Result.IsSuccess.Should().BeTrue();
+        address3Result.IsSuccess.Should().BeTrue();
         
         var address1 = address1Result.Value;
         var address2 = address2Result.Value;
         var address3 = address3Result.Value;
 
         // Act & Assert
-        Assert.True(address1.Equals(address2));
-        Assert.False(address1.Equals(address3));
+        address1.Equals(address2).Should().BeTrue();
+        address1.Equals(address3).Should().BeFalse();
     }
 }

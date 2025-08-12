@@ -12,17 +12,17 @@ public class AddressTests
     private User CreateTestUser()
     {
         var emailResult = Email.Create("test@example.com");
-        Assert.True(emailResult.IsSuccess);
+        emailResult.IsSuccess.Should().BeTrue();
 
         var fullNameResult = FullName.Create("Test", "User");
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
 
         var userResult = User.Create(
             emailResult.Value,
             "hashed_password",
             fullNameResult.Value);
 
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -40,13 +40,13 @@ public class AddressTests
             "12345",
             "Apt 4B");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var addressType = AddressType.Shipping;
 
         var phoneResult = PhoneNumber.Create("555-123-4567");
-        Assert.True(phoneResult.IsSuccess);
+        phoneResult.IsSuccess.Should().BeTrue();
         var phone = phoneResult.Value;
 
         var isDefault = true;
@@ -59,20 +59,20 @@ public class AddressTests
             isDefault);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
-        Assert.Equal(user.Id, address.UserId);
-        Assert.Equal(postalAddress, address.PostalAddress);
-        Assert.Equal(postalAddress.AddressLine1, address.AddressLine1);
-        Assert.Equal(postalAddress.AddressLine2, address.AddressLine2);
-        Assert.Equal(postalAddress.City, address.City);
-        Assert.Equal(postalAddress.State, address.State);
-        Assert.Equal(postalAddress.Country, address.Country);
-        Assert.Equal(postalAddress.PostalCode, address.PostalCode);
-        Assert.Equal(phone, address.Phone);
-        Assert.Equal(addressType, address.AddressType);
-        Assert.Equal(isDefault, address.IsDefault);
-        Assert.Contains(address.DomainEvents, e => e is AddressCreatedEvent);
+        address.UserId.Should().Be(user.Id);
+        address.PostalAddress.Should().Be(postalAddress);
+        address.AddressLine1.Should().Be(postalAddress.AddressLine1);
+        address.AddressLine2.Should().Be(postalAddress.AddressLine2);
+        address.City.Should().Be(postalAddress.City);
+        address.State.Should().Be(postalAddress.State);
+        address.Country.Should().Be(postalAddress.Country);
+        address.PostalCode.Should().Be(postalAddress.PostalCode);
+        address.Phone.Should().Be(phone);
+        address.AddressType.Should().Be(addressType);
+        address.IsDefault.Should().Be(isDefault);
+        address.DomainEvents.Should().Contain(e => e is AddressCreatedEvent);
     }
 
     [Fact]
@@ -88,15 +88,15 @@ public class AddressTests
             "Country",
             "12345");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         // Act - Use CreateShipping instead of internal Create method
         var result = Address.CreateShipping(user, postalAddress);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.NotFound");
     }
 
     [Fact]
@@ -110,8 +110,8 @@ public class AddressTests
         var result = Address.CreateShipping(user, postalAddress);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Address.AddressLine1Required", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Address.AddressLine1Required");
     }
 
     [Fact]
@@ -128,11 +128,11 @@ public class AddressTests
             "12345",
             "Suite 100");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var phoneResult = PhoneNumber.Create("555-123-4567");
-        Assert.True(phoneResult.IsSuccess);
+        phoneResult.IsSuccess.Should().BeTrue();
         var phone = phoneResult.Value;
 
         var isDefault = true;
@@ -145,14 +145,14 @@ public class AddressTests
             isDefault);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
-        Assert.Equal(user.Id, address.UserId);
-        Assert.Equal(postalAddress, address.PostalAddress);
-        Assert.Equal(phone, address.Phone);
-        Assert.Equal(AddressType.Shipping, address.AddressType);
-        Assert.Equal(isDefault, address.IsDefault);
-        Assert.Contains(address.DomainEvents, e => e is AddressCreatedEvent);
+        address.UserId.Should().Be(user.Id);
+        address.PostalAddress.Should().Be(postalAddress);
+        address.Phone.Should().Be(phone);
+        address.AddressType.Should().Be(AddressType.Shipping);
+        address.IsDefault.Should().Be(isDefault);
+        address.DomainEvents.Should().Contain(e => e is AddressCreatedEvent);
     }
 
     [Fact]
@@ -169,11 +169,11 @@ public class AddressTests
             "12345",
             "Suite 100");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var phoneResult = PhoneNumber.Create("555-123-4567");
-        Assert.True(phoneResult.IsSuccess);
+        phoneResult.IsSuccess.Should().BeTrue();
         var phone = phoneResult.Value;
 
         var isDefault = true;
@@ -186,14 +186,14 @@ public class AddressTests
             isDefault);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
-        Assert.Equal(user.Id, address.UserId);
-        Assert.Equal(postalAddress, address.PostalAddress);
-        Assert.Equal(phone, address.Phone);
-        Assert.Equal(AddressType.Billing, address.AddressType);
-        Assert.Equal(isDefault, address.IsDefault);
-        Assert.Contains(address.DomainEvents, e => e is AddressCreatedEvent);
+        address.UserId.Should().Be(user.Id);
+        address.PostalAddress.Should().Be(postalAddress);
+        address.Phone.Should().Be(phone);
+        address.AddressType.Should().Be(AddressType.Billing);
+        address.IsDefault.Should().Be(isDefault);
+        address.DomainEvents.Should().Contain(e => e is AddressCreatedEvent);
     }
 
     [Fact]
@@ -210,13 +210,13 @@ public class AddressTests
             "12345",
             "Suite 100");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var addressType = AddressType.Both;
 
         var phoneResult = PhoneNumber.Create("555-123-4567");
-        Assert.True(phoneResult.IsSuccess);
+        phoneResult.IsSuccess.Should().BeTrue();
         var phone = phoneResult.Value;
 
         // Act
@@ -227,14 +227,14 @@ public class AddressTests
             phone);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var address = result.Value;
-        Assert.Equal(user.Id, address.UserId);
-        Assert.Equal(postalAddress, address.PostalAddress);
-        Assert.Equal(phone, address.Phone);
-        Assert.Equal(addressType, address.AddressType);
-        Assert.True(address.IsDefault);
-        Assert.Contains(address.DomainEvents, e => e is AddressCreatedEvent);
+        address.UserId.Should().Be(user.Id);
+        address.PostalAddress.Should().Be(postalAddress);
+        address.Phone.Should().Be(phone);
+        address.AddressType.Should().Be(addressType);
+        address.IsDefault.Should().BeTrue();
+        address.DomainEvents.Should().Contain(e => e is AddressCreatedEvent);
     }
 
     [Fact]
@@ -250,11 +250,11 @@ public class AddressTests
             "Country",
             "12345");
 
-        Assert.True(originalPostalAddressResult.IsSuccess);
+        originalPostalAddressResult.IsSuccess.Should().BeTrue();
         var originalPostalAddress = originalPostalAddressResult.Value;
 
         var addressResult = Address.CreateShipping(user, originalPostalAddress);
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         var address = addressResult.Value;
 
         var newPostalAddressResult = PostalAddress.Create(
@@ -265,27 +265,27 @@ public class AddressTests
             "56789",
             "Suite 100");
 
-        Assert.True(newPostalAddressResult.IsSuccess);
+        newPostalAddressResult.IsSuccess.Should().BeTrue();
         var newPostalAddress = newPostalAddressResult.Value;
 
         var newPhoneResult = PhoneNumber.Create("555-987-6543");
-        Assert.True(newPhoneResult.IsSuccess);
+        newPhoneResult.IsSuccess.Should().BeTrue();
         var newPhone = newPhoneResult.Value;
 
         // Act
         var updateResult = address.Update(newPostalAddress, newPhone);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(newPostalAddress, address.PostalAddress);
-        Assert.Equal(newPostalAddress.AddressLine1, address.AddressLine1);
-        Assert.Equal(newPostalAddress.AddressLine2, address.AddressLine2);
-        Assert.Equal(newPostalAddress.City, address.City);
-        Assert.Equal(newPostalAddress.State, address.State);
-        Assert.Equal(newPostalAddress.Country, address.Country);
-        Assert.Equal(newPostalAddress.PostalCode, address.PostalCode);
-        Assert.Equal(newPhone, address.Phone);
-        Assert.Contains(address.DomainEvents, e => e is AddressUpdatedEvent);
+        updateResult.IsSuccess.Should().BeTrue();
+        address.PostalAddress.Should().Be(newPostalAddress);
+        address.AddressLine1.Should().Be(newPostalAddress.AddressLine1);
+        address.AddressLine2.Should().Be(newPostalAddress.AddressLine2);
+        address.City.Should().Be(newPostalAddress.City);
+        address.State.Should().Be(newPostalAddress.State);
+        address.Country.Should().Be(newPostalAddress.Country);
+        address.PostalCode.Should().Be(newPostalAddress.PostalCode);
+        address.Phone.Should().Be(newPhone);
+        address.DomainEvents.Should().Contain(e => e is AddressUpdatedEvent);
     }
 
     [Fact]
@@ -301,11 +301,11 @@ public class AddressTests
             "Country",
             "12345");
 
-        Assert.True(originalPostalAddressResult.IsSuccess);
+        originalPostalAddressResult.IsSuccess.Should().BeTrue();
         var originalPostalAddress = originalPostalAddressResult.Value;
 
         var addressResult = Address.CreateShipping(user, originalPostalAddress);
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         var address = addressResult.Value;
 
         PostalAddress newPostalAddress = null;
@@ -314,8 +314,8 @@ public class AddressTests
         var updateResult = address.Update(newPostalAddress);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("Address.AddressLine1Required", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("Address.AddressLine1Required");
     }
 
     [Fact]
@@ -331,13 +331,13 @@ public class AddressTests
             "Country",
             "12345");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var addressResult = Address.CreateShipping(user, postalAddress);
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         var address = addressResult.Value;
-        Assert.Equal(AddressType.Shipping, address.AddressType);
+        address.AddressType.Should().Be(AddressType.Shipping);
 
         var newAddressType = AddressType.Both;
 
@@ -345,9 +345,9 @@ public class AddressTests
         var result = address.SetAddressType(newAddressType);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newAddressType, address.AddressType);
-        Assert.Contains(address.DomainEvents, e => e is AddressUpdatedEvent);
+        result.IsSuccess.Should().BeTrue();
+        address.AddressType.Should().Be(newAddressType);
+        address.DomainEvents.Should().Contain(e => e is AddressUpdatedEvent);
     }
 
     [Fact]
@@ -363,13 +363,13 @@ public class AddressTests
             "Country",
             "12345");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var addressResult = Address.CreateShipping(user, postalAddress);
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         var address = addressResult.Value;
-        Assert.False(address.IsDefault);
+        address.IsDefault.Should().BeFalse();
 
         address.ClearDomainEvents();
 
@@ -377,19 +377,19 @@ public class AddressTests
         var result = address.SetDefault(true);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(address.IsDefault);
-        Assert.Contains(address.DomainEvents, e => e is DefaultAddressChangedEvent);
-        Assert.Contains(address.DomainEvents, e => e is AddressUpdatedEvent);
+        result.IsSuccess.Should().BeTrue();
+        address.IsDefault.Should().BeTrue();
+        address.DomainEvents.Should().Contain(e => e is DefaultAddressChangedEvent);
+        address.DomainEvents.Should().Contain(e => e is AddressUpdatedEvent);
 
         // Act again
         address.ClearDomainEvents();
         var result2 = address.SetDefault(false);
 
         // Assert again
-        Assert.True(result2.IsSuccess);
-        Assert.False(address.IsDefault);
-        Assert.DoesNotContain(address.DomainEvents, e => e is DefaultAddressChangedEvent);
-        Assert.Contains(address.DomainEvents, e => e is AddressUpdatedEvent);
+        result2.IsSuccess.Should().BeTrue();
+        address.IsDefault.Should().BeFalse();
+        address.DomainEvents.Should().NotContain(e => e is DefaultAddressChangedEvent);
+        address.DomainEvents.Should().Contain(e => e is AddressUpdatedEvent);
     }
 }

@@ -12,15 +12,15 @@ public class SpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var activeSpec = new ActiveProductSpecification();
@@ -32,7 +32,7 @@ public class SpecificationTests
         var result = andSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -40,15 +40,15 @@ public class SpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var activeSpec = new ActiveProductSpecification();
@@ -60,7 +60,7 @@ public class SpecificationTests
         var result = andSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -68,15 +68,15 @@ public class SpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var activeSpec = new ActiveProductSpecification();
@@ -88,7 +88,7 @@ public class SpecificationTests
         var result = orSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -96,15 +96,15 @@ public class SpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var activeSpec = new ActiveProductSpecification();
@@ -116,7 +116,7 @@ public class SpecificationTests
         var result = orSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -124,15 +124,15 @@ public class SpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.CreateInactive("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var activeSpec = new ActiveProductSpecification();
@@ -144,7 +144,7 @@ public class SpecificationTests
         var result = orSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -152,15 +152,15 @@ public class SpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var activeSpec = new ActiveProductSpecification();
@@ -170,7 +170,7 @@ public class SpecificationTests
         var result = notSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -178,15 +178,15 @@ public class SpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.CreateInactive("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var activeSpec = new ActiveProductSpecification();
@@ -196,7 +196,7 @@ public class SpecificationTests
         var result = notSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -204,23 +204,23 @@ public class SpecificationTests
     {
         // Arrange - (Active OR ExpensivePrice) AND NOT InStockProduct
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var variantResult = ProductVariant.CreateOutOfStock(product, "IP-BLK-128", price);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var addVariantResult = product.AddVariant(variant);
-        Assert.True(addVariantResult.IsSuccess);
+        addVariantResult.IsSuccess.Should().BeTrue();
 
         var activeSpec = new ActiveProductSpecification();
         var priceSpec = new ProductPriceRangeSpecification(1500, 2000);
@@ -232,6 +232,6 @@ public class SpecificationTests
         var result = complexSpec.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result); // Active but not in stock, should match
+        result.Should().BeTrue(); // Active but not in stock, should match
     }
 }

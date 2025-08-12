@@ -15,15 +15,15 @@ public class OutboxMessageTests
         var outboxMessage = OutboxMessage.Create(testMessage);
 
         // Assert
-        Assert.NotNull(outboxMessage);
-        Assert.Equal("Shopilent.Domain.Tests.Outbox.OutboxMessageTests+TestMessage", outboxMessage.Type);
-        Assert.Contains("\"Id\":1", outboxMessage.Content);
-        Assert.Contains("\"Name\":\"Test\"", outboxMessage.Content);
-        Assert.Null(outboxMessage.ProcessedAt);
-        Assert.Null(outboxMessage.Error);
-        Assert.Equal(0, outboxMessage.RetryCount);
-        Assert.True(outboxMessage.ScheduledAt.HasValue);
-        Assert.True(outboxMessage.ScheduledAt.Value <= DateTime.UtcNow);
+        outboxMessage.Should().NotBeNull();
+        outboxMessage.Type.Should().Be("Shopilent.Domain.Tests.Outbox.OutboxMessageTests+TestMessage");
+        outboxMessage.Content.Should().Contain("\"Id\":1");
+        outboxMessage.Content.Should().Contain("\"Name\":\"Test\"");
+        outboxMessage.ProcessedAt.Should().BeNull();
+        outboxMessage.Error.Should().BeNull();
+        outboxMessage.RetryCount.Should().Be(0);
+        outboxMessage.ScheduledAt.Should().NotBeNull();
+        outboxMessage.ScheduledAt.Value.Should().BeOnOrBefore(DateTime.UtcNow);
     }
 
     [Fact]
@@ -37,8 +37,8 @@ public class OutboxMessageTests
         var outboxMessage = OutboxMessage.Create(testMessage, scheduledAt);
 
         // Assert
-        Assert.NotNull(outboxMessage);
-        Assert.Equal(scheduledAt, outboxMessage.ScheduledAt);
+        outboxMessage.Should().NotBeNull();
+        outboxMessage.ScheduledAt.Should().Be(scheduledAt);
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public class OutboxMessageTests
         TestMessage testMessage = null;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentNullException>(() => 
-            OutboxMessage.Create(testMessage));
+        var action = () => OutboxMessage.Create(testMessage);
         
-        Assert.Equal("message", exception.ParamName);
+        action.Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("message");
     }
 
     [Fact]
@@ -65,9 +65,9 @@ public class OutboxMessageTests
         var deserializedMessage = outboxMessage.GetMessage<TestMessage>();
 
         // Assert
-        Assert.NotNull(deserializedMessage);
-        Assert.Equal(originalMessage.Id, deserializedMessage.Id);
-        Assert.Equal(originalMessage.Name, deserializedMessage.Name);
+        deserializedMessage.Should().NotBeNull();
+        deserializedMessage.Id.Should().Be(originalMessage.Id);
+        deserializedMessage.Name.Should().Be(originalMessage.Name);
     }
 
     [Fact]
@@ -79,15 +79,15 @@ public class OutboxMessageTests
         
         // First mark as failed to set error
         outboxMessage.MarkAsFailed("Some error");
-        Assert.NotNull(outboxMessage.Error);
+        outboxMessage.Error.Should().NotBeNull();
 
         // Act
         outboxMessage.MarkAsProcessed();
 
         // Assert
-        Assert.NotNull(outboxMessage.ProcessedAt);
-        Assert.True(outboxMessage.ProcessedAt.Value <= DateTime.UtcNow);
-        Assert.Null(outboxMessage.Error);
+        outboxMessage.ProcessedAt.Should().NotBeNull();
+        outboxMessage.ProcessedAt.Value.Should().BeOnOrBefore(DateTime.UtcNow);
+        outboxMessage.Error.Should().BeNull();
     }
 
     [Fact]
@@ -99,15 +99,15 @@ public class OutboxMessageTests
         var errorMessage = "Processing failed";
 
         // Pre-check
-        Assert.Equal(0, outboxMessage.RetryCount);
-        Assert.Null(outboxMessage.Error);
+        outboxMessage.RetryCount.Should().Be(0);
+        outboxMessage.Error.Should().BeNull();
 
         // Act
         outboxMessage.MarkAsFailed(errorMessage);
 
         // Assert
-        Assert.Equal(errorMessage, outboxMessage.Error);
-        Assert.Equal(1, outboxMessage.RetryCount);
+        outboxMessage.Error.Should().Be(errorMessage);
+        outboxMessage.RetryCount.Should().Be(1);
     }
 
     [Fact]
@@ -123,8 +123,8 @@ public class OutboxMessageTests
         outboxMessage.MarkAsFailed("Third failure");
 
         // Assert
-        Assert.Equal("Third failure", outboxMessage.Error);
-        Assert.Equal(3, outboxMessage.RetryCount);
+        outboxMessage.Error.Should().Be("Third failure");
+        outboxMessage.RetryCount.Should().Be(3);
     }
 
     [Fact]
@@ -140,9 +140,9 @@ public class OutboxMessageTests
         outboxMessage.Reschedule(delay);
 
         // Assert
-        Assert.NotEqual(originalScheduledAt, outboxMessage.ScheduledAt);
-        Assert.True(outboxMessage.ScheduledAt > DateTime.UtcNow.Add(delay).AddSeconds(-1));
-        Assert.True(outboxMessage.ScheduledAt < DateTime.UtcNow.Add(delay).AddSeconds(1));
+        outboxMessage.ScheduledAt.Should().NotBe(originalScheduledAt);
+        outboxMessage.ScheduledAt.Should().BeAfter(DateTime.UtcNow.Add(delay).AddSeconds(-1));
+        outboxMessage.ScheduledAt.Should().BeBefore(DateTime.UtcNow.Add(delay).AddSeconds(1));
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class OutboxMessageTests
 
         // Assert
         // For non-domain events, it should use the full type name
-        Assert.Equal("Shopilent.Domain.Tests.Outbox.OutboxMessageTests+TestMessage", outboxMessage.Type);
+        outboxMessage.Type.Should().Be("Shopilent.Domain.Tests.Outbox.OutboxMessageTests+TestMessage");
     }
 
 
@@ -177,19 +177,19 @@ public class OutboxMessageTests
         var outboxMessage = OutboxMessage.Create(complexMessage);
 
         // Assert
-        Assert.NotNull(outboxMessage.Content);
-        Assert.Contains("\"Id\":1", outboxMessage.Content);
-        Assert.Contains("\"Property1\":\"Value1\"", outboxMessage.Content);
-        Assert.Contains("\"Property2\":42", outboxMessage.Content);
-        Assert.Contains("tag1", outboxMessage.Content);
-        Assert.Contains("tag2", outboxMessage.Content);
-        Assert.Contains("tag3", outboxMessage.Content);
+        outboxMessage.Content.Should().NotBeNull();
+        outboxMessage.Content.Should().Contain("\"Id\":1");
+        outboxMessage.Content.Should().Contain("\"Property1\":\"Value1\"");
+        outboxMessage.Content.Should().Contain("\"Property2\":42");
+        outboxMessage.Content.Should().Contain("tag1");
+        outboxMessage.Content.Should().Contain("tag2");
+        outboxMessage.Content.Should().Contain("tag3");
 
         // Verify deserialization works
         var deserialized = outboxMessage.GetMessage<ComplexTestMessage>();
-        Assert.Equal(complexMessage.Id, deserialized.Id);
-        Assert.Equal(3, deserialized.Tags.Length);
-        Assert.Contains("tag1", deserialized.Tags);
+        deserialized.Id.Should().Be(complexMessage.Id);
+        deserialized.Tags.Should().HaveCount(3);
+        deserialized.Tags.Should().Contain("tag1");
     }
 
     // Test classes

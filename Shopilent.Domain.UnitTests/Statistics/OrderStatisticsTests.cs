@@ -12,7 +12,7 @@ public class OrderStatisticsTests
         var period = new DateTime(2023, 1, 1);
         var orderCount = 10;
         var totalRevenueResult = Money.FromDollars(1000);
-        Assert.True(totalRevenueResult.IsSuccess);
+        totalRevenueResult.IsSuccess.Should().BeTrue();
         var totalRevenue = totalRevenueResult.Value;
         var newCustomerCount = 6;
         var returnCustomerCount = 4;
@@ -26,19 +26,19 @@ public class OrderStatisticsTests
             returnCustomerCount);
 
         // Assert
-        Assert.Equal(period, orderStatistics.Period);
-        Assert.Equal(orderCount, orderStatistics.OrderCount);
-        Assert.Equal(totalRevenue, orderStatistics.TotalRevenue);
-        Assert.Equal(newCustomerCount, orderStatistics.NewCustomerCount);
-        Assert.Equal(returnCustomerCount, orderStatistics.ReturnCustomerCount);
+        orderStatistics.Period.Should().Be(period);
+        orderStatistics.OrderCount.Should().Be(orderCount);
+        orderStatistics.TotalRevenue.Should().Be(totalRevenue);
+        orderStatistics.NewCustomerCount.Should().Be(newCustomerCount);
+        orderStatistics.ReturnCustomerCount.Should().Be(returnCustomerCount);
         
         // Check calculated properties
         var expectedAvg = 100m; // 1000 / 10
-        Assert.Equal(expectedAvg, orderStatistics.AverageOrderValue.Amount);
-        Assert.Equal(totalRevenue.Currency, orderStatistics.AverageOrderValue.Currency);
+        orderStatistics.AverageOrderValue.Amount.Should().Be(expectedAvg);
+        orderStatistics.AverageOrderValue.Currency.Should().Be(totalRevenue.Currency);
         
         var expectedRate = 40m; // (4 / 10) * 100
-        Assert.Equal(expectedRate, orderStatistics.ReturnCustomerRate);
+        orderStatistics.ReturnCustomerRate.Should().Be(expectedRate);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class OrderStatisticsTests
         var period = new DateTime(2023, 1, 1);
         var orderCount = 0;
         var totalRevenueResult = Money.FromDollars(0);
-        Assert.True(totalRevenueResult.IsSuccess);
+        totalRevenueResult.IsSuccess.Should().BeTrue();
         var totalRevenue = totalRevenueResult.Value;
         var newCustomerCount = 0;
         var returnCustomerCount = 0;
@@ -62,14 +62,14 @@ public class OrderStatisticsTests
             returnCustomerCount);
 
         // Assert
-        Assert.Equal(period, orderStatistics.Period);
-        Assert.Equal(orderCount, orderStatistics.OrderCount);
-        Assert.Equal(totalRevenue, orderStatistics.TotalRevenue);
+        orderStatistics.Period.Should().Be(period);
+        orderStatistics.OrderCount.Should().Be(orderCount);
+        orderStatistics.TotalRevenue.Should().Be(totalRevenue);
         
         // Check edge cases with zero orders
-        Assert.Equal(0m, orderStatistics.AverageOrderValue.Amount);
-        Assert.Equal(totalRevenue.Currency, orderStatistics.AverageOrderValue.Currency);
-        Assert.Equal(0m, orderStatistics.ReturnCustomerRate);
+        orderStatistics.AverageOrderValue.Amount.Should().Be(0m);
+        orderStatistics.AverageOrderValue.Currency.Should().Be(totalRevenue.Currency);
+        orderStatistics.ReturnCustomerRate.Should().Be(0m);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class OrderStatisticsTests
         var period = new DateTime(2023, 1, 1);
         var orderCount = 10;
         var totalRevenueResult = Money.FromDollars(1000);
-        Assert.True(totalRevenueResult.IsSuccess);
+        totalRevenueResult.IsSuccess.Should().BeTrue();
         var totalRevenue = totalRevenueResult.Value;
         var newCustomerCount = 6;
         var returnCustomerCount = 4;
@@ -99,7 +99,7 @@ public class OrderStatisticsTests
             returnCustomerCount);
 
         // Act & Assert
-        Assert.Equal(statistics1, statistics2);
+        statistics1.Should().Be(statistics2);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class OrderStatisticsTests
         // Arrange
         var period = new DateTime(2023, 1, 1);
         var totalRevenueResult = Money.FromDollars(1000);
-        Assert.True(totalRevenueResult.IsSuccess);
+        totalRevenueResult.IsSuccess.Should().BeTrue();
         var totalRevenue = totalRevenueResult.Value;
 
         var statistics1 = OrderStatistics.Create(
@@ -126,6 +126,6 @@ public class OrderStatisticsTests
             4);
 
         // Act & Assert
-        Assert.NotEqual(statistics1, statistics2);
+        statistics1.Should().NotBe(statistics2);
     }
 }
