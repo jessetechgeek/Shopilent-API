@@ -15,7 +15,7 @@ public class ProductStatisticsTests
         var orderCount = 10;
         var quantitySold = 15;
         var revenueResult = Money.FromDollars(750);
-        Assert.True(revenueResult.IsSuccess);
+        revenueResult.IsSuccess.Should().BeTrue();
         var revenue = revenueResult.Value;
 
         // Act
@@ -28,14 +28,14 @@ public class ProductStatisticsTests
             revenue);
 
         // Assert
-        Assert.Equal(productId, productStatistics.ProductId);
-        Assert.Equal(productName, productStatistics.ProductName);
-        Assert.Equal(viewCount, productStatistics.ViewCount);
-        Assert.Equal(orderCount, productStatistics.OrderCount);
-        Assert.Equal(quantitySold, productStatistics.QuantitySold);
-        Assert.Equal(revenue, productStatistics.Revenue);
-        Assert.True(productStatistics.LastUpdated <= DateTime.UtcNow);
-        Assert.True(productStatistics.LastUpdated > DateTime.UtcNow.AddMinutes(-1));
+        productStatistics.ProductId.Should().Be(productId);
+        productStatistics.ProductName.Should().Be(productName);
+        productStatistics.ViewCount.Should().Be(viewCount);
+        productStatistics.OrderCount.Should().Be(orderCount);
+        productStatistics.QuantitySold.Should().Be(quantitySold);
+        productStatistics.Revenue.Should().Be(revenue);
+        productStatistics.LastUpdated.Should().BeOnOrBefore(DateTime.UtcNow);
+        productStatistics.LastUpdated.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class ProductStatisticsTests
         var orderCount = 10;
         var quantitySold = 15;
         var revenueResult = Money.FromDollars(750);
-        Assert.True(revenueResult.IsSuccess);
+        revenueResult.IsSuccess.Should().BeTrue();
         var revenue = revenueResult.Value;
 
         var productStatistics = ProductStatistics.Create(
@@ -63,12 +63,12 @@ public class ProductStatisticsTests
         var updatedStatistics = productStatistics.IncrementViews();
 
         // Assert
-        Assert.Equal(initialViewCount + 1, updatedStatistics.ViewCount);
-        Assert.Equal(productId, updatedStatistics.ProductId);
-        Assert.Equal(productName, updatedStatistics.ProductName);
-        Assert.Equal(orderCount, updatedStatistics.OrderCount);
-        Assert.Equal(quantitySold, updatedStatistics.QuantitySold);
-        Assert.Equal(revenue, updatedStatistics.Revenue);
+        updatedStatistics.ViewCount.Should().Be(initialViewCount + 1);
+        updatedStatistics.ProductId.Should().Be(productId);
+        updatedStatistics.ProductName.Should().Be(productName);
+        updatedStatistics.OrderCount.Should().Be(orderCount);
+        updatedStatistics.QuantitySold.Should().Be(quantitySold);
+        updatedStatistics.Revenue.Should().Be(revenue);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class ProductStatisticsTests
         var initialOrderCount = 10;
         var initialQuantitySold = 15;
         var initialRevenueResult = Money.FromDollars(750);
-        Assert.True(initialRevenueResult.IsSuccess);
+        initialRevenueResult.IsSuccess.Should().BeTrue();
         var initialRevenue = initialRevenueResult.Value;
 
         var productStatistics = ProductStatistics.Create(
@@ -94,19 +94,19 @@ public class ProductStatisticsTests
 
         var saleQuantity = 2;
         var saleAmountResult = Money.FromDollars(100);
-        Assert.True(saleAmountResult.IsSuccess);
+        saleAmountResult.IsSuccess.Should().BeTrue();
         var saleAmount = saleAmountResult.Value;
 
         // Act
         var updatedStatistics = productStatistics.AddSale(saleQuantity, saleAmount);
 
         // Assert
-        Assert.Equal(initialOrderCount + 1, updatedStatistics.OrderCount);
-        Assert.Equal(initialQuantitySold + saleQuantity, updatedStatistics.QuantitySold);
-        Assert.Equal(initialRevenue.Amount + saleAmount.Amount, updatedStatistics.Revenue.Amount);
-        Assert.Equal(productId, updatedStatistics.ProductId);
-        Assert.Equal(productName, updatedStatistics.ProductName);
-        Assert.Equal(viewCount, updatedStatistics.ViewCount);
+        updatedStatistics.OrderCount.Should().Be(initialOrderCount + 1);
+        updatedStatistics.QuantitySold.Should().Be(initialQuantitySold + saleQuantity);
+        updatedStatistics.Revenue.Amount.Should().Be(initialRevenue.Amount + saleAmount.Amount);
+        updatedStatistics.ProductId.Should().Be(productId);
+        updatedStatistics.ProductName.Should().Be(productName);
+        updatedStatistics.ViewCount.Should().Be(viewCount);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class ProductStatisticsTests
         var orderCount = 10;
         var quantitySold = 15;
         var revenueResult = Money.FromDollars(750);
-        Assert.True(revenueResult.IsSuccess);
+        revenueResult.IsSuccess.Should().BeTrue();
         var revenue = revenueResult.Value;
 
         var statistics1 = ProductStatistics.Create(
@@ -139,7 +139,7 @@ public class ProductStatisticsTests
             revenue);
 
         // Act & Assert
-        Assert.Equal(statistics1, statistics2);
+        statistics1.Should().Be(statistics2);
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public class ProductStatisticsTests
         var orderCount = 10;
         var quantitySold = 15;
         var revenueResult = Money.FromDollars(750);
-        Assert.True(revenueResult.IsSuccess);
+        revenueResult.IsSuccess.Should().BeTrue();
         var revenue = revenueResult.Value;
 
         var statistics1 = ProductStatistics.Create(
@@ -172,6 +172,6 @@ public class ProductStatisticsTests
             revenue);
 
         // Act & Assert
-        Assert.NotEqual(statistics1, statistics2);
+        statistics1.Should().NotBe(statistics2);
     }
 }

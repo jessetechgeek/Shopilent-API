@@ -54,17 +54,17 @@ public class AuditLogTests
             appVersion);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var auditLog = result.Value;
-        Assert.Equal(entityType, auditLog.EntityType);
-        Assert.Equal(entityId, auditLog.EntityId);
-        Assert.Equal(action, auditLog.Action);
-        Assert.Equal(user.Id, auditLog.UserId);
-        Assert.Equal(oldValues, auditLog.OldValues);
-        Assert.Equal(newValues, auditLog.NewValues);
-        Assert.Equal(ipAddress, auditLog.IpAddress);
-        Assert.Equal(userAgent, auditLog.UserAgent);
-        Assert.Equal(appVersion, auditLog.AppVersion);
+        auditLog.EntityType.Should().Be(entityType);
+        auditLog.EntityId.Should().Be(entityId);
+        auditLog.Action.Should().Be(action);
+        auditLog.UserId.Should().Be(user.Id);
+        auditLog.OldValues.Should().BeEquivalentTo(oldValues);
+        auditLog.NewValues.Should().BeEquivalentTo(newValues);
+        auditLog.IpAddress.Should().Be(ipAddress);
+        auditLog.UserAgent.Should().Be(userAgent);
+        auditLog.AppVersion.Should().Be(appVersion);
     }
 
     [Fact]
@@ -82,8 +82,8 @@ public class AuditLogTests
             action);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("AuditLog.EntityTypeRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("AuditLog.EntityTypeRequired");
     }
 
     [Fact]
@@ -101,8 +101,8 @@ public class AuditLogTests
             action);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("AuditLog.InvalidEntityId", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("AuditLog.InvalidEntityId");
     }
 
     [Fact]
@@ -128,17 +128,17 @@ public class AuditLogTests
             appVersion);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var auditLog = result.Value;
-        Assert.Equal(entityType, auditLog.EntityType);
-        Assert.Equal(entityId, auditLog.EntityId);
-        Assert.Equal(AuditAction.Create, auditLog.Action);
-        Assert.Equal(user.Id, auditLog.UserId);
-        Assert.Null(auditLog.OldValues);
-        Assert.Equal(values, auditLog.NewValues);
-        Assert.Equal(ipAddress, auditLog.IpAddress);
-        Assert.Equal(userAgent, auditLog.UserAgent);
-        Assert.Equal(appVersion, auditLog.AppVersion);
+        auditLog.EntityType.Should().Be(entityType);
+        auditLog.EntityId.Should().Be(entityId);
+        auditLog.Action.Should().Be(AuditAction.Create);
+        auditLog.UserId.Should().Be(user.Id);
+        auditLog.OldValues.Should().BeNull();
+        auditLog.NewValues.Should().BeEquivalentTo(values);
+        auditLog.IpAddress.Should().Be(ipAddress);
+        auditLog.UserAgent.Should().Be(userAgent);
+        auditLog.AppVersion.Should().Be(appVersion);
     }
 
     [Fact]
@@ -166,17 +166,17 @@ public class AuditLogTests
             appVersion);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var auditLog = result.Value;
-        Assert.Equal(entityType, auditLog.EntityType);
-        Assert.Equal(entityId, auditLog.EntityId);
-        Assert.Equal(AuditAction.Update, auditLog.Action);
-        Assert.Equal(user.Id, auditLog.UserId);
-        Assert.Equal(oldValues, auditLog.OldValues);
-        Assert.Equal(newValues, auditLog.NewValues);
-        Assert.Equal(ipAddress, auditLog.IpAddress);
-        Assert.Equal(userAgent, auditLog.UserAgent);
-        Assert.Equal(appVersion, auditLog.AppVersion);
+        auditLog.EntityType.Should().Be(entityType);
+        auditLog.EntityId.Should().Be(entityId);
+        auditLog.Action.Should().Be(AuditAction.Update);
+        auditLog.UserId.Should().Be(user.Id);
+        auditLog.OldValues.Should().BeEquivalentTo(oldValues);
+        auditLog.NewValues.Should().BeEquivalentTo(newValues);
+        auditLog.IpAddress.Should().Be(ipAddress);
+        auditLog.UserAgent.Should().Be(userAgent);
+        auditLog.AppVersion.Should().Be(appVersion);
     }
 
     [Fact]
@@ -202,17 +202,17 @@ public class AuditLogTests
             appVersion);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var auditLog = result.Value;
-        Assert.Equal(entityType, auditLog.EntityType);
-        Assert.Equal(entityId, auditLog.EntityId);
-        Assert.Equal(AuditAction.Delete, auditLog.Action);
-        Assert.Equal(user.Id, auditLog.UserId);
-        Assert.Equal(values, auditLog.OldValues);
-        Assert.Null(auditLog.NewValues);
-        Assert.Equal(ipAddress, auditLog.IpAddress);
-        Assert.Equal(userAgent, auditLog.UserAgent);
-        Assert.Equal(appVersion, auditLog.AppVersion);
+        auditLog.EntityType.Should().Be(entityType);
+        auditLog.EntityId.Should().Be(entityId);
+        auditLog.Action.Should().Be(AuditAction.Delete);
+        auditLog.UserId.Should().Be(user.Id);
+        auditLog.OldValues.Should().BeEquivalentTo(values);
+        auditLog.NewValues.Should().BeNull();
+        auditLog.IpAddress.Should().Be(ipAddress);
+        auditLog.UserAgent.Should().Be(userAgent);
+        auditLog.AppVersion.Should().Be(appVersion);
     }
 
     [Fact]
@@ -230,16 +230,16 @@ public class AuditLogTests
             action);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var auditLog = result.Value;
-        Assert.Equal(entityType, auditLog.EntityType);
-        Assert.Equal(entityId, auditLog.EntityId);
-        Assert.Equal(action, auditLog.Action);
-        Assert.Null(auditLog.UserId);
-        Assert.Null(auditLog.OldValues);
-        Assert.Null(auditLog.NewValues);
-        Assert.Null(auditLog.IpAddress);
-        Assert.Null(auditLog.UserAgent);
-        Assert.Null(auditLog.AppVersion);
+        auditLog.EntityType.Should().Be(entityType);
+        auditLog.EntityId.Should().Be(entityId);
+        auditLog.Action.Should().Be(action);
+        auditLog.UserId.Should().BeNull();
+        auditLog.OldValues.Should().BeNull();
+        auditLog.NewValues.Should().BeNull();
+        auditLog.IpAddress.Should().BeNull();
+        auditLog.UserAgent.Should().BeNull();
+        auditLog.AppVersion.Should().BeNull();
     }
 }
