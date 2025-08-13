@@ -14,8 +14,8 @@ public class SlugTests
         var result = Slug.Create(value);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(value, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(value);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class SlugTests
         var result = Slug.Create(value);
 
         // Assert
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class SlugTests
         var result = Slug.Create(value);
 
         // Assert
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -55,8 +55,8 @@ public class SlugTests
         var result = Slug.Create(input);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Fact]
@@ -70,8 +70,8 @@ public class SlugTests
         var result = Slug.Create(input);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Fact]
@@ -85,8 +85,8 @@ public class SlugTests
         var result = Slug.Create(input);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Fact]
@@ -100,8 +100,8 @@ public class SlugTests
         var result = Slug.Create(input);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Fact]
@@ -111,16 +111,16 @@ public class SlugTests
         var slug1Result = Slug.Create("test-slug");
         var slug2Result = Slug.Create("test-slug");
         
-        Assert.True(slug1Result.IsSuccess);
-        Assert.True(slug2Result.IsSuccess);
+        slug1Result.IsSuccess.Should().BeTrue();
+        slug2Result.IsSuccess.Should().BeTrue();
         
         var slug1 = slug1Result.Value;
         var slug2 = slug2Result.Value;
 
         // Act & Assert
-        Assert.True(slug1.Equals(slug2));
-        Assert.True(slug1 == slug2);
-        Assert.False(slug1 != slug2);
+        slug1.Equals(slug2).Should().BeTrue();
+        (slug1 == slug2).Should().BeTrue();
+        (slug1 != slug2).Should().BeFalse();
     }
 
     [Fact]
@@ -130,16 +130,16 @@ public class SlugTests
         var slug1Result = Slug.Create("test-slug-1");
         var slug2Result = Slug.Create("test-slug-2");
         
-        Assert.True(slug1Result.IsSuccess);
-        Assert.True(slug2Result.IsSuccess);
+        slug1Result.IsSuccess.Should().BeTrue();
+        slug2Result.IsSuccess.Should().BeTrue();
         
         var slug1 = slug1Result.Value;
         var slug2 = slug2Result.Value;
 
         // Act & Assert
-        Assert.False(slug1.Equals(slug2));
-        Assert.False(slug1 == slug2);
-        Assert.True(slug1 != slug2);
+        slug1.Equals(slug2).Should().BeFalse();
+        (slug1 == slug2).Should().BeFalse();
+        (slug1 != slug2).Should().BeTrue();
     }
 
     [Fact]
@@ -148,13 +148,13 @@ public class SlugTests
         // Arrange
         var value = "test-slug";
         var slugResult = Slug.Create(value);
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         // Act
         var result = slug.ToString();
 
         // Assert
-        Assert.Equal(value, result);
+        result.Should().Be(value);
     }
 }

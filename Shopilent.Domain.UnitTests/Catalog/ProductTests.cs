@@ -15,11 +15,11 @@ public class ProductTests
         // Arrange
         var name = "iPhone 13";
         var slugResult = Slug.Create("iphone-13");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var basePriceResult = Money.FromDollars(999);
-        Assert.True(basePriceResult.IsSuccess);
+        basePriceResult.IsSuccess.Should().BeTrue();
         var basePrice = basePriceResult.Value;
 
         var sku = "IP13-64GB";
@@ -28,17 +28,17 @@ public class ProductTests
         var result = Product.Create(name, slug, basePrice, sku);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var product = result.Value;
-        Assert.Equal(name, product.Name);
-        Assert.Equal(slug, product.Slug);
-        Assert.Equal(basePrice, product.BasePrice);
-        Assert.Equal(sku, product.Sku);
-        Assert.True(product.IsActive);
-        Assert.Empty(product.Categories);
-        Assert.Empty(product.Attributes);
-        Assert.Empty(product.Variants);
-        Assert.Contains(product.DomainEvents, e => e is ProductCreatedEvent);
+        product.Name.Should().Be(name);
+        product.Slug.Should().Be(slug);
+        product.BasePrice.Should().Be(basePrice);
+        product.Sku.Should().Be(sku);
+        product.IsActive.Should().BeTrue();
+        product.Categories.Should().BeEmpty();
+        product.Attributes.Should().BeEmpty();
+        product.Variants.Should().BeEmpty();
+        product.DomainEvents.Should().Contain(e => e is ProductCreatedEvent);
     }
 
     [Fact]
@@ -47,19 +47,19 @@ public class ProductTests
         // Arrange
         var name = string.Empty;
         var slugResult = Slug.Create("iphone-13");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var basePriceResult = Money.FromDollars(999);
-        Assert.True(basePriceResult.IsSuccess);
+        basePriceResult.IsSuccess.Should().BeTrue();
         var basePrice = basePriceResult.Value;
 
         // Act
         var result = Product.Create(name, slug, basePrice);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Product.NameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Product.NameRequired");
     }
 
     [Fact]
@@ -70,8 +70,8 @@ public class ProductTests
         var slugResult = Slug.Create(string.Empty);
 
         // Act & Assert
-        Assert.True(slugResult.IsFailure);
-        Assert.Equal("Category.SlugRequired", slugResult.Error.Code);
+        slugResult.IsFailure.Should().BeTrue();
+        slugResult.Error.Code.Should().Be("Category.SlugRequired");
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class ProductTests
         // Arrange
         var name = "iPhone 13";
         var slugResult = Slug.Create("iphone-13");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         Money basePrice = null;
@@ -89,8 +89,8 @@ public class ProductTests
         var result = Product.Create(name, slug, basePrice);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Product.NegativePrice", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Product.NegativePrice");
     }
 
     [Fact]
@@ -99,11 +99,11 @@ public class ProductTests
         // Arrange
         var name = "iPhone 13";
         var slugResult = Slug.Create("iphone-13");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var basePriceResult = Money.FromDollars(999);
-        Assert.True(basePriceResult.IsSuccess);
+        basePriceResult.IsSuccess.Should().BeTrue();
         var basePrice = basePriceResult.Value;
 
         var description = "Latest iPhone with A15 Bionic chip";
@@ -112,13 +112,13 @@ public class ProductTests
         var result = Product.CreateWithDescription(name, slug, basePrice, description);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var product = result.Value;
-        Assert.Equal(name, product.Name);
-        Assert.Equal(slug, product.Slug);
-        Assert.Equal(basePrice, product.BasePrice);
-        Assert.Equal(description, product.Description);
-        Assert.True(product.IsActive);
+        product.Name.Should().Be(name);
+        product.Slug.Should().Be(slug);
+        product.BasePrice.Should().Be(basePrice);
+        product.Description.Should().Be(description);
+        product.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -127,24 +127,24 @@ public class ProductTests
         // Arrange
         var name = "iPhone 13";
         var slugResult = Slug.Create("iphone-13");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var basePriceResult = Money.FromDollars(999);
-        Assert.True(basePriceResult.IsSuccess);
+        basePriceResult.IsSuccess.Should().BeTrue();
         var basePrice = basePriceResult.Value;
 
         // Act
         var result = Product.CreateInactive(name, slug, basePrice);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var product = result.Value;
-        Assert.Equal(name, product.Name);
-        Assert.Equal(slug, product.Slug);
-        Assert.Equal(basePrice, product.BasePrice);
-        Assert.False(product.IsActive);
-        Assert.Contains(product.DomainEvents, e => e is ProductCreatedEvent);
+        product.Name.Should().Be(name);
+        product.Slug.Should().Be(slug);
+        product.BasePrice.Should().Be(basePrice);
+        product.IsActive.Should().BeFalse();
+        product.DomainEvents.Should().Contain(e => e is ProductCreatedEvent);
     }
 
     [Fact]
@@ -156,16 +156,16 @@ public class ProductTests
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value,
             "IP13-64GB");
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var newName = "iPhone 13 Pro";
         var newSlugResult = Slug.Create("iphone-13-pro");
-        Assert.True(newSlugResult.IsSuccess);
+        newSlugResult.IsSuccess.Should().BeTrue();
         var newSlug = newSlugResult.Value;
 
         var newPriceResult = Money.FromDollars(1099);
-        Assert.True(newPriceResult.IsSuccess);
+        newPriceResult.IsSuccess.Should().BeTrue();
         var newPrice = newPriceResult.Value;
 
         var newDescription = "Pro model with better camera";
@@ -175,13 +175,13 @@ public class ProductTests
         var result = product.Update(newName, newSlug, newPrice, newDescription, newSku);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newName, product.Name);
-        Assert.Equal(newSlug, product.Slug);
-        Assert.Equal(newPrice, product.BasePrice);
-        Assert.Equal(newDescription, product.Description);
-        Assert.Equal(newSku, product.Sku);
-        Assert.Contains(product.DomainEvents, e => e is ProductUpdatedEvent);
+        result.IsSuccess.Should().BeTrue();
+        product.Name.Should().Be(newName);
+        product.Slug.Should().Be(newSlug);
+        product.BasePrice.Should().Be(newPrice);
+        product.Description.Should().Be(newDescription);
+        product.Sku.Should().Be(newSku);
+        product.DomainEvents.Should().Contain(e => e is ProductUpdatedEvent);
     }
 
     [Fact]
@@ -192,17 +192,17 @@ public class ProductTests
             "iPhone 13",
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
-        Assert.False(product.IsActive);
+        product.IsActive.Should().BeFalse();
 
         // Act
         var result = product.Activate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(product.IsActive);
-        Assert.Contains(product.DomainEvents, e => e is ProductStatusChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        product.IsActive.Should().BeTrue();
+        product.DomainEvents.Should().Contain(e => e is ProductStatusChangedEvent);
     }
 
     [Fact]
@@ -213,17 +213,17 @@ public class ProductTests
             "iPhone 13",
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
-        Assert.True(product.IsActive);
+        product.IsActive.Should().BeTrue();
 
         // Act
         var result = product.Deactivate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.False(product.IsActive);
-        Assert.Contains(product.DomainEvents, e => e is ProductStatusChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        product.IsActive.Should().BeFalse();
+        product.DomainEvents.Should().Contain(e => e is ProductStatusChangedEvent);
     }
 
     [Fact]
@@ -234,23 +234,23 @@ public class ProductTests
             "iPhone 13",
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var categoryResult = Category.Create(
             "Smartphones",
             Slug.Create("smartphones").Value);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
 
         // Act
         var result = product.AddCategory(category);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Single(product.Categories);
-        Assert.Equal(category.Id, product.Categories.First().CategoryId);
-        Assert.Contains(product.DomainEvents, e => e is ProductCategoryAddedEvent);
+        result.IsSuccess.Should().BeTrue();
+        product.Categories.Should().HaveCount(1);
+        product.Categories.First().CategoryId.Should().Be(category.Id);
+        product.DomainEvents.Should().Contain(e => e is ProductCategoryAddedEvent);
     }
 
     [Fact]
@@ -261,26 +261,26 @@ public class ProductTests
             "iPhone 13",
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var categoryResult = Category.Create(
             "Smartphones",
             Slug.Create("smartphones").Value);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
 
         product.AddCategory(category);
 
         // Pre-check
-        Assert.Single(product.Categories);
+        product.Categories.Should().HaveCount(1);
 
         // Act
         var result = product.AddCategory(category);
 
         // Assert - still only one category
-        Assert.True(result.IsSuccess);
-        Assert.Single(product.Categories);
+        result.IsSuccess.Should().BeTrue();
+        product.Categories.Should().HaveCount(1);
     }
 
     [Fact]
@@ -291,15 +291,15 @@ public class ProductTests
             "iPhone 13",
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         // Act
         var result = product.AddCategory(null);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Category.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Category.NotFound");
     }
 
     [Fact]
@@ -310,25 +310,25 @@ public class ProductTests
             "iPhone 13",
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var categoryResult = Category.Create(
             "Smartphones",
             Slug.Create("smartphones").Value);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
 
         product.AddCategory(category);
-        Assert.Single(product.Categories);
+        product.Categories.Should().HaveCount(1);
 
         // Act
         var result = product.RemoveCategory(category);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Empty(product.Categories);
-        Assert.Contains(product.DomainEvents, e => e is ProductCategoryRemovedEvent);
+        result.IsSuccess.Should().BeTrue();
+        product.Categories.Should().BeEmpty();
+        product.DomainEvents.Should().Contain(e => e is ProductCategoryRemovedEvent);
     }
 
     [Fact]
@@ -339,11 +339,11 @@ public class ProductTests
             "iPhone 13",
             Slug.Create("iphone-13").Value,
             Money.FromDollars(999).Value);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var attributeResult = Attribute.Create("Color", "Color", AttributeType.Color);
-        Assert.True(attributeResult.IsSuccess);
+        attributeResult.IsSuccess.Should().BeTrue();
         var attribute = attributeResult.Value;
 
         var attributeValue = "Blue";
@@ -352,90 +352,90 @@ public class ProductTests
         var result = product.AddAttribute(attribute, attributeValue);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Single(product.Attributes);
-        Assert.Equal(attribute.Id, product.Attributes.First().AttributeId);
+        result.IsSuccess.Should().BeTrue();
+        product.Attributes.Should().HaveCount(1);
+        product.Attributes.First().AttributeId.Should().Be(attribute.Id);
     }
 
-    // [Fact]
-    // public void AddVariant_ShouldAddVariantToProduct()
-    // {
-    //     // Arrange
-    //     var productResult = Product.Create(
-    //         "iPhone 13",
-    //         Slug.Create("iphone-13").Value,
-    //         Money.FromDollars(999).Value);
-    //     Assert.True(productResult.IsSuccess);
-    //     var product = productResult.Value;
-    //
-    //     var variantResult = ProductVariant.Create(
-    //         product,
-    //         "IP13-128GB",
-    //         Money.FromDollars(1099).Value,
-    //         100);
-    //     Assert.True(variantResult.IsSuccess);
-    //     var variant = variantResult.Value;
-    //
-    //     // Act
-    //     var result = product.AddVariant(variant);
-    //
-    //     // Assert
-    //     Assert.True(result.IsSuccess);
-    //     Assert.Single(product.Variants);
-    //     Assert.Equal(variant.Id, product.Variants.First().Id);
-    //     Assert.Contains(product.DomainEvents, e => e is ProductVariantAddedEvent);
-    // }
+    [Fact]
+    public void AddVariant_ShouldAddVariantToProduct()
+    {
+        // Arrange
+        var productResult = Product.Create(
+            "iPhone 13",
+            Slug.Create("iphone-13").Value,
+            Money.FromDollars(999).Value);
+        productResult.IsSuccess.Should().BeTrue();
+        var product = productResult.Value;
 
-    // [Fact]
-    // public void AddVariant_WithDuplicateSku_ShouldReturnFailure()
-    // {
-    //     // Arrange
-    //     var productResult = Product.Create(
-    //         "iPhone 13",
-    //         Slug.Create("iphone-13").Value,
-    //         Money.FromDollars(999).Value);
-    //     Assert.True(productResult.IsSuccess);
-    //     var product = productResult.Value;
-    //
-    //     var sku = "IP13-128GB";
-    //     var variant1Result = ProductVariant.Create(product, sku, Money.FromDollars(1099).Value, 100);
-    //     Assert.True(variant1Result.IsSuccess);
-    //     var variant1 = variant1Result.Value;
-    //
-    //     product.AddVariant(variant1);
-    //
-    //     var variant2Result = ProductVariant.Create(product, sku, Money.FromDollars(1199).Value, 50);
-    //     Assert.True(variant2Result.IsSuccess);
-    //     var variant2 = variant2Result.Value;
-    //
-    //     // Act
-    //     var result = product.AddVariant(variant2);
-    //
-    //     // Assert
-    //     Assert.True(result.IsFailure);
-    //     Assert.Equal("ProductVariant.DuplicateSku", result.Error.Code);
-    // }
+        var variantResult = ProductVariant.Create(
+            product.Id,
+            "IP13-128GB",
+            Money.FromDollars(1099).Value,
+            100);
+        variantResult.IsSuccess.Should().BeTrue();
+        var variant = variantResult.Value;
 
-    // [Fact]
-    // public void UpdateMetadata_ShouldUpdateProductMetadata()
-    // {
-    //     // Arrange
-    //     var productResult = Product.Create(
-    //         "iPhone 13",
-    //         Slug.Create("iphone-13").Value,
-    //         Money.FromDollars(999).Value);
-    //     Assert.True(productResult.IsSuccess);
-    //     var product = productResult.Value;
-    //
-    //     var key = "weight";
-    //     var value = "174g";
-    //
-    //     // Act
-    //     var result = product.UpdateMetadata(key, value);
-    //
-    //     // Assert
-    //     Assert.True(result.IsSuccess);
-    //     Assert.True(product.Metadata.ContainsKey(key));
-    //     Assert.Equal(value, product.Metadata[key]);
-    // }
+        // Act
+        var result = product.AddVariant(variant);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        product.Variants.Should().HaveCount(1);
+        product.Variants.First().Id.Should().Be(variant.Id);
+        product.DomainEvents.Should().Contain(e => e is ProductVariantAddedEvent);
+    }
+
+    [Fact]
+    public void AddVariant_WithDuplicateSku_ShouldReturnFailure()
+    {
+        // Arrange
+        var productResult = Product.Create(
+            "iPhone 13",
+            Slug.Create("iphone-13").Value,
+            Money.FromDollars(999).Value);
+        productResult.IsSuccess.Should().BeTrue();
+        var product = productResult.Value;
+
+        var sku = "IP13-128GB";
+        var variant1Result = ProductVariant.Create(product.Id, sku, Money.FromDollars(1099).Value, 100);
+        variant1Result.IsSuccess.Should().BeTrue();
+        var variant1 = variant1Result.Value;
+
+        product.AddVariant(variant1);
+
+        var variant2Result = ProductVariant.Create(product.Id, sku, Money.FromDollars(1199).Value, 50);
+        variant2Result.IsSuccess.Should().BeTrue();
+        var variant2 = variant2Result.Value;
+
+        // Act
+        var result = product.AddVariant(variant2);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("ProductVariant.DuplicateSku");
+    }
+
+    [Fact]
+    public void UpdateMetadata_ShouldUpdateProductMetadata()
+    {
+        // Arrange
+        var productResult = Product.Create(
+            "iPhone 13",
+            Slug.Create("iphone-13").Value,
+            Money.FromDollars(999).Value);
+        productResult.IsSuccess.Should().BeTrue();
+        var product = productResult.Value;
+
+        var key = "weight";
+        var value = "174g";
+
+        // Act
+        var result = product.UpdateMetadata(key, value);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        product.Metadata.Should().ContainKey(key);
+        product.Metadata[key].Should().Be(value);
+    }
 }

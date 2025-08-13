@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Sales;
 using Shopilent.Domain.Sales.Events;
 using Shopilent.Domain.Identity;
@@ -20,24 +21,24 @@ public class CartTests
             "hashed_password",
             fullNameResult.Value);
 
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
     private Product CreateTestProduct(string name = "Test Product", decimal price = 100M)
     {
         var slugResult = Slug.Create(name.ToLower().Replace(" ", "-"));
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
 
         var priceResult = Money.FromDollars(price);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
 
         var productResult = Product.Create(
             name,
             slugResult.Value,
             priceResult.Value);
 
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         return productResult.Value;
     }
 
@@ -48,12 +49,12 @@ public class CartTests
         var cartResult = Cart.Create();
 
         // Assert
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
-        Assert.Null(cart.UserId);
-        Assert.Empty(cart.Items);
-        Assert.Empty(cart.Metadata);
-        Assert.Contains(cart.DomainEvents, e => e is CartCreatedEvent);
+        cart.UserId.Should().BeNull();
+        cart.Items.Should().BeEmpty();
+        cart.Metadata.Should().BeEmpty();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartCreatedEvent);
     }
 
     [Fact]
@@ -66,12 +67,12 @@ public class CartTests
         var cartResult = Cart.Create(user);
 
         // Assert
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
-        Assert.Equal(user.Id, cart.UserId);
-        Assert.Empty(cart.Items);
-        Assert.Empty(cart.Metadata);
-        Assert.Contains(cart.DomainEvents, e => e is CartCreatedEvent);
+        cart.UserId.Should().Be(user.Id);
+        cart.Items.Should().BeEmpty();
+        cart.Metadata.Should().BeEmpty();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartCreatedEvent);
     }
 
     [Fact]
@@ -89,14 +90,14 @@ public class CartTests
         var cartResult = Cart.CreateWithMetadata(user, metadata);
 
         // Assert
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
-        Assert.Equal(user.Id, cart.UserId);
-        Assert.Empty(cart.Items);
-        Assert.Equal(2, cart.Metadata.Count);
-        Assert.Equal("mobile_app", cart.Metadata["source"]);
-        Assert.Equal("1.0", cart.Metadata["version"]);
-        Assert.Contains(cart.DomainEvents, e => e is CartCreatedEvent);
+        cart.UserId.Should().Be(user.Id);
+        cart.Items.Should().BeEmpty();
+        cart.Metadata.Should().HaveCount(2);
+        cart.Metadata["source"].Should().Be("mobile_app");
+        cart.Metadata["version"].Should().Be("1.0");
+        cart.DomainEvents.Should().ContainSingle(e => e is CartCreatedEvent);
     }
 
     [Fact]
@@ -104,9 +105,9 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
-        Assert.Null(cart.UserId);
+        cart.UserId.Should().BeNull();
 
         var user = CreateTestUser();
 
@@ -114,9 +115,9 @@ public class CartTests
         var assignResult = cart.AssignToUser(user);
 
         // Assert
-        Assert.True(assignResult.IsSuccess);
-        Assert.Equal(user.Id, cart.UserId);
-        Assert.Contains(cart.DomainEvents, e => e is CartAssignedToUserEvent);
+        assignResult.IsSuccess.Should().BeTrue();
+        cart.UserId.Should().Be(user.Id);
+        cart.DomainEvents.Should().ContainSingle(e => e is CartAssignedToUserEvent);
     }
 
     [Fact]
@@ -124,7 +125,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
         User user = null;
 
@@ -132,8 +133,8 @@ public class CartTests
         var assignResult = cart.AssignToUser(user);
 
         // Assert
-        Assert.True(assignResult.IsFailure);
-        Assert.Equal("User.NotFound", assignResult.Error.Code);
+        assignResult.IsFailure.Should().BeTrue();
+        assignResult.Error.Code.Should().Be("User.NotFound");
     }
 
     [Fact]
@@ -141,7 +142,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var product = CreateTestProduct();
@@ -151,13 +152,13 @@ public class CartTests
         var cartItemResult = cart.AddItem(product, quantity);
 
         // Assert
-        Assert.True(cartItemResult.IsSuccess);
+        cartItemResult.IsSuccess.Should().BeTrue();
         var cartItem = cartItemResult.Value;
-        Assert.Single(cart.Items);
-        Assert.Equal(product.Id, cartItem.ProductId);
-        Assert.Equal(quantity, cartItem.Quantity);
-        Assert.Null(cartItem.VariantId);
-        Assert.Contains(cart.DomainEvents, e => e is CartItemAddedEvent);
+        cart.Items.Should().HaveCount(1);
+        cartItem.ProductId.Should().Be(product.Id);
+        cartItem.Quantity.Should().Be(quantity);
+        cartItem.VariantId.Should().BeNull();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemAddedEvent);
     }
 
     [Fact]
@@ -165,7 +166,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var product = CreateTestProduct();
@@ -173,9 +174,9 @@ public class CartTests
         // Add first item
         var initialQuantity = 2;
         var cartItemResult = cart.AddItem(product, initialQuantity);
-        Assert.True(cartItemResult.IsSuccess);
+        cartItemResult.IsSuccess.Should().BeTrue();
         var cartItem = cartItemResult.Value;
-        Assert.Equal(initialQuantity, cartItem.Quantity);
+        cartItem.Quantity.Should().Be(initialQuantity);
 
         // Add same product again
         var additionalQuantity = 3;
@@ -184,11 +185,11 @@ public class CartTests
         var updatedItemResult = cart.AddItem(product, additionalQuantity);
 
         // Assert
-        Assert.True(updatedItemResult.IsSuccess);
+        updatedItemResult.IsSuccess.Should().BeTrue();
         var updatedItem = updatedItemResult.Value;
-        Assert.Single(cart.Items);
-        Assert.Equal(cartItem.Id, updatedItem.Id);
-        Assert.Equal(initialQuantity + additionalQuantity, updatedItem.Quantity);
+        cart.Items.Should().HaveCount(1);
+        updatedItem.Id.Should().Be(cartItem.Id);
+        updatedItem.Quantity.Should().Be(initialQuantity + additionalQuantity);
     }
 
     [Fact]
@@ -196,16 +197,16 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var product = CreateTestProduct();
 
         var priceResult = Money.FromDollars(150);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
 
         var variantResult = ProductVariant.Create(product.Id, "VAR-123", priceResult.Value, 100);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var quantity = 1;
@@ -214,13 +215,13 @@ public class CartTests
         var cartItemResult = cart.AddItem(product, quantity, variant);
 
         // Assert
-        Assert.True(cartItemResult.IsSuccess);
+        cartItemResult.IsSuccess.Should().BeTrue();
         var cartItem = cartItemResult.Value;
-        Assert.Single(cart.Items);
-        Assert.Equal(product.Id, cartItem.ProductId);
-        Assert.Equal(variant.Id, cartItem.VariantId);
-        Assert.Equal(quantity, cartItem.Quantity);
-        Assert.Contains(cart.DomainEvents, e => e is CartItemAddedEvent);
+        cart.Items.Should().HaveCount(1);
+        cartItem.ProductId.Should().Be(product.Id);
+        cartItem.VariantId.Should().Be(variant.Id);
+        cartItem.Quantity.Should().Be(quantity);
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemAddedEvent);
     }
 
     [Fact]
@@ -228,7 +229,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         Product product = null;
@@ -238,8 +239,8 @@ public class CartTests
         var cartItemResult = cart.AddItem(product, quantity);
 
         // Assert
-        Assert.True(cartItemResult.IsFailure);
-        Assert.Equal("Product.NotFound", cartItemResult.Error.Code);
+        cartItemResult.IsFailure.Should().BeTrue();
+        cartItemResult.Error.Code.Should().Be("Product.NotFound");
     }
 
     [Fact]
@@ -247,7 +248,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var product = CreateTestProduct();
@@ -257,8 +258,8 @@ public class CartTests
         var cartItemResult = cart.AddItem(product, quantity);
 
         // Assert
-        Assert.True(cartItemResult.IsFailure);
-        Assert.Equal("Cart.InvalidQuantity", cartItemResult.Error.Code);
+        cartItemResult.IsFailure.Should().BeTrue();
+        cartItemResult.Error.Code.Should().Be("Cart.InvalidQuantity");
     }
 
     [Fact]
@@ -266,13 +267,13 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var product = CreateTestProduct();
         var initialQuantity = 1;
         var cartItemResult = cart.AddItem(product, initialQuantity);
-        Assert.True(cartItemResult.IsSuccess);
+        cartItemResult.IsSuccess.Should().BeTrue();
         var cartItem = cartItemResult.Value;
 
         var newQuantity = 5;
@@ -281,10 +282,10 @@ public class CartTests
         var updateResult = cart.UpdateItemQuantity(cartItem.Id, newQuantity);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Single(cart.Items);
-        Assert.Equal(newQuantity, cart.Items.First().Quantity);
-        Assert.Contains(cart.DomainEvents, e => e is CartItemUpdatedEvent);
+        updateResult.IsSuccess.Should().BeTrue();
+        cart.Items.Should().HaveCount(1);
+        cart.Items.First().Quantity.Should().Be(newQuantity);
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemUpdatedEvent);
     }
 
     [Fact]
@@ -292,21 +293,21 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var product = CreateTestProduct();
         var cartItemResult = cart.AddItem(product, 2);
-        Assert.True(cartItemResult.IsSuccess);
-        Assert.Single(cart.Items);
+        cartItemResult.IsSuccess.Should().BeTrue();
+        cart.Items.Should().HaveCount(1);
 
         // Act
         var updateResult = cart.UpdateItemQuantity(cartItemResult.Value.Id, 0);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Empty(cart.Items);
-        Assert.Contains(cart.DomainEvents, e => e is CartItemRemovedEvent);
+        updateResult.IsSuccess.Should().BeTrue();
+        cart.Items.Should().BeEmpty();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemRemovedEvent);
     }
 
     [Fact]
@@ -314,7 +315,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var invalidItemId = Guid.NewGuid();
@@ -324,8 +325,8 @@ public class CartTests
         var updateResult = cart.UpdateItemQuantity(invalidItemId, quantity);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("Cart.ItemNotFound", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("Cart.ItemNotFound");
     }
 
     [Fact]
@@ -333,21 +334,21 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var product = CreateTestProduct();
         var cartItemResult = cart.AddItem(product, 1);
-        Assert.True(cartItemResult.IsSuccess);
-        Assert.Single(cart.Items);
+        cartItemResult.IsSuccess.Should().BeTrue();
+        cart.Items.Should().HaveCount(1);
 
         // Act
         var removeResult = cart.RemoveItem(cartItemResult.Value.Id);
 
         // Assert
-        Assert.True(removeResult.IsSuccess);
-        Assert.Empty(cart.Items);
-        Assert.Contains(cart.DomainEvents, e => e is CartItemRemovedEvent);
+        removeResult.IsSuccess.Should().BeTrue();
+        cart.Items.Should().BeEmpty();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemRemovedEvent);
     }
 
     [Fact]
@@ -355,21 +356,21 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         cart.AddItem(CreateTestProduct("Product 1"), 1);
         cart.AddItem(CreateTestProduct("Product 2"), 2);
         cart.AddItem(CreateTestProduct("Product 3"), 3);
-        Assert.Equal(3, cart.Items.Count);
+        cart.Items.Should().HaveCount(3);
 
         // Act
         var clearResult = cart.Clear();
 
         // Assert
-        Assert.True(clearResult.IsSuccess);
-        Assert.Empty(cart.Items);
-        Assert.Contains(cart.DomainEvents, e => e is CartClearedEvent);
+        clearResult.IsSuccess.Should().BeTrue();
+        cart.Items.Should().BeEmpty();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartClearedEvent);
     }
 
     [Fact]
@@ -377,7 +378,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var key = "campaign";
@@ -387,9 +388,9 @@ public class CartTests
         var updateResult = cart.UpdateMetadata(key, value);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Single(cart.Metadata);
-        Assert.Equal(value, cart.Metadata[key]);
+        updateResult.IsSuccess.Should().BeTrue();
+        cart.Metadata.Should().HaveCount(1);
+        cart.Metadata[key].Should().Be(value);
     }
 
     [Fact]
@@ -397,7 +398,7 @@ public class CartTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
 
         var key = string.Empty;
@@ -407,7 +408,7 @@ public class CartTests
         var updateResult = cart.UpdateMetadata(key, value);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("Cart.InvalidMetadataKey", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("Cart.InvalidMetadataKey");
     }
 }

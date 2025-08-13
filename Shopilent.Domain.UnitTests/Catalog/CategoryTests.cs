@@ -12,24 +12,24 @@ public class CategoryTests
         // Arrange
         var name = "Electronics";
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         // Act
         var result = Category.Create(name, slug);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var category = result.Value;
-        Assert.Equal(name, category.Name);
-        Assert.Equal(slug, category.Slug);
-        Assert.Null(category.ParentId);
-        Assert.Equal(0, category.Level);
-        Assert.Equal($"/{slug}", category.Path);
-        Assert.True(category.IsActive);
-        Assert.Empty(category.Children);
-        Assert.Empty(category.ProductCategories);
-        Assert.Contains(category.DomainEvents, e => e is CategoryCreatedEvent);
+        category.Name.Should().Be(name);
+        category.Slug.Should().Be(slug);
+        category.ParentId.Should().BeNull();
+        category.Level.Should().Be(0);
+        category.Path.Should().Be($"/{slug}");
+        category.IsActive.Should().BeTrue();
+        category.Children.Should().BeEmpty();
+        category.ProductCategories.Should().BeEmpty();
+        category.DomainEvents.Should().Contain(e => e is CategoryCreatedEvent);
     }
 
     [Fact]
@@ -38,15 +38,15 @@ public class CategoryTests
         // Arrange
         var name = string.Empty;
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         // Act
         var result = Category.Create(name, slug);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Category.NameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Category.NameRequired");
     }
 
     [Fact]
@@ -57,8 +57,8 @@ public class CategoryTests
         var slugResult = Slug.Create(string.Empty);
 
         // Act & Assert
-        Assert.True(slugResult.IsFailure);
-        Assert.Equal("Category.SlugRequired", slugResult.Error.Code);
+        slugResult.IsFailure.Should().BeTrue();
+        slugResult.Error.Code.Should().Be("Category.SlugRequired");
     }
 
     [Fact]
@@ -67,30 +67,30 @@ public class CategoryTests
         // Arrange
         var parentName = "Electronics";
         var parentSlugResult = Slug.Create("electronics");
-        Assert.True(parentSlugResult.IsSuccess);
+        parentSlugResult.IsSuccess.Should().BeTrue();
         var parentSlug = parentSlugResult.Value;
 
         var parentResult = Category.Create(parentName, parentSlug);
-        Assert.True(parentResult.IsSuccess);
+        parentResult.IsSuccess.Should().BeTrue();
         var parent = parentResult.Value;
 
         var childName = "Smartphones";
         var childSlugResult = Slug.Create("smartphones");
-        Assert.True(childSlugResult.IsSuccess);
+        childSlugResult.IsSuccess.Should().BeTrue();
         var childSlug = childSlugResult.Value;
 
         // Act
         var result = Category.Create(childName, childSlug, parent);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var child = result.Value;
-        Assert.Equal(childName, child.Name);
-        Assert.Equal(childSlug, child.Slug);
-        Assert.Equal(parent.Id, child.ParentId);
-        Assert.Equal(1, child.Level);
-        Assert.Equal($"/{parentSlug}/{childSlug}", child.Path);
-        Assert.True(child.IsActive);
+        child.Name.Should().Be(childName);
+        child.Slug.Should().Be(childSlug);
+        child.ParentId.Should().Be(parent.Id);
+        child.Level.Should().Be(1);
+        child.Path.Should().Be($"/{parentSlug}/{childSlug}");
+        child.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -99,19 +99,19 @@ public class CategoryTests
         // Arrange
         var name = "Electronics";
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         // Act
         var result = Category.CreateInactive(name, slug);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var category = result.Value;
-        Assert.Equal(name, category.Name);
-        Assert.Equal(slug, category.Slug);
-        Assert.False(category.IsActive);
-        Assert.Contains(category.DomainEvents, e => e is CategoryCreatedEvent);
+        category.Name.Should().Be(name);
+        category.Slug.Should().Be(slug);
+        category.IsActive.Should().BeFalse();
+        category.DomainEvents.Should().Contain(e => e is CategoryCreatedEvent);
     }
 
     [Fact]
@@ -119,12 +119,12 @@ public class CategoryTests
     {
         // Arrange
         var categoryResult = Category.Create("Electronics", Slug.Create("electronics").Value);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
 
         var newName = "Tech Gadgets";
         var newSlugResult = Slug.Create("tech-gadgets");
-        Assert.True(newSlugResult.IsSuccess);
+        newSlugResult.IsSuccess.Should().BeTrue();
         var newSlug = newSlugResult.Value;
 
         var description = "All kinds of tech gadgets";
@@ -133,11 +133,11 @@ public class CategoryTests
         var result = category.Update(newName, newSlug, description);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newName, category.Name);
-        Assert.Equal(newSlug, category.Slug);
-        Assert.Equal(description, category.Description);
-        Assert.Contains(category.DomainEvents, e => e is CategoryUpdatedEvent);
+        result.IsSuccess.Should().BeTrue();
+        category.Name.Should().Be(newName);
+        category.Slug.Should().Be(newSlug);
+        category.Description.Should().Be(description);
+        category.DomainEvents.Should().Contain(e => e is CategoryUpdatedEvent);
     }
 
     [Fact]
@@ -145,17 +145,17 @@ public class CategoryTests
     {
         // Arrange
         var categoryResult = Category.CreateInactive("Electronics", Slug.Create("electronics").Value);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
-        Assert.False(category.IsActive);
+        category.IsActive.Should().BeFalse();
 
         // Act
         var result = category.Activate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(category.IsActive);
-        Assert.Contains(category.DomainEvents, e => e is CategoryStatusChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        category.IsActive.Should().BeTrue();
+        category.DomainEvents.Should().Contain(e => e is CategoryStatusChangedEvent);
     }
 
     [Fact]
@@ -163,17 +163,17 @@ public class CategoryTests
     {
         // Arrange
         var categoryResult = Category.Create("Electronics", Slug.Create("electronics").Value);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
-        Assert.True(category.IsActive);
+        category.IsActive.Should().BeTrue();
 
         // Act
         var result = category.Deactivate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.False(category.IsActive);
-        Assert.Contains(category.DomainEvents, e => e is CategoryStatusChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        category.IsActive.Should().BeFalse();
+        category.DomainEvents.Should().Contain(e => e is CategoryStatusChangedEvent);
     }
 
     [Fact]
@@ -181,22 +181,22 @@ public class CategoryTests
     {
         // Arrange
         var categoryResult = Category.Create("Smartphones", Slug.Create("smartphones").Value);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
 
         var parentResult = Category.Create("Electronics", Slug.Create("electronics").Value);
-        Assert.True(parentResult.IsSuccess);
+        parentResult.IsSuccess.Should().BeTrue();
         var parent = parentResult.Value;
 
         // Act
         var result = category.SetParent(parent);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(parent.Id, category.ParentId);
-        Assert.Equal(1, category.Level);
-        Assert.Equal($"/{parent.Slug}/{category.Slug}", category.Path);
-        Assert.Contains(category.DomainEvents, e => e is CategoryHierarchyChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        category.ParentId.Should().Be(parent.Id);
+        category.Level.Should().Be(1);
+        category.Path.Should().Be($"/{parent.Slug}/{category.Slug}");
+        category.DomainEvents.Should().Contain(e => e is CategoryHierarchyChangedEvent);
     }
 
     [Fact]
@@ -204,23 +204,23 @@ public class CategoryTests
     {
         // Arrange
         var parentResult = Category.Create("Electronics", Slug.Create("electronics").Value);
-        Assert.True(parentResult.IsSuccess);
+        parentResult.IsSuccess.Should().BeTrue();
         var parent = parentResult.Value;
 
         var categoryResult = Category.Create("Smartphones", Slug.Create("smartphones").Value, parent);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
-        Assert.Equal(parent.Id, category.ParentId);
+        category.ParentId.Should().Be(parent.Id);
 
         // Act
         var result = category.SetParent(null);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Null(category.ParentId);
-        Assert.Equal(0, category.Level);
-        Assert.Equal($"/{category.Slug}", category.Path);
-        Assert.Contains(category.DomainEvents, e => e is CategoryHierarchyChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        category.ParentId.Should().BeNull();
+        category.Level.Should().Be(0);
+        category.Path.Should().Be($"/{category.Slug}");
+        category.DomainEvents.Should().Contain(e => e is CategoryHierarchyChangedEvent);
     }
 
     [Fact]
@@ -228,22 +228,22 @@ public class CategoryTests
     {
         // Arrange
         var parentResult = Category.Create("Electronics", Slug.Create("electronics").Value);
-        Assert.True(parentResult.IsSuccess);
+        parentResult.IsSuccess.Should().BeTrue();
         var parent = parentResult.Value;
 
         var childResult = Category.Create("Smartphones", Slug.Create("smartphones").Value);
-        Assert.True(childResult.IsSuccess);
+        childResult.IsSuccess.Should().BeTrue();
         var child = childResult.Value;
 
         // Act
         var result = parent.AddChild(child);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(parent.Id, child.ParentId);
-        Assert.Equal(1, child.Level);
-        Assert.Equal($"/{parent.Slug}/{child.Slug}", child.Path);
-        Assert.Contains(parent.Children, c => c.Id == child.Id);
+        result.IsSuccess.Should().BeTrue();
+        child.ParentId.Should().Be(parent.Id);
+        child.Level.Should().Be(1);
+        child.Path.Should().Be($"/{parent.Slug}/{child.Slug}");
+        parent.Children.Should().Contain(c => c.Id == child.Id);
     }
 
     [Fact]
@@ -251,14 +251,14 @@ public class CategoryTests
     {
         // Arrange
         var parentResult = Category.Create("Electronics", Slug.Create("electronics").Value);
-        Assert.True(parentResult.IsSuccess);
+        parentResult.IsSuccess.Should().BeTrue();
         var parent = parentResult.Value;
 
         // Act
         var result = parent.AddChild(null);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Category.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Category.NotFound");
     }
 }

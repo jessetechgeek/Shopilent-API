@@ -11,11 +11,11 @@ public class ActiveCategorySpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
         
         var categoryResult = Category.Create("Electronics", slug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         var specification = new ActiveCategorySpecification();
@@ -24,7 +24,7 @@ public class ActiveCategorySpecificationTests
         var result = specification.IsSatisfiedBy(category);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -32,11 +32,11 @@ public class ActiveCategorySpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
         
         var categoryResult = Category.CreateInactive("Electronics", slug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         var specification = new ActiveCategorySpecification();
@@ -45,6 +45,6 @@ public class ActiveCategorySpecificationTests
         var result = specification.IsSatisfiedBy(category);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 }

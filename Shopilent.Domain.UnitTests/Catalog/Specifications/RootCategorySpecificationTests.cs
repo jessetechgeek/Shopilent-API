@@ -11,11 +11,11 @@ public class RootCategorySpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
         
         var categoryResult = Category.Create("Electronics", slug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         var specification = new RootCategorySpecification();
@@ -24,7 +24,7 @@ public class RootCategorySpecificationTests
         var result = specification.IsSatisfiedBy(category);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -32,19 +32,19 @@ public class RootCategorySpecificationTests
     {
         // Arrange
         var parentSlugResult = Slug.Create("electronics");
-        Assert.True(parentSlugResult.IsSuccess);
+        parentSlugResult.IsSuccess.Should().BeTrue();
         var parentSlug = parentSlugResult.Value;
         
         var parentResult = Category.Create("Electronics", parentSlug);
-        Assert.True(parentResult.IsSuccess);
+        parentResult.IsSuccess.Should().BeTrue();
         var parent = parentResult.Value;
         
         var childSlugResult = Slug.Create("phones");
-        Assert.True(childSlugResult.IsSuccess);
+        childSlugResult.IsSuccess.Should().BeTrue();
         var childSlug = childSlugResult.Value;
         
         var childResult = Category.Create("Phones", childSlug, parent);
-        Assert.True(childResult.IsSuccess);
+        childResult.IsSuccess.Should().BeTrue();
         var child = childResult.Value;
         
         var specification = new RootCategorySpecification();
@@ -53,6 +53,6 @@ public class RootCategorySpecificationTests
         var result = specification.IsSatisfiedBy(child);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 }

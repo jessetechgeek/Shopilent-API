@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Catalog;
 using Shopilent.Domain.Catalog.ValueObjects;
 using Shopilent.Domain.Identity;
@@ -13,34 +14,34 @@ public class CartEventTests
     private User CreateTestUser()
     {
         var emailResult = Email.Create("test@example.com");
-        Assert.True(emailResult.IsSuccess);
+        emailResult.IsSuccess.Should().BeTrue();
         
         var fullNameResult = FullName.Create("Test", "User");
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
         
         var userResult = User.Create(
             emailResult.Value,
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
     private Product CreateTestProduct()
     {
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         
         var priceResult = Money.FromDollars(100);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         
         var productResult = Product.Create(
             "Test Product",
             slugResult.Value,
             priceResult.Value);
             
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         return productResult.Value;
     }
 
@@ -51,11 +52,12 @@ public class CartEventTests
         var cartResult = Cart.Create();
 
         // Assert
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
-        var domainEvent = Assert.Single(cart.DomainEvents, e => e is CartCreatedEvent);
+        cart.DomainEvents.Should().ContainSingle(e => e is CartCreatedEvent);
+        var domainEvent = cart.DomainEvents.First(e => e is CartCreatedEvent);
         var createdEvent = (CartCreatedEvent)domainEvent;
-        Assert.Equal(cart.Id, createdEvent.CartId);
+        createdEvent.CartId.Should().Be(cart.Id);
     }
 
     [Fact]
@@ -63,7 +65,7 @@ public class CartEventTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
         
         var user = CreateTestUser();
@@ -73,11 +75,12 @@ public class CartEventTests
         var assignResult = cart.AssignToUser(user);
 
         // Assert
-        Assert.True(assignResult.IsSuccess);
-        var domainEvent = Assert.Single(cart.DomainEvents, e => e is CartAssignedToUserEvent);
+        assignResult.IsSuccess.Should().BeTrue();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartAssignedToUserEvent);
+        var domainEvent = cart.DomainEvents.First(e => e is CartAssignedToUserEvent);
         var assignedEvent = (CartAssignedToUserEvent)domainEvent;
-        Assert.Equal(cart.Id, assignedEvent.CartId);
-        Assert.Equal(user.Id, assignedEvent.UserId);
+        assignedEvent.CartId.Should().Be(cart.Id);
+        assignedEvent.UserId.Should().Be(user.Id);
     }
 
     [Fact]
@@ -85,7 +88,7 @@ public class CartEventTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
         
         var product = CreateTestProduct();
@@ -95,12 +98,13 @@ public class CartEventTests
         var cartItemResult = cart.AddItem(product, 2);
 
         // Assert
-        Assert.True(cartItemResult.IsSuccess);
+        cartItemResult.IsSuccess.Should().BeTrue();
         var cartItem = cartItemResult.Value;
-        var domainEvent = Assert.Single(cart.DomainEvents, e => e is CartItemAddedEvent);
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemAddedEvent);
+        var domainEvent = cart.DomainEvents.First(e => e is CartItemAddedEvent);
         var addedEvent = (CartItemAddedEvent)domainEvent;
-        Assert.Equal(cart.Id, addedEvent.CartId);
-        Assert.Equal(cartItem.Id, addedEvent.ItemId);
+        addedEvent.CartId.Should().Be(cart.Id);
+        addedEvent.ItemId.Should().Be(cartItem.Id);
     }
 
     [Fact]
@@ -108,12 +112,12 @@ public class CartEventTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
         
         var product = CreateTestProduct();
         var cartItemResult = cart.AddItem(product, 1);
-        Assert.True(cartItemResult.IsSuccess);
+        cartItemResult.IsSuccess.Should().BeTrue();
         var cartItem = cartItemResult.Value;
         
         cart.ClearDomainEvents(); // Clear previous events
@@ -122,11 +126,12 @@ public class CartEventTests
         var updateResult = cart.UpdateItemQuantity(cartItem.Id, 3);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        var domainEvent = Assert.Single(cart.DomainEvents, e => e is CartItemUpdatedEvent);
+        updateResult.IsSuccess.Should().BeTrue();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemUpdatedEvent);
+        var domainEvent = cart.DomainEvents.First(e => e is CartItemUpdatedEvent);
         var updatedEvent = (CartItemUpdatedEvent)domainEvent;
-        Assert.Equal(cart.Id, updatedEvent.CartId);
-        Assert.Equal(cartItem.Id, updatedEvent.ItemId);
+        updatedEvent.CartId.Should().Be(cart.Id);
+        updatedEvent.ItemId.Should().Be(cartItem.Id);
     }
 
     [Fact]
@@ -134,12 +139,12 @@ public class CartEventTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
         
         var product = CreateTestProduct();
         var cartItemResult = cart.AddItem(product, 1);
-        Assert.True(cartItemResult.IsSuccess);
+        cartItemResult.IsSuccess.Should().BeTrue();
         var cartItem = cartItemResult.Value;
         
         cart.ClearDomainEvents(); // Clear previous events
@@ -148,11 +153,12 @@ public class CartEventTests
         var removeResult = cart.RemoveItem(cartItem.Id);
 
         // Assert
-        Assert.True(removeResult.IsSuccess);
-        var domainEvent = Assert.Single(cart.DomainEvents, e => e is CartItemRemovedEvent);
+        removeResult.IsSuccess.Should().BeTrue();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartItemRemovedEvent);
+        var domainEvent = cart.DomainEvents.First(e => e is CartItemRemovedEvent);
         var removedEvent = (CartItemRemovedEvent)domainEvent;
-        Assert.Equal(cart.Id, removedEvent.CartId);
-        Assert.Equal(cartItem.Id, removedEvent.ItemId);
+        removedEvent.CartId.Should().Be(cart.Id);
+        removedEvent.ItemId.Should().Be(cartItem.Id);
     }
 
     [Fact]
@@ -160,19 +166,19 @@ public class CartEventTests
     {
         // Arrange
         var cartResult = Cart.Create();
-        Assert.True(cartResult.IsSuccess);
+        cartResult.IsSuccess.Should().BeTrue();
         var cart = cartResult.Value;
         
         var product1 = CreateTestProduct();
         
         var slugResult = Slug.Create("product-2");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         
         var priceResult = Money.FromDollars(200);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         
         var product2Result = Product.Create("Product 2", slugResult.Value, priceResult.Value);
-        Assert.True(product2Result.IsSuccess);
+        product2Result.IsSuccess.Should().BeTrue();
         var product2 = product2Result.Value;
 
         cart.AddItem(product1, 1);
@@ -184,9 +190,10 @@ public class CartEventTests
         var clearResult = cart.Clear();
 
         // Assert
-        Assert.True(clearResult.IsSuccess);
-        var domainEvent = Assert.Single(cart.DomainEvents, e => e is CartClearedEvent);
+        clearResult.IsSuccess.Should().BeTrue();
+        cart.DomainEvents.Should().ContainSingle(e => e is CartClearedEvent);
+        var domainEvent = cart.DomainEvents.First(e => e is CartClearedEvent);
         var clearedEvent = (CartClearedEvent)domainEvent;
-        Assert.Equal(cart.Id, clearedEvent.CartId);
+        clearedEvent.CartId.Should().Be(cart.Id);
     }
 }

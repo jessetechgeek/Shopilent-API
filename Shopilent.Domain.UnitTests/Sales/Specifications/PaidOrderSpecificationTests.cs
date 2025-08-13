@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Sales;
@@ -13,17 +14,17 @@ public class PaidOrderSpecificationTests
     private User CreateTestUser()
     {
         var emailResult = Email.Create("test@example.com");
-        Assert.True(emailResult.IsSuccess);
+        emailResult.IsSuccess.Should().BeTrue();
         
         var fullNameResult = FullName.Create("Test", "User");
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
         
         var userResult = User.Create(
             emailResult.Value,
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -36,13 +37,13 @@ public class PaidOrderSpecificationTests
             "Country",
             "12345");
             
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         
         var addressResult = Address.CreateShipping(
             user,
             postalAddressResult.Value);
             
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         return addressResult.Value;
     }
 
@@ -54,13 +55,13 @@ public class PaidOrderSpecificationTests
         var address = CreateTestAddress(user);
         
         var subtotalResult = Money.FromDollars(100);
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         
         var taxResult = Money.FromDollars(10);
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         
         var shippingCostResult = Money.FromDollars(5);
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -70,7 +71,7 @@ public class PaidOrderSpecificationTests
             taxResult.Value,
             shippingCostResult.Value);
             
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
         
         var specification = new PaidOrderSpecification();
@@ -79,7 +80,7 @@ public class PaidOrderSpecificationTests
         var result = specification.IsSatisfiedBy(order);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -90,13 +91,13 @@ public class PaidOrderSpecificationTests
         var address = CreateTestAddress(user);
         
         var subtotalResult = Money.FromDollars(100);
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         
         var taxResult = Money.FromDollars(10);
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         
         var shippingCostResult = Money.FromDollars(5);
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         
         var orderResult = Order.Create(
             user,
@@ -106,7 +107,7 @@ public class PaidOrderSpecificationTests
             taxResult.Value,
             shippingCostResult.Value);
             
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
         
         var specification = new PaidOrderSpecification();
@@ -115,7 +116,7 @@ public class PaidOrderSpecificationTests
         var result = specification.IsSatisfiedBy(order);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -126,13 +127,13 @@ public class PaidOrderSpecificationTests
         var address = CreateTestAddress(user);
         
         var subtotalResult = Money.FromDollars(100);
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         
         var taxResult = Money.FromDollars(10);
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         
         var shippingCostResult = Money.FromDollars(5);
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         
         var orderResult = Order.Create(
             user,
@@ -142,21 +143,21 @@ public class PaidOrderSpecificationTests
             taxResult.Value,
             shippingCostResult.Value);
             
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
         
         // Initial check
         var specification = new PaidOrderSpecification();
-        Assert.False(specification.IsSatisfiedBy(order));
+        specification.IsSatisfiedBy(order).Should().BeFalse();
         
         // Mark as paid
         var paidResult = order.MarkAsPaid();
-        Assert.True(paidResult.IsSuccess);
+        paidResult.IsSuccess.Should().BeTrue();
 
         // Act
         var result = specification.IsSatisfiedBy(order);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 }

@@ -18,13 +18,13 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey, altText, isDefault, displayOrder);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var productImage = result.Value;
-        Assert.Equal(imageKey, productImage.ImageKey);
-        Assert.Equal(thumbnailKey, productImage.ThumbnailKey);
-        Assert.Equal(altText, productImage.AltText);
-        Assert.Equal(isDefault, productImage.IsDefault);
-        Assert.Equal(displayOrder, productImage.DisplayOrder);
+        productImage.ImageKey.Should().Be(imageKey);
+        productImage.ThumbnailKey.Should().Be(thumbnailKey);
+        productImage.AltText.Should().Be(altText);
+        productImage.IsDefault.Should().Be(isDefault);
+        productImage.DisplayOrder.Should().Be(displayOrder);
     }
 
     [Fact]
@@ -38,13 +38,13 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var productImage = result.Value;
-        Assert.Equal(imageKey, productImage.ImageKey);
-        Assert.Equal(thumbnailKey, productImage.ThumbnailKey);
-        Assert.Null(productImage.AltText);
-        Assert.False(productImage.IsDefault);
-        Assert.Equal(0, productImage.DisplayOrder);
+        productImage.ImageKey.Should().Be(imageKey);
+        productImage.ThumbnailKey.Should().Be(thumbnailKey);
+        productImage.AltText.Should().BeNull();
+        productImage.IsDefault.Should().BeFalse();
+        productImage.DisplayOrder.Should().Be(0);
     }
 
     [Fact]
@@ -58,8 +58,8 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Contains("Image Key is required", result.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("Image Key is required");
     }
 
     [Fact]
@@ -73,8 +73,8 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Contains("Image Key is required", result.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("Image Key is required");
     }
 
     [Fact]
@@ -88,8 +88,8 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Contains("Image Key is required", result.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("Image Key is required");
     }
 
     [Fact]
@@ -103,8 +103,8 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Contains("Thumbnail Key is required", result.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("Thumbnail Key is required");
     }
 
     [Fact]
@@ -118,8 +118,8 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Contains("Thumbnail Key is required", result.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("Thumbnail Key is required");
     }
 
     [Fact]
@@ -133,8 +133,8 @@ public class ProductImageTests
         var result = ProductImage.Create(imageKey, thumbnailKey);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Contains("Thumbnail Key is required", result.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Contain("Thumbnail Key is required");
     }
 
     [Fact]
@@ -142,15 +142,15 @@ public class ProductImageTests
     {
         // Arrange
         var productImageResult = ProductImage.Create("image.jpg", "thumb.jpg", isDefault: false);
-        Assert.True(productImageResult.IsSuccess);
+        productImageResult.IsSuccess.Should().BeTrue();
         var productImage = productImageResult.Value;
-        Assert.False(productImage.IsDefault);
+        productImage.IsDefault.Should().BeFalse();
 
         // Act
         productImage.SetAsDefault();
 
         // Assert
-        Assert.True(productImage.IsDefault);
+        productImage.IsDefault.Should().BeTrue();
     }
 
     [Fact]
@@ -158,15 +158,15 @@ public class ProductImageTests
     {
         // Arrange
         var productImageResult = ProductImage.Create("image.jpg", "thumb.jpg", isDefault: true);
-        Assert.True(productImageResult.IsSuccess);
+        productImageResult.IsSuccess.Should().BeTrue();
         var productImage = productImageResult.Value;
-        Assert.True(productImage.IsDefault);
+        productImage.IsDefault.Should().BeTrue();
 
         // Act
         productImage.RemoveDefault();
 
         // Assert
-        Assert.False(productImage.IsDefault);
+        productImage.IsDefault.Should().BeFalse();
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class ProductImageTests
     {
         // Arrange
         var productImageResult = ProductImage.Create("image.jpg", "thumb.jpg", displayOrder: 0);
-        Assert.True(productImageResult.IsSuccess);
+        productImageResult.IsSuccess.Should().BeTrue();
         var productImage = productImageResult.Value;
         var newOrder = 5;
 
@@ -182,7 +182,7 @@ public class ProductImageTests
         productImage.UpdateDisplayOrder(newOrder);
 
         // Assert
-        Assert.Equal(newOrder, productImage.DisplayOrder);
+        productImage.DisplayOrder.Should().Be(newOrder);
     }
 
     [Fact]
@@ -190,15 +190,14 @@ public class ProductImageTests
     {
         // Arrange
         var productImageResult = ProductImage.Create("image.jpg", "thumb.jpg");
-        Assert.True(productImageResult.IsSuccess);
+        productImageResult.IsSuccess.Should().BeTrue();
         var productImage = productImageResult.Value;
         var negativeOrder = -1;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => 
-            productImage.UpdateDisplayOrder(negativeOrder));
-        
-        Assert.Contains("Display order cannot be negative", exception.Message);
+        var action = () => productImage.UpdateDisplayOrder(negativeOrder);
+        action.Should().Throw<ArgumentException>()
+            .WithMessage("*Display order cannot be negative*");
     }
 
     [Fact]
@@ -206,14 +205,14 @@ public class ProductImageTests
     {
         // Arrange
         var productImageResult = ProductImage.Create("image.jpg", "thumb.jpg", displayOrder: 5);
-        Assert.True(productImageResult.IsSuccess);
+        productImageResult.IsSuccess.Should().BeTrue();
         var productImage = productImageResult.Value;
 
         // Act
         productImage.UpdateDisplayOrder(0);
 
         // Assert
-        Assert.Equal(0, productImage.DisplayOrder);
+        productImage.DisplayOrder.Should().Be(0);
     }
 
     [Fact]
@@ -229,13 +228,13 @@ public class ProductImageTests
         var image1Result = ProductImage.Create(imageKey, thumbnailKey, altText, isDefault, displayOrder);
         var image2Result = ProductImage.Create(imageKey, thumbnailKey, altText, isDefault, displayOrder);
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.Equal(image1Result.Value, image2Result.Value);
-        Assert.True(image1Result.Value.Equals(image2Result.Value));
-        Assert.Equal(image1Result.Value.GetHashCode(), image2Result.Value.GetHashCode());
+        image1Result.Value.Should().Be(image2Result.Value);
+        image1Result.Value.Equals(image2Result.Value).Should().BeTrue();
+        image1Result.Value.GetHashCode().Should().Be(image2Result.Value.GetHashCode());
     }
 
     [Fact]
@@ -245,11 +244,11 @@ public class ProductImageTests
         var image1Result = ProductImage.Create("image1.jpg", "thumb.jpg");
         var image2Result = ProductImage.Create("image2.jpg", "thumb.jpg");
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.NotEqual(image1Result.Value, image2Result.Value);
+        image1Result.Value.Should().NotBe(image2Result.Value);
     }
 
     [Fact]
@@ -259,11 +258,11 @@ public class ProductImageTests
         var image1Result = ProductImage.Create("image.jpg", "thumb1.jpg");
         var image2Result = ProductImage.Create("image.jpg", "thumb2.jpg");
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.NotEqual(image1Result.Value, image2Result.Value);
+        image1Result.Value.Should().NotBe(image2Result.Value);
     }
 
     [Fact]
@@ -273,11 +272,11 @@ public class ProductImageTests
         var image1Result = ProductImage.Create("image.jpg", "thumb.jpg", "Alt 1");
         var image2Result = ProductImage.Create("image.jpg", "thumb.jpg", "Alt 2");
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.NotEqual(image1Result.Value, image2Result.Value);
+        image1Result.Value.Should().NotBe(image2Result.Value);
     }
 
     [Fact]
@@ -287,11 +286,11 @@ public class ProductImageTests
         var image1Result = ProductImage.Create("image.jpg", "thumb.jpg", isDefault: true);
         var image2Result = ProductImage.Create("image.jpg", "thumb.jpg", isDefault: false);
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.NotEqual(image1Result.Value, image2Result.Value);
+        image1Result.Value.Should().NotBe(image2Result.Value);
     }
 
     [Fact]
@@ -301,11 +300,11 @@ public class ProductImageTests
         var image1Result = ProductImage.Create("image.jpg", "thumb.jpg", displayOrder: 1);
         var image2Result = ProductImage.Create("image.jpg", "thumb.jpg", displayOrder: 2);
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.NotEqual(image1Result.Value, image2Result.Value);
+        image1Result.Value.Should().NotBe(image2Result.Value);
     }
 
     [Fact]
@@ -315,11 +314,11 @@ public class ProductImageTests
         var image1Result = ProductImage.Create("image.jpg", "thumb.jpg", null);
         var image2Result = ProductImage.Create("image.jpg", "thumb.jpg", "Alt text");
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.NotEqual(image1Result.Value, image2Result.Value);
+        image1Result.Value.Should().NotBe(image2Result.Value);
     }
 
     [Fact]
@@ -329,10 +328,10 @@ public class ProductImageTests
         var image1Result = ProductImage.Create("image.jpg", "thumb.jpg", null);
         var image2Result = ProductImage.Create("image.jpg", "thumb.jpg", null);
 
-        Assert.True(image1Result.IsSuccess);
-        Assert.True(image2Result.IsSuccess);
+        image1Result.IsSuccess.Should().BeTrue();
+        image2Result.IsSuccess.Should().BeTrue();
 
         // Act & Assert
-        Assert.Equal(image1Result.Value, image2Result.Value);
+        image1Result.Value.Should().Be(image2Result.Value);
     }
 }

@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Sales;
 using Shopilent.Domain.Sales.Enums;
 using Shopilent.Domain.Sales.Events;
@@ -17,17 +18,17 @@ public class OrderTests
     private User CreateTestUser()
     {
         var emailResult = Email.Create("test@example.com");
-        Assert.True(emailResult.IsSuccess);
+        emailResult.IsSuccess.Should().BeTrue();
 
         var fullNameResult = FullName.Create("Test", "User");
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
 
         var userResult = User.Create(
             emailResult.Value,
             "hashed_password",
             fullNameResult.Value);
 
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -39,13 +40,13 @@ public class OrderTests
             "State",
             "Country",
             "12345");
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
 
         var addressResult = Address.CreateShipping(
             user,
             postalAddressResult.Value);
 
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         return addressResult.Value;
     }
 
@@ -58,15 +59,15 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         var shippingMethod = "Standard";
@@ -82,26 +83,26 @@ public class OrderTests
             shippingMethod);
 
         // Assert
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
-        Assert.Equal(user.Id, order.UserId);
-        Assert.Equal(shippingAddress.Id, order.ShippingAddressId);
-        Assert.Equal(billingAddress.Id, order.BillingAddressId);
-        Assert.Equal(subtotal, order.Subtotal);
-        Assert.Equal(tax, order.Tax);
-        Assert.Equal(shippingCost, order.ShippingCost);
-        Assert.Equal(shippingMethod, order.ShippingMethod);
-        Assert.Equal(OrderStatus.Pending, order.Status);
-        Assert.Equal(PaymentStatus.Pending, order.PaymentStatus);
+        order.UserId.Should().Be(user.Id);
+        order.ShippingAddressId.Should().Be(shippingAddress.Id);
+        order.BillingAddressId.Should().Be(billingAddress.Id);
+        order.Subtotal.Should().Be(subtotal);
+        order.Tax.Should().Be(tax);
+        order.ShippingCost.Should().Be(shippingCost);
+        order.ShippingMethod.Should().Be(shippingMethod);
+        order.Status.Should().Be(OrderStatus.Pending);
+        order.PaymentStatus.Should().Be(PaymentStatus.Pending);
 
         // Total should be sum of subtotal, tax, and shipping
         var expectedTotalResult = Money.Create(115, "USD");
-        Assert.True(expectedTotalResult.IsSuccess);
+        expectedTotalResult.IsSuccess.Should().BeTrue();
         var expectedTotal = expectedTotalResult.Value;
-        Assert.Equal(expectedTotal.Amount, order.Total.Amount);
+        order.Total.Amount.Should().Be(expectedTotal.Amount);
 
-        Assert.Empty(order.Items);
-        Assert.Contains(order.DomainEvents, e => e is OrderCreatedEvent);
+        order.Items.Should().BeEmpty();
+        order.DomainEvents.Should().ContainSingle(e => e is OrderCreatedEvent);
     }
 
     [Fact]
@@ -114,11 +115,11 @@ public class OrderTests
         Money subtotal = null;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         // Act
@@ -131,8 +132,8 @@ public class OrderTests
             shippingCost);
 
         // Assert
-        Assert.True(orderResult.IsFailure);
-        Assert.Equal("Payment.NegativeAmount", orderResult.Error.Code);
+        orderResult.IsFailure.Should().BeTrue();
+        orderResult.Error.Code.Should().Be("Payment.NegativeAmount");
     }
 
     [Fact]
@@ -144,13 +145,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         Money tax = null;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         // Act
@@ -163,8 +164,8 @@ public class OrderTests
             shippingCost);
 
         // Assert
-        Assert.True(orderResult.IsFailure);
-        Assert.Equal("Payment.NegativeAmount", orderResult.Error.Code);
+        orderResult.IsFailure.Should().BeTrue();
+        orderResult.Error.Code.Should().Be("Payment.NegativeAmount");
     }
 
     [Fact]
@@ -176,11 +177,11 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         Money shippingCost = null;
@@ -195,8 +196,8 @@ public class OrderTests
             shippingCost);
 
         // Assert
-        Assert.True(orderResult.IsFailure);
-        Assert.Equal("Payment.NegativeAmount", orderResult.Error.Code);
+        orderResult.IsFailure.Should().BeTrue();
+        orderResult.Error.Code.Should().Be("Payment.NegativeAmount");
     }
 
     [Fact]
@@ -208,15 +209,15 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         // Act
@@ -229,12 +230,12 @@ public class OrderTests
             shippingCost);
 
         // Assert
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
-        Assert.Equal(PaymentStatus.Succeeded, order.PaymentStatus);
-        Assert.Equal(OrderStatus.Processing, order.Status);
-        Assert.Contains(order.DomainEvents, e => e is OrderCreatedEvent);
-        Assert.Contains(order.DomainEvents, e => e is OrderPaidEvent);
+        order.PaymentStatus.Should().Be(PaymentStatus.Succeeded);
+        order.Status.Should().Be(OrderStatus.Processing);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderCreatedEvent);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderPaidEvent);
     }
 
     // Removing CreateFromCart test as this method doesn't exist anymore
@@ -248,15 +249,15 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(0, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         var orderResult = Order.Create(
@@ -267,54 +268,54 @@ public class OrderTests
             tax,
             shippingCost);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
 
         var productPriceResult = Money.Create(50, "USD");
-        Assert.True(productPriceResult.IsSuccess);
+        productPriceResult.IsSuccess.Should().BeTrue();
 
         var productResult = Product.Create(
             "Test Product",
             slugResult.Value,
             productPriceResult.Value);
 
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var quantity = 2;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         // Act
         var orderItemResult = order.AddItem(product, quantity, unitPrice);
 
         // Assert
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
-        Assert.Single(order.Items);
-        Assert.Equal(product.Id, orderItem.ProductId);
-        Assert.Equal(quantity, orderItem.Quantity);
-        Assert.Equal(unitPrice, orderItem.UnitPrice);
+        order.Items.Should().HaveCount(1);
+        orderItem.ProductId.Should().Be(product.Id);
+        orderItem.Quantity.Should().Be(quantity);
+        orderItem.UnitPrice.Should().Be(unitPrice);
 
         // Total price for the item should be unit price * quantity
         var expectedItemTotalResult = Money.Create(100, "USD");
-        Assert.True(expectedItemTotalResult.IsSuccess);
+        expectedItemTotalResult.IsSuccess.Should().BeTrue();
         var expectedItemTotal = expectedItemTotalResult.Value;
-        Assert.Equal(expectedItemTotal.Amount, orderItem.TotalPrice.Amount);
+        orderItem.TotalPrice.Amount.Should().Be(expectedItemTotal.Amount);
 
         // Order subtotal should be updated
-        Assert.Equal(expectedItemTotal.Amount, order.Subtotal.Amount);
+        order.Subtotal.Amount.Should().Be(expectedItemTotal.Amount);
 
         // Order total should be updated (subtotal + tax + shipping)
         var expectedOrderTotalResult = Money.Create(115, "USD");
-        Assert.True(expectedOrderTotalResult.IsSuccess);
+        expectedOrderTotalResult.IsSuccess.Should().BeTrue();
         var expectedOrderTotal = expectedOrderTotalResult.Value;
-        Assert.Equal(expectedOrderTotal.Amount, order.Total.Amount);
+        order.Total.Amount.Should().Be(expectedOrderTotal.Amount);
     }
 
     [Fact]
@@ -326,13 +327,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(0, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(0, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(0, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -342,22 +343,22 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         Product product = null;
         var quantity = 1;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         // Act
         var orderItemResult = order.AddItem(product, quantity, unitPrice);
 
         // Assert
-        Assert.True(orderItemResult.IsFailure);
-        Assert.Equal("Product.NotFound", orderItemResult.Error.Code);
+        orderItemResult.IsFailure.Should().BeTrue();
+        orderItemResult.Error.Code.Should().Be("Product.NotFound");
     }
 
     [Fact]
@@ -369,7 +370,7 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var moneyResult = Money.Create(0, "USD");
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var orderResult = Order.Create(
@@ -380,21 +381,21 @@ public class OrderTests
             money,
             money);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
 
         var priceResult = Money.Create(50, "USD");
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
 
         var productResult = Product.Create(
             "Test Product",
             slugResult.Value,
             priceResult.Value);
 
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var quantity = 0;
@@ -403,8 +404,8 @@ public class OrderTests
         var orderItemResult = order.AddItem(product, quantity, priceResult.Value);
 
         // Assert
-        Assert.True(orderItemResult.IsFailure);
-        Assert.Equal("Order.InvalidQuantity", orderItemResult.Error.Code);
+        orderItemResult.IsFailure.Should().BeTrue();
+        orderItemResult.Error.Code.Should().Be("Order.InvalidQuantity");
     }
 
     [Fact]
@@ -416,15 +417,15 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         var orderResult = Order.Create(
@@ -435,30 +436,30 @@ public class OrderTests
             tax,
             shippingCost);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         // Change order status from Pending
         var paidResult = order.MarkAsPaid();
-        Assert.True(paidResult.IsSuccess);
+        paidResult.IsSuccess.Should().BeTrue();
 
         var shippedResult = order.MarkAsShipped();
-        Assert.True(shippedResult.IsSuccess);
+        shippedResult.IsSuccess.Should().BeTrue();
 
-        Assert.Equal(OrderStatus.Shipped, order.Status);
+        order.Status.Should().Be(OrderStatus.Shipped);
 
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
 
         var priceResult = Money.Create(50, "USD");
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
 
         var productResult = Product.Create(
             "Test Product",
             slugResult.Value,
             priceResult.Value);
 
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var quantity = 1;
@@ -467,8 +468,8 @@ public class OrderTests
         var orderItemResult = order.AddItem(product, quantity, priceResult.Value);
 
         // Assert
-        Assert.True(orderItemResult.IsFailure);
-        Assert.Equal("Order.InvalidStatus", orderItemResult.Error.Code);
+        orderItemResult.IsFailure.Should().BeTrue();
+        orderItemResult.Error.Code.Should().Be("Order.InvalidStatus");
     }
 
     [Fact]
@@ -480,15 +481,15 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(0, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         var orderResult = Order.Create(
@@ -499,25 +500,25 @@ public class OrderTests
             tax,
             shippingCost);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
 
         var basePriceResult = Money.Create(50, "USD");
-        Assert.True(basePriceResult.IsSuccess);
+        basePriceResult.IsSuccess.Should().BeTrue();
 
         var productResult = Product.Create(
             "Test Product",
             slugResult.Value,
             basePriceResult.Value);
 
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var variantPriceResult = Money.Create(60, "USD");
-        Assert.True(variantPriceResult.IsSuccess);
+        variantPriceResult.IsSuccess.Should().BeTrue();
 
         var variantResult = ProductVariant.Create(
             product.Id,
@@ -525,7 +526,7 @@ public class OrderTests
             variantPriceResult.Value,
             10);
 
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var quantity = 1;
@@ -535,17 +536,17 @@ public class OrderTests
         var orderItemResult = order.AddItem(product, quantity, unitPrice, variant);
 
         // Assert
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
-        Assert.Single(order.Items);
-        Assert.Equal(product.Id, orderItem.ProductId);
-        Assert.Equal(variant.Id, orderItem.VariantId);
-        Assert.Equal(quantity, orderItem.Quantity);
-        Assert.Equal(unitPrice, orderItem.UnitPrice);
+        order.Items.Should().HaveCount(1);
+        orderItem.ProductId.Should().Be(product.Id);
+        orderItem.VariantId.Should().Be(variant.Id);
+        orderItem.Quantity.Should().Be(quantity);
+        orderItem.UnitPrice.Should().Be(unitPrice);
 
         // Product data should include variant info
-        Assert.True(orderItem.ProductData.ContainsKey("variant_sku"));
-        Assert.Equal(variant.Sku, orderItem.ProductData["variant_sku"]);
+        orderItem.ProductData.Should().ContainKey("variant_sku");
+        orderItem.ProductData["variant_sku"].Should().Be(variant.Sku);
     }
 
     [Fact]
@@ -557,13 +558,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -573,18 +574,18 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
-        Assert.Equal(OrderStatus.Pending, order.Status);
+        order.Status.Should().Be(OrderStatus.Pending);
 
         // Act
         var updateResult = order.UpdateOrderStatus(OrderStatus.Processing);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(OrderStatus.Processing, order.Status);
-        Assert.Contains(order.DomainEvents, e => e is OrderStatusChangedEvent);
+        updateResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Processing);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderStatusChangedEvent);
     }
 
     [Fact]
@@ -596,13 +597,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -612,18 +613,18 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
-        Assert.Equal(PaymentStatus.Pending, order.PaymentStatus);
+        order.PaymentStatus.Should().Be(PaymentStatus.Pending);
 
         // Act
         var updateResult = order.UpdatePaymentStatus(PaymentStatus.Succeeded);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(PaymentStatus.Succeeded, order.PaymentStatus);
-        Assert.Contains(order.DomainEvents, e => e is OrderPaymentStatusChangedEvent);
+        updateResult.IsSuccess.Should().BeTrue();
+        order.PaymentStatus.Should().Be(PaymentStatus.Succeeded);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderPaymentStatusChangedEvent);
     }
 
     [Fact]
@@ -635,13 +636,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -651,20 +652,20 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
-        Assert.Equal(PaymentStatus.Pending, order.PaymentStatus);
-        Assert.Equal(OrderStatus.Pending, order.Status);
+        order.PaymentStatus.Should().Be(PaymentStatus.Pending);
+        order.Status.Should().Be(OrderStatus.Pending);
 
         // Act
         var paidResult = order.MarkAsPaid();
 
         // Assert
-        Assert.True(paidResult.IsSuccess);
-        Assert.Equal(PaymentStatus.Succeeded, order.PaymentStatus);
-        Assert.Equal(OrderStatus.Processing, order.Status);
-        Assert.Contains(order.DomainEvents, e => e is OrderPaidEvent);
+        paidResult.IsSuccess.Should().BeTrue();
+        order.PaymentStatus.Should().Be(PaymentStatus.Succeeded);
+        order.Status.Should().Be(OrderStatus.Processing);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderPaidEvent);
     }
 
     [Fact]
@@ -676,13 +677,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -692,10 +693,10 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
-        Assert.Equal(PaymentStatus.Succeeded, order.PaymentStatus);
+        order.PaymentStatus.Should().Be(PaymentStatus.Succeeded);
 
         // Clear domain events for fresh test
         order.ClearDomainEvents();
@@ -704,9 +705,9 @@ public class OrderTests
         var paidResult = order.MarkAsPaid();
 
         // Assert
-        Assert.True(paidResult.IsSuccess);
-        Assert.Equal(PaymentStatus.Succeeded, order.PaymentStatus);
-        Assert.Empty(order.DomainEvents); // No events should be raised
+        paidResult.IsSuccess.Should().BeTrue();
+        order.PaymentStatus.Should().Be(PaymentStatus.Succeeded);
+        order.DomainEvents.Should().BeEmpty(); // No events should be raised
     }
 
     [Fact]
@@ -718,13 +719,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -734,20 +735,20 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
-        Assert.Equal(OrderStatus.Processing, order.Status);
+        order.Status.Should().Be(OrderStatus.Processing);
         var trackingNumber = "TRACK123456";
 
         // Act
         var shippedResult = order.MarkAsShipped(trackingNumber);
 
         // Assert
-        Assert.True(shippedResult.IsSuccess);
-        Assert.Equal(OrderStatus.Shipped, order.Status);
-        Assert.Equal(trackingNumber, order.Metadata["trackingNumber"]);
-        Assert.Contains(order.DomainEvents, e => e is OrderShippedEvent);
+        shippedResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Shipped);
+        order.Metadata["trackingNumber"].Should().Be(trackingNumber);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderShippedEvent);
     }
 
     [Fact]
@@ -759,13 +760,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -775,17 +776,17 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
-        Assert.Equal(PaymentStatus.Pending, order.PaymentStatus);
+        order.PaymentStatus.Should().Be(PaymentStatus.Pending);
 
         // Act
         var shippedResult = order.MarkAsShipped();
 
         // Assert
-        Assert.True(shippedResult.IsFailure);
-        Assert.Equal("Order.PaymentRequired", shippedResult.Error.Code);
+        shippedResult.IsFailure.Should().BeTrue();
+        shippedResult.Error.Code.Should().Be("Order.PaymentRequired");
     }
 
     [Fact]
@@ -797,13 +798,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -813,12 +814,12 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var shippedResult = order.MarkAsShipped("TRACK123");
-        Assert.True(shippedResult.IsSuccess);
-        Assert.Equal(OrderStatus.Shipped, order.Status);
+        shippedResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Shipped);
 
         // Clear domain events for fresh test
         order.ClearDomainEvents();
@@ -827,10 +828,10 @@ public class OrderTests
         var secondShippedResult = order.MarkAsShipped("TRACK456");
 
         // Assert
-        Assert.True(secondShippedResult.IsSuccess);
-        Assert.Equal(OrderStatus.Shipped, order.Status);
-        Assert.Equal("TRACK123", order.Metadata["trackingNumber"]); // Shouldn't change
-        Assert.Empty(order.DomainEvents); // No events should be raised
+        secondShippedResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Shipped);
+        order.Metadata["trackingNumber"].Should().Be("TRACK123"); // Shouldn't change
+        order.DomainEvents.Should().BeEmpty(); // No events should be raised
     }
 
     [Fact]
@@ -842,13 +843,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -858,20 +859,20 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var shippedResult = order.MarkAsShipped();
-        Assert.True(shippedResult.IsSuccess);
-        Assert.Equal(OrderStatus.Shipped, order.Status);
+        shippedResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Shipped);
 
         // Act
         var deliveredResult = order.MarkAsDelivered();
 
         // Assert
-        Assert.True(deliveredResult.IsSuccess);
-        Assert.Equal(OrderStatus.Delivered, order.Status);
-        Assert.Contains(order.DomainEvents, e => e is OrderDeliveredEvent);
+        deliveredResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Delivered);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderDeliveredEvent);
     }
 
     [Fact]
@@ -883,13 +884,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -899,17 +900,17 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
-        Assert.Equal(OrderStatus.Processing, order.Status);
+        order.Status.Should().Be(OrderStatus.Processing);
 
         // Act
         var deliveredResult = order.MarkAsDelivered();
 
         // Assert
-        Assert.True(deliveredResult.IsFailure);
-        Assert.Equal("Order.InvalidStatus", deliveredResult.Error.Code);
+        deliveredResult.IsFailure.Should().BeTrue();
+        deliveredResult.Error.Code.Should().Be("Order.InvalidStatus");
     }
 
     [Fact]
@@ -921,13 +922,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -937,15 +938,15 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var shippedResult = order.MarkAsShipped();
-        Assert.True(shippedResult.IsSuccess);
+        shippedResult.IsSuccess.Should().BeTrue();
 
         var deliveredResult = order.MarkAsDelivered();
-        Assert.True(deliveredResult.IsSuccess);
-        Assert.Equal(OrderStatus.Delivered, order.Status);
+        deliveredResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Delivered);
 
         // Clear domain events for fresh test
         order.ClearDomainEvents();
@@ -954,9 +955,9 @@ public class OrderTests
         var secondDeliveredResult = order.MarkAsDelivered();
 
         // Assert
-        Assert.True(secondDeliveredResult.IsSuccess);
-        Assert.Equal(OrderStatus.Delivered, order.Status);
-        Assert.Empty(order.DomainEvents); // No events should be raised
+        secondDeliveredResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Delivered);
+        order.DomainEvents.Should().BeEmpty(); // No events should be raised
     }
 
     [Fact]
@@ -968,13 +969,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -984,7 +985,7 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var reason = "Customer request";
@@ -993,10 +994,10 @@ public class OrderTests
         var cancelResult = order.Cancel(reason);
 
         // Assert
-        Assert.True(cancelResult.IsSuccess);
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
-        Assert.Equal(reason, order.Metadata["cancellationReason"]);
-        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+        cancelResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        order.Metadata["cancellationReason"].Should().Be(reason);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderCancelledEvent);
     }
 
     [Fact]
@@ -1008,13 +1009,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -1024,17 +1025,17 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         // Act - default behavior (customer)
         var cancelResult = order.Cancel();
 
         // Assert
-        Assert.True(cancelResult.IsSuccess);
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
-        Assert.False(order.Metadata.ContainsKey("cancellationReason"));
-        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+        cancelResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        order.Metadata.Should().NotContainKey("cancellationReason");
+        order.DomainEvents.Should().ContainSingle(e => e is OrderCancelledEvent);
     }
 
     [Fact]
@@ -1046,13 +1047,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -1062,22 +1063,22 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var shippedResult = order.MarkAsShipped();
-        Assert.True(shippedResult.IsSuccess);
+        shippedResult.IsSuccess.Should().BeTrue();
 
         var deliveredResult = order.MarkAsDelivered();
-        Assert.True(deliveredResult.IsSuccess);
-        Assert.Equal(OrderStatus.Delivered, order.Status);
+        deliveredResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Delivered);
 
         // Act - default behavior (customer)
         var cancelResult = order.Cancel();
 
         // Assert
-        Assert.True(cancelResult.IsFailure);
-        Assert.Equal("Order.InvalidStatus", cancelResult.Error.Code);
+        cancelResult.IsFailure.Should().BeTrue();
+        cancelResult.Error.Code.Should().Be("Order.InvalidStatus");
     }
 
     [Fact]
@@ -1089,13 +1090,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -1105,12 +1106,12 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var cancelResult = order.Cancel("Initial reason");
-        Assert.True(cancelResult.IsSuccess);
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
+        cancelResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled);
 
         // Clear domain events for fresh test
         order.ClearDomainEvents();
@@ -1119,10 +1120,10 @@ public class OrderTests
         var secondCancelResult = order.Cancel("New reason");
 
         // Assert
-        Assert.True(secondCancelResult.IsSuccess);
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
-        Assert.Equal("Initial reason", order.Metadata["cancellationReason"]); // Shouldn't change
-        Assert.Empty(order.DomainEvents); // No events should be raised
+        secondCancelResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        order.Metadata["cancellationReason"].Should().Be("Initial reason"); // Shouldn't change
+        order.DomainEvents.Should().BeEmpty(); // No events should be raised
     }
 
     [Fact]
@@ -1134,13 +1135,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -1150,7 +1151,7 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var key = "note";
@@ -1160,9 +1161,9 @@ public class OrderTests
         var updateResult = order.UpdateMetadata(key, value);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.True(order.Metadata.ContainsKey(key));
-        Assert.Equal(value, order.Metadata[key]);
+        updateResult.IsSuccess.Should().BeTrue();
+        order.Metadata.Should().ContainKey(key);
+        order.Metadata[key].Should().Be(value);
     }
 
     [Fact]
@@ -1174,13 +1175,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -1190,7 +1191,7 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var key = string.Empty;
@@ -1200,8 +1201,8 @@ public class OrderTests
         var updateResult = order.UpdateMetadata(key, value);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("Order.InvalidMetadataKey", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("Order.InvalidMetadataKey");
     }
 
     [Fact]
@@ -1213,15 +1214,15 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(0, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
         var subtotal = subtotalResult.Value;
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
         var tax = taxResult.Value;
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
         var shippingCost = shippingCostResult.Value;
 
         var orderResult = Order.Create(
@@ -1232,37 +1233,37 @@ public class OrderTests
             tax,
             shippingCost);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var slugResult1 = Slug.Create("product-1");
-        Assert.True(slugResult1.IsSuccess);
+        slugResult1.IsSuccess.Should().BeTrue();
 
         var priceResult1 = Money.FromDollars(50);
-        Assert.True(priceResult1.IsSuccess);
+        priceResult1.IsSuccess.Should().BeTrue();
 
         var productResult1 = Product.Create("Product 1", slugResult1.Value, priceResult1.Value);
-        Assert.True(productResult1.IsSuccess);
+        productResult1.IsSuccess.Should().BeTrue();
         var product1 = productResult1.Value;
 
         var slugResult2 = Slug.Create("product-2");
-        Assert.True(slugResult2.IsSuccess);
+        slugResult2.IsSuccess.Should().BeTrue();
 
         var priceResult2 = Money.FromDollars(75);
-        Assert.True(priceResult2.IsSuccess);
+        priceResult2.IsSuccess.Should().BeTrue();
 
         var productResult2 = Product.Create("Product 2", slugResult2.Value, priceResult2.Value);
-        Assert.True(productResult2.IsSuccess);
+        productResult2.IsSuccess.Should().BeTrue();
         var product2 = productResult2.Value;
 
         var slugResult3 = Slug.Create("product-3");
-        Assert.True(slugResult3.IsSuccess);
+        slugResult3.IsSuccess.Should().BeTrue();
 
         var priceResult3 = Money.FromDollars(25);
-        Assert.True(priceResult3.IsSuccess);
+        priceResult3.IsSuccess.Should().BeTrue();
 
         var productResult3 = Product.Create("Product 3", slugResult3.Value, priceResult3.Value);
-        Assert.True(productResult3.IsSuccess);
+        productResult3.IsSuccess.Should().BeTrue();
         var product3 = productResult3.Value;
 
         // Act
@@ -1271,13 +1272,13 @@ public class OrderTests
         order.AddItem(product3, 3, priceResult3.Value); // $75
 
         // Assert
-        Assert.Equal(3, order.Items.Count);
+        order.Items.Count.Should().Be(3);
 
         // Expected subtotal: $100 + $75 + $75 = $250
-        Assert.Equal(250m, order.Subtotal.Amount);
+        order.Subtotal.Amount.Should().Be(250m);
 
         // Expected total: $250 + $10 + $5 = $265
-        Assert.Equal(265m, order.Total.Amount);
+        order.Total.Amount.Should().Be(265m);
     }
 
     [Fact]
@@ -1289,13 +1290,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -1305,17 +1306,17 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
-        Assert.Equal(OrderStatus.Pending, order.Status);
+        order.Status.Should().Be(OrderStatus.Pending);
 
         // Act
         var cancelResult = order.Cancel("Customer request", isAdminOrManager: false);
 
         // Assert
-        Assert.True(cancelResult.IsSuccess);
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
-        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+        cancelResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderCancelledEvent);
     }
 
     [Fact]
@@ -1327,13 +1328,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -1343,17 +1344,17 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
-        Assert.Equal(OrderStatus.Processing, order.Status);
+        order.Status.Should().Be(OrderStatus.Processing);
 
         // Act
         var cancelResult = order.Cancel("Customer request", isAdminOrManager: false);
 
         // Assert
-        Assert.True(cancelResult.IsSuccess);
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
-        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+        cancelResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderCancelledEvent);
     }
 
     [Fact]
@@ -1365,13 +1366,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -1381,20 +1382,20 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var shippedResult = order.MarkAsShipped();
-        Assert.True(shippedResult.IsSuccess);
-        Assert.Equal(OrderStatus.Shipped, order.Status);
+        shippedResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Shipped);
 
         // Act
         var cancelResult = order.Cancel("Customer request", isAdminOrManager: false);
 
         // Assert
-        Assert.True(cancelResult.IsFailure);
-        Assert.Equal("Order.InvalidStatus", cancelResult.Error.Code);
-        Assert.Contains("cancel - only pending or processing orders can be cancelled by customers", cancelResult.Error.Message);
+        cancelResult.IsFailure.Should().BeTrue();
+        cancelResult.Error.Code.Should().Be("Order.InvalidStatus");
+        cancelResult.Error.Message.Should().Contain("cancel - only pending or processing orders can be cancelled by customers");
     }
 
     [Fact]
@@ -1406,13 +1407,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -1422,20 +1423,20 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var shippedResult = order.MarkAsShipped();
-        Assert.True(shippedResult.IsSuccess);
-        Assert.Equal(OrderStatus.Shipped, order.Status);
+        shippedResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Shipped);
 
         // Act
         var cancelResult = order.Cancel("Admin cancellation", isAdminOrManager: true);
 
         // Assert
-        Assert.True(cancelResult.IsSuccess);
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
-        Assert.Contains(order.DomainEvents, e => e is OrderCancelledEvent);
+        cancelResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        order.DomainEvents.Should().ContainSingle(e => e is OrderCancelledEvent);
     }
 
     [Fact]
@@ -1447,13 +1448,13 @@ public class OrderTests
         var billingAddress = CreateTestAddress(user);
 
         var subtotalResult = Money.Create(100, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.CreatePaidOrder(
             user,
@@ -1463,22 +1464,22 @@ public class OrderTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         var order = orderResult.Value;
 
         var shippedResult = order.MarkAsShipped();
-        Assert.True(shippedResult.IsSuccess);
+        shippedResult.IsSuccess.Should().BeTrue();
 
         var deliveredResult = order.MarkAsDelivered();
-        Assert.True(deliveredResult.IsSuccess);
-        Assert.Equal(OrderStatus.Delivered, order.Status);
+        deliveredResult.IsSuccess.Should().BeTrue();
+        order.Status.Should().Be(OrderStatus.Delivered);
 
         // Act
         var cancelResult = order.Cancel("Admin cancellation", isAdminOrManager: true);
 
         // Assert
-        Assert.True(cancelResult.IsFailure);
-        Assert.Equal("Order.InvalidStatus", cancelResult.Error.Code);
-        Assert.Contains("cancel - delivered orders cannot be cancelled", cancelResult.Error.Message);
+        cancelResult.IsFailure.Should().BeTrue();
+        cancelResult.Error.Code.Should().Be("Order.InvalidStatus");
+        cancelResult.Error.Message.Should().Contain("cancel - delivered orders cannot be cancelled");
     }
 }

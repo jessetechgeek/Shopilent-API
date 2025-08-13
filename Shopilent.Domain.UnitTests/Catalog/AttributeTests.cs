@@ -19,17 +19,16 @@ public class AttributeTests
         var result = Attribute.Create(name, displayName, type);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var attribute = result.Value;
-        Assert.Equal(name, attribute.Name);
-        Assert.Equal(displayName, attribute.DisplayName);
-        Assert.Equal(type, attribute.Type);
-        Assert.False(attribute.Filterable);
-        Assert.False(attribute.Searchable);
-        Assert.False(attribute.IsVariant);
-        Assert.NotNull(attribute.Configuration);
-        Assert.Empty(attribute.Configuration);
-        Assert.Contains(attribute.DomainEvents, e => e is AttributeCreatedEvent);
+        attribute.Name.Should().Be(name);
+        attribute.DisplayName.Should().Be(displayName);
+        attribute.Type.Should().Be(type);
+        attribute.Filterable.Should().BeFalse();
+        attribute.Searchable.Should().BeFalse();
+        attribute.IsVariant.Should().BeFalse();
+        attribute.Configuration.Should().NotBeNull().And.BeEmpty();
+        attribute.DomainEvents.Should().Contain(e => e is AttributeCreatedEvent);
     }
 
     [Fact]
@@ -44,8 +43,8 @@ public class AttributeTests
         var result = Attribute.Create(name, displayName, type);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Attribute.NameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Attribute.NameRequired");
     }
 
     [Fact]
@@ -60,8 +59,8 @@ public class AttributeTests
         var result = Attribute.Create(name, displayName, type);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Attribute.DisplayNameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Attribute.DisplayNameRequired");
     }
 
     [Fact]
@@ -76,15 +75,15 @@ public class AttributeTests
         var result = Attribute.CreateFilterable(name, displayName, type);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var attribute = result.Value;
-        Assert.Equal(name, attribute.Name);
-        Assert.Equal(displayName, attribute.DisplayName);
-        Assert.Equal(type, attribute.Type);
-        Assert.True(attribute.Filterable);
-        Assert.False(attribute.Searchable);
-        Assert.False(attribute.IsVariant);
-        Assert.Contains(attribute.DomainEvents, e => e is AttributeCreatedEvent);
+        attribute.Name.Should().Be(name);
+        attribute.DisplayName.Should().Be(displayName);
+        attribute.Type.Should().Be(type);
+        attribute.Filterable.Should().BeTrue();
+        attribute.Searchable.Should().BeFalse();
+        attribute.IsVariant.Should().BeFalse();
+        attribute.DomainEvents.Should().Contain(e => e is AttributeCreatedEvent);
     }
 
     [Fact]
@@ -99,15 +98,15 @@ public class AttributeTests
         var result = Attribute.CreateSearchable(name, displayName, type);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var attribute = result.Value;
-        Assert.Equal(name, attribute.Name);
-        Assert.Equal(displayName, attribute.DisplayName);
-        Assert.Equal(type, attribute.Type);
-        Assert.False(attribute.Filterable);
-        Assert.True(attribute.Searchable);
-        Assert.False(attribute.IsVariant);
-        Assert.Contains(attribute.DomainEvents, e => e is AttributeCreatedEvent);
+        attribute.Name.Should().Be(name);
+        attribute.DisplayName.Should().Be(displayName);
+        attribute.Type.Should().Be(type);
+        attribute.Filterable.Should().BeFalse();
+        attribute.Searchable.Should().BeTrue();
+        attribute.IsVariant.Should().BeFalse();
+        attribute.DomainEvents.Should().Contain(e => e is AttributeCreatedEvent);
     }
 
     [Fact]
@@ -122,15 +121,15 @@ public class AttributeTests
         var result = Attribute.CreateVariant(name, displayName, type);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var attribute = result.Value;
-        Assert.Equal(name, attribute.Name);
-        Assert.Equal(displayName, attribute.DisplayName);
-        Assert.Equal(type, attribute.Type);
-        Assert.False(attribute.Filterable);
-        Assert.False(attribute.Searchable);
-        Assert.True(attribute.IsVariant);
-        Assert.Contains(attribute.DomainEvents, e => e is AttributeCreatedEvent);
+        attribute.Name.Should().Be(name);
+        attribute.DisplayName.Should().Be(displayName);
+        attribute.Type.Should().Be(type);
+        attribute.Filterable.Should().BeFalse();
+        attribute.Searchable.Should().BeFalse();
+        attribute.IsVariant.Should().BeTrue();
+        attribute.DomainEvents.Should().Contain(e => e is AttributeCreatedEvent);
     }
 
     [Fact]
@@ -138,16 +137,16 @@ public class AttributeTests
     {
         // Arrange
         var attributeResult = Attribute.Create("color", "Color", AttributeType.Color);
-        Assert.True(attributeResult.IsSuccess);
+        attributeResult.IsSuccess.Should().BeTrue();
         var attribute = attributeResult.Value;
-        Assert.False(attribute.Filterable);
+        attribute.Filterable.Should().BeFalse();
 
         // Act
         var result = attribute.SetFilterable(true);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(attribute.Filterable);
+        result.IsSuccess.Should().BeTrue();
+        attribute.Filterable.Should().BeTrue();
     }
 
     [Fact]
@@ -155,16 +154,16 @@ public class AttributeTests
     {
         // Arrange
         var attributeResult = Attribute.Create("color", "Color", AttributeType.Color);
-        Assert.True(attributeResult.IsSuccess);
+        attributeResult.IsSuccess.Should().BeTrue();
         var attribute = attributeResult.Value;
-        Assert.False(attribute.Searchable);
+        attribute.Searchable.Should().BeFalse();
 
         // Act
         var result = attribute.SetSearchable(true);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(attribute.Searchable);
+        result.IsSuccess.Should().BeTrue();
+        attribute.Searchable.Should().BeTrue();
     }
 
     [Fact]
@@ -172,16 +171,16 @@ public class AttributeTests
     {
         // Arrange
         var attributeResult = Attribute.Create("color", "Color", AttributeType.Color);
-        Assert.True(attributeResult.IsSuccess);
+        attributeResult.IsSuccess.Should().BeTrue();
         var attribute = attributeResult.Value;
-        Assert.False(attribute.IsVariant);
+        attribute.IsVariant.Should().BeFalse();
 
         // Act
         var result = attribute.SetIsVariant(true);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(attribute.IsVariant);
+        result.IsSuccess.Should().BeTrue();
+        attribute.IsVariant.Should().BeTrue();
     }
 
     [Fact]
@@ -189,7 +188,7 @@ public class AttributeTests
     {
         // Arrange
         var attributeResult = Attribute.Create("color", "Color", AttributeType.Color);
-        Assert.True(attributeResult.IsSuccess);
+        attributeResult.IsSuccess.Should().BeTrue();
         var attribute = attributeResult.Value;
         var key = "available_values";
         var value = new[] { "Red", "Blue", "Green" };
@@ -198,9 +197,9 @@ public class AttributeTests
         var result = attribute.UpdateConfiguration(key, value);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(attribute.Configuration.ContainsKey(key));
-        Assert.Equal(value, attribute.Configuration[key]);
+        result.IsSuccess.Should().BeTrue();
+        attribute.Configuration.Should().ContainKey(key);
+        attribute.Configuration[key].Should().BeEquivalentTo(value);
     }
 
     [Fact]
@@ -208,7 +207,7 @@ public class AttributeTests
     {
         // Arrange
         var attributeResult = Attribute.Create("color", "Color", AttributeType.Color);
-        Assert.True(attributeResult.IsSuccess);
+        attributeResult.IsSuccess.Should().BeTrue();
         var attribute = attributeResult.Value;
         var key = string.Empty;
         var value = new[] { "Red", "Blue", "Green" };
@@ -217,7 +216,7 @@ public class AttributeTests
         var result = attribute.UpdateConfiguration(key, value);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Attribute.InvalidConfigurationFormat", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Attribute.InvalidConfigurationFormat");
     }
 }
