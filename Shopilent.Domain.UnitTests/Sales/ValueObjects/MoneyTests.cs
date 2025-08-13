@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Sales.ValueObjects;
 
 namespace Shopilent.Domain.Tests.Sales.ValueObjects;
@@ -15,10 +16,10 @@ public class MoneyTests
         var result = Money.Create(amount, currency);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var money = result.Value;
-        Assert.Equal(amount, money.Amount);
-        Assert.Equal(currency, money.Currency);
+        money.Amount.Should().Be(amount);
+        money.Currency.Should().Be(currency);
     }
 
     [Fact]
@@ -32,8 +33,8 @@ public class MoneyTests
         var result = Money.Create(amount, currency);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.NegativeAmount", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.NegativeAmount");
     }
 
     [Fact]
@@ -47,8 +48,8 @@ public class MoneyTests
         var result = Money.Create(amount, currency);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.InvalidCurrency", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.InvalidCurrency");
     }
 
     [Fact]
@@ -61,10 +62,10 @@ public class MoneyTests
         var result = Money.FromDollars(amount);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var money = result.Value;
-        Assert.Equal(amount, money.Amount);
-        Assert.Equal("USD", money.Currency);
+        money.Amount.Should().Be(amount);
+        money.Currency.Should().Be("USD");
     }
 
     [Fact]
@@ -77,10 +78,10 @@ public class MoneyTests
         var result = Money.FromEuros(amount);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var money = result.Value;
-        Assert.Equal(amount, money.Amount);
-        Assert.Equal("EUR", money.Currency);
+        money.Amount.Should().Be(amount);
+        money.Currency.Should().Be("EUR");
     }
 
     [Fact]
@@ -90,8 +91,8 @@ public class MoneyTests
         var money = Money.Zero();
 
         // Assert
-        Assert.Equal(0m, money.Amount);
-        Assert.Equal("USD", money.Currency);
+        money.Amount.Should().Be(0m);
+        money.Currency.Should().Be("USD");
     }
 
     [Fact]
@@ -104,8 +105,8 @@ public class MoneyTests
         var money = Money.Zero(currency);
 
         // Assert
-        Assert.Equal(0m, money.Amount);
-        Assert.Equal(currency, money.Currency);
+        money.Amount.Should().Be(0m);
+        money.Currency.Should().Be(currency);
     }
 
     [Fact]
@@ -113,11 +114,11 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromDollars(50);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
         
         var expected = 150m;
@@ -126,8 +127,8 @@ public class MoneyTests
         var result = money1.Add(money2);
 
         // Assert
-        Assert.Equal(expected, result.Amount);
-        Assert.Equal(money1.Currency, result.Currency);
+        result.Amount.Should().Be(expected);
+        result.Currency.Should().Be(money1.Currency);
     }
 
     [Fact]
@@ -135,15 +136,16 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromEuros(50);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => money1.Add(money2));
+        Action act = () => money1.Add(money2);
+        act.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
@@ -151,11 +153,11 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromDollars(50);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
         
         var expected = 150m;
@@ -164,9 +166,9 @@ public class MoneyTests
         var result = money1.AddSafe(money2);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Amount);
-        Assert.Equal(money1.Currency, result.Value.Currency);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Amount.Should().Be(expected);
+        result.Value.Currency.Should().Be(money1.Currency);
     }
 
     [Fact]
@@ -174,19 +176,19 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromEuros(50);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
 
         // Act
         var result = money1.AddSafe(money2);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.CurrencyMismatch", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.CurrencyMismatch");
     }
 
     [Fact]
@@ -194,11 +196,11 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromDollars(30);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
         
         var expected = 70m;
@@ -207,9 +209,9 @@ public class MoneyTests
         var result = money1.Subtract(money2);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Amount);
-        Assert.Equal(money1.Currency, result.Value.Currency);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Amount.Should().Be(expected);
+        result.Value.Currency.Should().Be(money1.Currency);
     }
 
     [Fact]
@@ -217,19 +219,19 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromEuros(50);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
 
         // Act
         var result = money1.Subtract(money2);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.CurrencyMismatch", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.CurrencyMismatch");
     }
 
     [Fact]
@@ -237,19 +239,19 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(30);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromDollars(50);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
 
         // Act
         var result = money1.Subtract(money2);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.NegativeAmount", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.NegativeAmount");
     }
 
     [Fact]
@@ -257,7 +259,7 @@ public class MoneyTests
     {
         // Arrange
         var moneyResult = Money.FromDollars(10);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
         
         var multiplier = 3.5m;
@@ -267,9 +269,9 @@ public class MoneyTests
         var result = money.Multiply(multiplier);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Amount);
-        Assert.Equal(money.Currency, result.Value.Currency);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Amount.Should().Be(expected);
+        result.Value.Currency.Should().Be(money.Currency);
     }
 
     [Fact]
@@ -277,7 +279,7 @@ public class MoneyTests
     {
         // Arrange
         var moneyResult = Money.FromDollars(10);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
         
         var multiplier = -2m;
@@ -286,8 +288,8 @@ public class MoneyTests
         var result = money.Multiply(multiplier);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.NegativeAmount", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.NegativeAmount");
     }
 
     [Fact]
@@ -295,17 +297,17 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromDollars(100);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
 
         // Act & Assert
-        Assert.True(money1.Equals(money2));
-        Assert.True(money1 == money2);
-        Assert.False(money1 != money2);
+        money1.Equals(money2).Should().BeTrue();
+        (money1 == money2).Should().BeTrue();
+        (money1 != money2).Should().BeFalse();
     }
 
     [Fact]
@@ -313,17 +315,17 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromDollars(50);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
 
         // Act & Assert
-        Assert.False(money1.Equals(money2));
-        Assert.False(money1 == money2);
-        Assert.True(money1 != money2);
+        money1.Equals(money2).Should().BeFalse();
+        (money1 == money2).Should().BeFalse();
+        (money1 != money2).Should().BeTrue();
     }
 
     [Fact]
@@ -331,17 +333,17 @@ public class MoneyTests
     {
         // Arrange
         var money1Result = Money.FromDollars(100);
-        Assert.True(money1Result.IsSuccess);
+        money1Result.IsSuccess.Should().BeTrue();
         var money1 = money1Result.Value;
         
         var money2Result = Money.FromEuros(100);
-        Assert.True(money2Result.IsSuccess);
+        money2Result.IsSuccess.Should().BeTrue();
         var money2 = money2Result.Value;
 
         // Act & Assert
-        Assert.False(money1.Equals(money2));
-        Assert.False(money1 == money2);
-        Assert.True(money1 != money2);
+        money1.Equals(money2).Should().BeFalse();
+        (money1 == money2).Should().BeFalse();
+        (money1 != money2).Should().BeTrue();
     }
 
     [Fact]
@@ -349,7 +351,7 @@ public class MoneyTests
     {
         // Arrange
         var moneyResult = Money.FromDollars(123.45m);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
         
         var expected = "123.45 USD";
@@ -358,6 +360,6 @@ public class MoneyTests
         var result = money.ToString();
 
         // Assert
-        Assert.Equal(expected, result);
+        result.Should().Be(expected);
     }
 }

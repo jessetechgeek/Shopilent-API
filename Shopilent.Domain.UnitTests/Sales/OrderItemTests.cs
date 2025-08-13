@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Catalog;
@@ -14,17 +15,17 @@ public class OrderItemTests
     private User CreateTestUser()
     {
         var emailResult = Email.Create("test@example.com");
-        Assert.True(emailResult.IsSuccess);
+        emailResult.IsSuccess.Should().BeTrue();
 
         var fullNameResult = FullName.Create("Test", "User");
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
 
         var userResult = User.Create(
             emailResult.Value,
             "hashed_password",
             fullNameResult.Value);
 
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -37,26 +38,26 @@ public class OrderItemTests
             "Country",
             "12345");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
 
         var addressResult = Address.CreateShipping(
             user,
             postalAddressResult.Value);
 
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         return addressResult.Value;
     }
 
     private Order CreateTestOrder(User user, Address address)
     {
         var subtotalResult = Money.Create(0, "USD");
-        Assert.True(subtotalResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
 
         var taxResult = Money.Create(10, "USD");
-        Assert.True(taxResult.IsSuccess);
+        taxResult.IsSuccess.Should().BeTrue();
 
         var shippingCostResult = Money.Create(5, "USD");
-        Assert.True(shippingCostResult.IsSuccess);
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -66,32 +67,32 @@ public class OrderItemTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         return orderResult.Value;
     }
 
     private Product CreateTestProduct(string name = "Test Product", decimal price = 50)
     {
         var slugResult = Slug.Create(name.ToLower().Replace(" ", "-"));
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.Create(price, "USD");
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var basePrice = priceResult.Value;
 
         var productResult = Product.Create(name, slug, basePrice, "TEST-SKU");
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         return productResult.Value;
     }
 
     private ProductVariant CreateTestVariant(Product product, string sku = "VAR-SKU", decimal price = 60)
     {
         var priceResult = Money.Create(price, "USD");
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
 
         var variantResult = ProductVariant.Create(product.Id, sku, priceResult.Value, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         return variantResult.Value;
     }
 
@@ -106,24 +107,24 @@ public class OrderItemTests
         var quantity = 2;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         // Act
         var orderItemResult = order.AddItem(product, quantity, unitPrice);
 
         // Assert
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
 
         // Verify product data snapshot
-        Assert.NotNull(orderItem.ProductData);
-        Assert.True(orderItem.ProductData.ContainsKey("name"));
-        Assert.Equal(product.Name, orderItem.ProductData["name"]);
-        Assert.True(orderItem.ProductData.ContainsKey("sku"));
-        Assert.Equal(product.Sku, orderItem.ProductData["sku"]);
-        Assert.True(orderItem.ProductData.ContainsKey("slug"));
-        Assert.Equal(product.Slug.Value, orderItem.ProductData["slug"]);
+        orderItem.ProductData.Should().NotBeNull();
+        orderItem.ProductData.Should().ContainKey("name");
+        orderItem.ProductData["name"].Should().Be(product.Name);
+        orderItem.ProductData.Should().ContainKey("sku");
+        orderItem.ProductData["sku"].Should().Be(product.Sku);
+        orderItem.ProductData.Should().ContainKey("slug");
+        orderItem.ProductData["slug"].Should().Be(product.Slug.Value);
     }
 
     [Fact]
@@ -138,20 +139,20 @@ public class OrderItemTests
         var quantity = 1;
 
         var unitPriceResult = Money.Create(60, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         // Act
         var orderItemResult = order.AddItem(product, quantity, unitPrice, variant);
 
         // Assert
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
 
         // Verify variant data in snapshot
-        Assert.True(orderItem.ProductData.ContainsKey("variant_sku"));
-        Assert.Equal(variant.Sku, orderItem.ProductData["variant_sku"]);
-        Assert.True(orderItem.ProductData.ContainsKey("variant_attributes"));
+        orderItem.ProductData.Should().ContainKey("variant_sku");
+        orderItem.ProductData["variant_sku"].Should().Be(variant.Sku);
+        orderItem.ProductData.Should().ContainKey("variant_attributes");
     }
 
     [Fact]
@@ -165,17 +166,17 @@ public class OrderItemTests
         var quantity = 3;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         // Act
         var orderItemResult = order.AddItem(product, quantity, unitPrice);
 
         // Assert
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
-        Assert.Equal(unitPrice.Amount * quantity, orderItem.TotalPrice.Amount);
-        Assert.Equal(unitPrice.Currency, orderItem.TotalPrice.Currency);
+        orderItem.TotalPrice.Amount.Should().Be(unitPrice.Amount * quantity);
+        orderItem.TotalPrice.Currency.Should().Be(unitPrice.Currency);
     }
 
     [Fact]
@@ -189,15 +190,15 @@ public class OrderItemTests
         var initialQuantity = 2;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         var orderItemResult = order.AddItem(product, initialQuantity, unitPrice);
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
 
         var initialTotalPrice = orderItem.TotalPrice.Amount;
-        Assert.Equal(unitPrice.Amount * initialQuantity, initialTotalPrice);
+        initialTotalPrice.Should().Be(unitPrice.Amount * initialQuantity);
 
         var newQuantity = 5;
 
@@ -205,9 +206,9 @@ public class OrderItemTests
         var updateResult = order.UpdateOrderItemQuantity(orderItem.Id, newQuantity);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(newQuantity, orderItem.Quantity);
-        Assert.Equal(unitPrice.Amount * newQuantity, orderItem.TotalPrice.Amount);
+        updateResult.IsSuccess.Should().BeTrue();
+        orderItem.Quantity.Should().Be(newQuantity);
+        orderItem.TotalPrice.Amount.Should().Be(unitPrice.Amount * newQuantity);
     }
 
     [Fact]
@@ -221,20 +222,20 @@ public class OrderItemTests
         var initialQuantity = 2;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         var orderItemResult = order.AddItem(product, initialQuantity, unitPrice);
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
 
         // Act
         var zeroResult = order.UpdateOrderItemQuantity(orderItem.Id, 0);
 
         // Assert
-        Assert.True(zeroResult.IsFailure);
-        Assert.Equal("Order.InvalidQuantity", zeroResult.Error.Code);
-        Assert.Equal(initialQuantity, orderItem.Quantity); // Quantity should remain unchanged
+        zeroResult.IsFailure.Should().BeTrue();
+        zeroResult.Error.Code.Should().Be("Order.InvalidQuantity");
+        orderItem.Quantity.Should().Be(initialQuantity); // Quantity should remain unchanged
     }
 
     [Fact]
@@ -248,20 +249,20 @@ public class OrderItemTests
         var initialQuantity = 2;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         var orderItemResult = order.AddItem(product, initialQuantity, unitPrice);
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
 
         // Act
         var negativeResult = order.UpdateOrderItemQuantity(orderItem.Id, -1);
 
         // Assert
-        Assert.True(negativeResult.IsFailure);
-        Assert.Equal("Order.InvalidQuantity", negativeResult.Error.Code);
-        Assert.Equal(initialQuantity, orderItem.Quantity); // Quantity should remain unchanged
+        negativeResult.IsFailure.Should().BeTrue();
+        negativeResult.Error.Code.Should().Be("Order.InvalidQuantity");
+        orderItem.Quantity.Should().Be(initialQuantity); // Quantity should remain unchanged
     }
 
     [Fact]
@@ -277,22 +278,22 @@ public class OrderItemTests
         var quantity = 1;
 
         var unitPriceResult = Money.Create(50, "USD");
-        Assert.True(unitPriceResult.IsSuccess);
+        unitPriceResult.IsSuccess.Should().BeTrue();
         var unitPrice = unitPriceResult.Value;
 
         var orderItemResult = order.AddItem(product, quantity, unitPrice);
-        Assert.True(orderItemResult.IsSuccess);
+        orderItemResult.IsSuccess.Should().BeTrue();
         var orderItem = orderItemResult.Value;
 
         // Verify original product name is in snapshot
-        Assert.Equal(productName, orderItem.ProductData["name"]);
+        orderItem.ProductData["name"].Should().Be(productName);
 
         // Now change the product
         var newSlugResult = Slug.Create("updated-product");
-        Assert.True(newSlugResult.IsSuccess);
+        newSlugResult.IsSuccess.Should().BeTrue();
 
         var newPriceResult = Money.FromDollars(70);
-        Assert.True(newPriceResult.IsSuccess);
+        newPriceResult.IsSuccess.Should().BeTrue();
 
         product.Update(
             "Updated Product Name",
@@ -302,9 +303,9 @@ public class OrderItemTests
             "NEW-SKU");
 
         // Act & Assert - Snapshot should remain unchanged
-        Assert.Equal(productName, orderItem.ProductData["name"]);
-        Assert.NotEqual("Updated Product Name", orderItem.ProductData["name"]);
-        Assert.Equal("TEST-SKU", orderItem.ProductData["sku"]);
-        Assert.NotEqual("NEW-SKU", orderItem.ProductData["sku"]);
+        orderItem.ProductData["name"].Should().Be(productName);
+        orderItem.ProductData["name"].Should().NotBe("Updated Product Name");
+        orderItem.ProductData["sku"].Should().Be("TEST-SKU");
+        orderItem.ProductData["sku"].Should().NotBe("NEW-SKU");
     }
 }

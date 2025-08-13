@@ -58,7 +58,7 @@ public class ProductVariant : AggregateRoot
     }
 
     // Original factory method for Product aggregate use
-    public static ProductVariant Create(Product product, string sku = null, Money price = null, int stockQuantity = 0)
+    internal static ProductVariant Create(Product product, string sku = null, Money price = null, int stockQuantity = 0)
     {
         if (product == null)
             throw new ArgumentNullException(nameof(product));

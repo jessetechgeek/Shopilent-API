@@ -12,27 +12,27 @@ public class ProductInCategorySpecificationTests
     {
         // Arrange
         var categorySlugResult = Slug.Create("electronics");
-        Assert.True(categorySlugResult.IsSuccess);
+        categorySlugResult.IsSuccess.Should().BeTrue();
         var categorySlug = categorySlugResult.Value;
         
         var categoryResult = Category.Create("Electronics", categorySlug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         var productSlugResult = Slug.Create("iphone");
-        Assert.True(productSlugResult.IsSuccess);
+        productSlugResult.IsSuccess.Should().BeTrue();
         var productSlug = productSlugResult.Value;
         
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
         
         var productResult = Product.Create("iPhone", productSlug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
         
         var addCategoryResult = product.AddCategory(category);
-        Assert.True(addCategoryResult.IsSuccess);
+        addCategoryResult.IsSuccess.Should().BeTrue();
 
         var specification = new ProductInCategorySpecification(category.Id);
 
@@ -40,7 +40,7 @@ public class ProductInCategorySpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -48,35 +48,35 @@ public class ProductInCategorySpecificationTests
     {
         // Arrange
         var categorySlugResult = Slug.Create("electronics");
-        Assert.True(categorySlugResult.IsSuccess);
+        categorySlugResult.IsSuccess.Should().BeTrue();
         var categorySlug = categorySlugResult.Value;
         
         var categoryResult = Category.Create("Electronics", categorySlug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         var otherCategorySlugResult = Slug.Create("phones");
-        Assert.True(otherCategorySlugResult.IsSuccess);
+        otherCategorySlugResult.IsSuccess.Should().BeTrue();
         var otherCategorySlug = otherCategorySlugResult.Value;
         
         var otherCategoryResult = Category.Create("Phones", otherCategorySlug);
-        Assert.True(otherCategoryResult.IsSuccess);
+        otherCategoryResult.IsSuccess.Should().BeTrue();
         var otherCategory = otherCategoryResult.Value;
         
         var productSlugResult = Slug.Create("iphone");
-        Assert.True(productSlugResult.IsSuccess);
+        productSlugResult.IsSuccess.Should().BeTrue();
         var productSlug = productSlugResult.Value;
         
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
         
         var productResult = Product.Create("iPhone", productSlug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
         
         var addCategoryResult = product.AddCategory(otherCategory);
-        Assert.True(addCategoryResult.IsSuccess);
+        addCategoryResult.IsSuccess.Should().BeTrue();
 
         var specification = new ProductInCategorySpecification(category.Id);
 
@@ -84,7 +84,7 @@ public class ProductInCategorySpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -92,31 +92,31 @@ public class ProductInCategorySpecificationTests
     {
         // Arrange
         var category1SlugResult = Slug.Create("electronics");
-        Assert.True(category1SlugResult.IsSuccess);
+        category1SlugResult.IsSuccess.Should().BeTrue();
         var category1Slug = category1SlugResult.Value;
         
         var category1Result = Category.Create("Electronics", category1Slug);
-        Assert.True(category1Result.IsSuccess);
+        category1Result.IsSuccess.Should().BeTrue();
         var category1 = category1Result.Value;
         
         var category2SlugResult = Slug.Create("phones");
-        Assert.True(category2SlugResult.IsSuccess);
+        category2SlugResult.IsSuccess.Should().BeTrue();
         var category2Slug = category2SlugResult.Value;
         
         var category2Result = Category.Create("Phones", category2Slug);
-        Assert.True(category2Result.IsSuccess);
+        category2Result.IsSuccess.Should().BeTrue();
         var category2 = category2Result.Value;
         
         var productSlugResult = Slug.Create("iphone");
-        Assert.True(productSlugResult.IsSuccess);
+        productSlugResult.IsSuccess.Should().BeTrue();
         var productSlug = productSlugResult.Value;
         
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
         
         var productResult = Product.Create("iPhone", productSlug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         product.AddCategory(category1);
@@ -128,6 +128,6 @@ public class ProductInCategorySpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 }

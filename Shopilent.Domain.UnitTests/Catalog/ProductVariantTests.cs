@@ -34,15 +34,15 @@ public class ProductVariantTests
         var result = ProductVariant.Create(product.Id, sku, price, stockQuantity);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var variant = result.Value;
-        Assert.Equal(product.Id, variant.ProductId);
-        Assert.Equal(sku, variant.Sku);
-        Assert.Equal(price, variant.Price);
-        Assert.Equal(stockQuantity, variant.StockQuantity);
-        Assert.True(variant.IsActive);
-        Assert.Empty(variant.VariantAttributes);
-        Assert.Empty(variant.Metadata);
+        variant.ProductId.Should().Be(product.Id);
+        variant.Sku.Should().Be(sku);
+        variant.Price.Should().Be(price);
+        variant.StockQuantity.Should().Be(stockQuantity);
+        variant.IsActive.Should().BeTrue();
+        variant.VariantAttributes.Should().BeEmpty();
+        variant.Metadata.Should().BeEmpty();
     }
 
     [Fact]
@@ -58,8 +58,8 @@ public class ProductVariantTests
         var result = ProductVariant.Create(productId, sku, price, stockQuantity);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Product.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Product.NotFound");
     }
 
     [Fact]
@@ -75,8 +75,8 @@ public class ProductVariantTests
         var result = ProductVariant.Create(product.Id, sku, price, stockQuantity);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("ProductVariant.NegativeStockQuantity", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("ProductVariant.NegativeStockQuantity");
     }
 
     [Fact]
@@ -92,13 +92,13 @@ public class ProductVariantTests
         var result = ProductVariant.CreateInactive(product, sku, price, stockQuantity);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var variant = result.Value;
-        Assert.Equal(product.Id, variant.ProductId);
-        Assert.Equal(sku, variant.Sku);
-        Assert.Equal(price, variant.Price);
-        Assert.Equal(stockQuantity, variant.StockQuantity);
-        Assert.False(variant.IsActive);
+        variant.ProductId.Should().Be(product.Id);
+        variant.Sku.Should().Be(sku);
+        variant.Price.Should().Be(price);
+        variant.StockQuantity.Should().Be(stockQuantity);
+        variant.IsActive.Should().BeFalse();
     }
 
     [Fact]
@@ -114,13 +114,13 @@ public class ProductVariantTests
 
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var variant = result.Value;
-        Assert.Equal(product.Id, variant.ProductId);
-        Assert.Equal(sku, variant.Sku);
-        Assert.Equal(price, variant.Price);
-        Assert.Equal(0, variant.StockQuantity);
-        Assert.True(variant.IsActive);
+        variant.ProductId.Should().Be(product.Id);
+        variant.Sku.Should().Be(sku);
+        variant.Price.Should().Be(price);
+        variant.StockQuantity.Should().Be(0);
+        variant.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "OLD-123", Money.FromDollars(100).Value, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var newSku = "NEW-456";
@@ -139,9 +139,9 @@ public class ProductVariantTests
         var result = variant.Update(newSku, newPrice);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newSku, variant.Sku);
-        Assert.Equal(newPrice, variant.Price);
+        result.IsSuccess.Should().BeTrue();
+        variant.Sku.Should().Be(newSku);
+        variant.Price.Should().Be(newPrice);
     }
 
     [Fact]
@@ -150,9 +150,9 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
-        Assert.Equal(10, variant.StockQuantity);
+        variant.StockQuantity.Should().Be(10);
 
         var newQuantity = 50;
 
@@ -160,8 +160,8 @@ public class ProductVariantTests
         var result = variant.SetStockQuantity(newQuantity);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newQuantity, variant.StockQuantity);
+        result.IsSuccess.Should().BeTrue();
+        variant.StockQuantity.Should().Be(newQuantity);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
         var negativeQuantity = -5;
 
@@ -178,8 +178,8 @@ public class ProductVariantTests
         var result = variant.SetStockQuantity(negativeQuantity);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("ProductVariant.NegativeStockQuantity", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("ProductVariant.NegativeStockQuantity");
     }
 
     [Fact]
@@ -189,7 +189,7 @@ public class ProductVariantTests
         var product = CreateTestProduct();
         var initialStock = 10;
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value, initialStock);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var additionalStock = 15;
@@ -199,8 +199,8 @@ public class ProductVariantTests
         var result = variant.AddStock(additionalStock);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedStock, variant.StockQuantity);
+        result.IsSuccess.Should().BeTrue();
+        variant.StockQuantity.Should().Be(expectedStock);
     }
 
     [Fact]
@@ -209,18 +209,18 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         // Act & Assert - Zero
         var zeroResult = variant.AddStock(0);
-        Assert.True(zeroResult.IsFailure);
-        Assert.Equal("ProductVariant.NegativeStockQuantity", zeroResult.Error.Code);
+        zeroResult.IsFailure.Should().BeTrue();
+        zeroResult.Error.Code.Should().Be("ProductVariant.NegativeStockQuantity");
 
         // Act & Assert - Negative
         var negativeResult = variant.AddStock(-5);
-        Assert.True(negativeResult.IsFailure);
-        Assert.Equal("ProductVariant.NegativeStockQuantity", negativeResult.Error.Code);
+        negativeResult.IsFailure.Should().BeTrue();
+        negativeResult.Error.Code.Should().Be("ProductVariant.NegativeStockQuantity");
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class ProductVariantTests
         var product = CreateTestProduct();
         var initialStock = 20;
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value, initialStock);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var quantityToRemove = 5;
@@ -240,8 +240,8 @@ public class ProductVariantTests
         var result = variant.RemoveStock(quantityToRemove);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedStock, variant.StockQuantity);
+        result.IsSuccess.Should().BeTrue();
+        variant.StockQuantity.Should().Be(expectedStock);
     }
 
     [Fact]
@@ -250,18 +250,18 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         // Act & Assert - Zero
         var zeroResult = variant.RemoveStock(0);
-        Assert.True(zeroResult.IsFailure);
-        Assert.Equal("ProductVariant.NegativeStockQuantity", zeroResult.Error.Code);
+        zeroResult.IsFailure.Should().BeTrue();
+        zeroResult.Error.Code.Should().Be("ProductVariant.NegativeStockQuantity");
 
         // Act & Assert - Negative
         var negativeResult = variant.RemoveStock(-5);
-        Assert.True(negativeResult.IsFailure);
-        Assert.Equal("ProductVariant.NegativeStockQuantity", negativeResult.Error.Code);
+        negativeResult.IsFailure.Should().BeTrue();
+        negativeResult.Error.Code.Should().Be("ProductVariant.NegativeStockQuantity");
     }
 
     [Fact]
@@ -271,7 +271,7 @@ public class ProductVariantTests
         var product = CreateTestProduct();
         var initialStock = 10;
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value, initialStock);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var quantityToRemove = initialStock + 5;
@@ -280,9 +280,9 @@ public class ProductVariantTests
         var result = variant.RemoveStock(quantityToRemove);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("ProductVariant.InsufficientStock", result.Error.Code);
-        Assert.Equal(initialStock, variant.StockQuantity); // Stock should remain unchanged
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("ProductVariant.InsufficientStock");
+        variant.StockQuantity.Should().Be(initialStock); // Stock should remain unchanged
     }
 
     [Fact]
@@ -291,16 +291,16 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.CreateInactive(product, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
-        Assert.False(variant.IsActive);
+        variant.IsActive.Should().BeFalse();
 
         // Act
         var result = variant.Activate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(variant.IsActive);
+        result.IsSuccess.Should().BeTrue();
+        variant.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -309,16 +309,16 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
-        Assert.True(variant.IsActive);
+        variant.IsActive.Should().BeTrue();
 
         // Act
         var result = variant.Deactivate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.False(variant.IsActive);
+        result.IsSuccess.Should().BeTrue();
+        variant.IsActive.Should().BeFalse();
     }
 
     [Fact]
@@ -327,7 +327,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var attribute = CreateTestAttribute();
@@ -337,9 +337,9 @@ public class ProductVariantTests
         var result = variant.AddAttribute(attribute, attributeValue);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Single(variant.VariantAttributes);
-        Assert.Equal(attribute.Id, variant.VariantAttributes.First().AttributeId);
+        result.IsSuccess.Should().BeTrue();
+        variant.VariantAttributes.Should().HaveCount(1);
+        variant.VariantAttributes.First().AttributeId.Should().Be(attribute.Id);
     }
 
     [Fact]
@@ -348,11 +348,11 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var attributeResult = Attribute.Create("Weight", "Weight", AttributeType.Number);
-        Assert.True(attributeResult.IsSuccess);
+        attributeResult.IsSuccess.Should().BeTrue();
         var attribute = attributeResult.Value; // Not a variant attribute
 
         var attributeValue = 500;
@@ -361,8 +361,8 @@ public class ProductVariantTests
         var result = variant.AddAttribute(attribute, attributeValue);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("ProductVariant.NonVariantAttribute", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("ProductVariant.NonVariantAttribute");
     }
 
     [Fact]
@@ -371,7 +371,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         Attribute attribute = null;
@@ -381,8 +381,8 @@ public class ProductVariantTests
         var result = variant.AddAttribute(attribute, attributeValue);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Attribute.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Attribute.NotFound");
     }
 
     [Fact]
@@ -391,7 +391,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var key = "dimension";
@@ -401,9 +401,9 @@ public class ProductVariantTests
         var result = variant.UpdateMetadata(key, value);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(variant.Metadata.ContainsKey(key));
-        Assert.Equal(value, variant.Metadata[key]);
+        result.IsSuccess.Should().BeTrue();
+        variant.Metadata.Should().ContainKey(key);
+        variant.Metadata[key].Should().Be(value);
     }
 
     [Fact]
@@ -412,7 +412,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var emptyKey = string.Empty;
@@ -422,8 +422,8 @@ public class ProductVariantTests
         var result = variant.UpdateMetadata(emptyKey, value);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("ProductVariant.InvalidMetadataKey", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("ProductVariant.InvalidMetadataKey");
     }
 
     [Fact]
@@ -432,20 +432,20 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var attribute = CreateTestAttribute();
         var attributeValue = "Blue";
 
         var addResult = variant.AddAttribute(attribute, attributeValue);
-        Assert.True(addResult.IsSuccess);
+        addResult.IsSuccess.Should().BeTrue();
 
         // Act
         var result = variant.HasAttribute(attribute.Id);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -454,7 +454,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var nonExistingAttributeId = Guid.NewGuid();
@@ -463,7 +463,7 @@ public class ProductVariantTests
         var result = variant.HasAttribute(nonExistingAttributeId);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -472,21 +472,21 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var attribute = CreateTestAttribute();
         var attributeValue = "Blue";
 
         var addResult = variant.AddAttribute(attribute, attributeValue);
-        Assert.True(addResult.IsSuccess);
+        addResult.IsSuccess.Should().BeTrue();
 
         // Act
         var result = variant.GetAttributeValue(attribute.Id);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(attributeValue, result.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(attributeValue);
     }
 
     [Fact]
@@ -495,7 +495,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var nonExistingAttributeId = Guid.NewGuid();
@@ -504,8 +504,8 @@ public class ProductVariantTests
         var result = variant.GetAttributeValue(nonExistingAttributeId);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Attribute.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Attribute.NotFound");
     }
 
     [Fact]
@@ -514,7 +514,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var attribute = CreateTestAttribute();
@@ -522,17 +522,17 @@ public class ProductVariantTests
         var newValue = "Red";
 
         var addResult = variant.AddAttribute(attribute, initialValue);
-        Assert.True(addResult.IsSuccess);
+        addResult.IsSuccess.Should().BeTrue();
 
         // Act
         var updateResult = variant.UpdateAttributeValue(attribute.Id, newValue);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
+        updateResult.IsSuccess.Should().BeTrue();
 
         var getValueResult = variant.GetAttributeValue(attribute.Id);
-        Assert.True(getValueResult.IsSuccess);
-        Assert.Equal(newValue, getValueResult.Value);
+        getValueResult.IsSuccess.Should().BeTrue();
+        getValueResult.Value.Should().Be(newValue);
     }
 
     [Fact]
@@ -541,7 +541,7 @@ public class ProductVariantTests
         // Arrange
         var product = CreateTestProduct();
         var variantResult = ProductVariant.Create(product.Id, "TEST-123", Money.FromDollars(100).Value);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var nonExistingAttributeId = Guid.NewGuid();
@@ -551,7 +551,7 @@ public class ProductVariantTests
         var result = variant.UpdateAttributeValue(nonExistingAttributeId, newValue);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Attribute.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Attribute.NotFound");
     }
 }

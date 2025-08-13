@@ -12,21 +12,21 @@ public class ProductEventTests
     {
         // Arrange & Act
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var moneyResult = Money.FromDollars(100);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var productResult = Product.Create("Test Product", slug, money);
 
         // Assert
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
-        var domainEvent = Assert.Single(product.DomainEvents, e => e is ProductCreatedEvent);
+        var domainEvent = product.DomainEvents.Should().ContainSingle(e => e is ProductCreatedEvent).Subject;
         var createdEvent = (ProductCreatedEvent)domainEvent;
-        Assert.Equal(product.Id, createdEvent.ProductId);
+        createdEvent.ProductId.Should().Be(product.Id);
     }
 
     [Fact]
@@ -34,25 +34,25 @@ public class ProductEventTests
     {
         // Arrange
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var moneyResult = Money.FromDollars(100);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var productResult = Product.Create("Test Product", slug, money);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         product.ClearDomainEvents(); // Clear the creation event
 
         var newSlugResult = Slug.Create("updated-product");
-        Assert.True(newSlugResult.IsSuccess);
+        newSlugResult.IsSuccess.Should().BeTrue();
         var newSlug = newSlugResult.Value;
 
         var newPriceResult = Money.FromDollars(120);
-        Assert.True(newPriceResult.IsSuccess);
+        newPriceResult.IsSuccess.Should().BeTrue();
         var newPrice = newPriceResult.Value;
 
         // Act
@@ -61,12 +61,12 @@ public class ProductEventTests
             newSlug,
             newPrice,
             "Updated description");
-        Assert.True(updateResult.IsSuccess);
+        updateResult.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(product.DomainEvents, e => e is ProductUpdatedEvent);
+        var domainEvent = product.DomainEvents.Should().ContainSingle(e => e is ProductUpdatedEvent).Subject;
         var updatedEvent = (ProductUpdatedEvent)domainEvent;
-        Assert.Equal(product.Id, updatedEvent.ProductId);
+        updatedEvent.ProductId.Should().Be(product.Id);
     }
 
     [Fact]
@@ -74,28 +74,28 @@ public class ProductEventTests
     {
         // Arrange
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var moneyResult = Money.FromDollars(100);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var productResult = Product.CreateInactive("Test Product", slug, money);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         product.ClearDomainEvents(); // Clear the creation event
 
         // Act
         var result = product.Activate();
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(product.DomainEvents, e => e is ProductStatusChangedEvent);
+        var domainEvent = product.DomainEvents.Should().ContainSingle(e => e is ProductStatusChangedEvent).Subject;
         var statusEvent = (ProductStatusChangedEvent)domainEvent;
-        Assert.Equal(product.Id, statusEvent.ProductId);
-        Assert.True(statusEvent.IsActive);
+        statusEvent.ProductId.Should().Be(product.Id);
+        statusEvent.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -103,28 +103,28 @@ public class ProductEventTests
     {
         // Arrange
         var slugResult = Slug.Create("test-product");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var moneyResult = Money.FromDollars(100);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var productResult = Product.Create("Test Product", slug, money);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         product.ClearDomainEvents(); // Clear the creation event
 
         // Act
         var result = product.Deactivate();
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(product.DomainEvents, e => e is ProductStatusChangedEvent);
+        var domainEvent = product.DomainEvents.Should().ContainSingle(e => e is ProductStatusChangedEvent).Subject;
         var statusEvent = (ProductStatusChangedEvent)domainEvent;
-        Assert.Equal(product.Id, statusEvent.ProductId);
-        Assert.False(statusEvent.IsActive);
+        statusEvent.ProductId.Should().Be(product.Id);
+        statusEvent.IsActive.Should().BeFalse();
     }
 
     [Fact]
@@ -132,36 +132,36 @@ public class ProductEventTests
     {
         // Arrange
         var productSlugResult = Slug.Create("test-product");
-        Assert.True(productSlugResult.IsSuccess);
+        productSlugResult.IsSuccess.Should().BeTrue();
         var productSlug = productSlugResult.Value;
 
         var moneyResult = Money.FromDollars(100);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var productResult = Product.Create("Test Product", productSlug, money);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var categorySlugResult = Slug.Create("test-category");
-        Assert.True(categorySlugResult.IsSuccess);
+        categorySlugResult.IsSuccess.Should().BeTrue();
         var categorySlug = categorySlugResult.Value;
 
         var categoryResult = Category.Create("Test Category", categorySlug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
 
         product.ClearDomainEvents(); // Clear the creation event
 
         // Act
         var result = product.AddCategory(category);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(product.DomainEvents, e => e is ProductCategoryAddedEvent);
+        var domainEvent = product.DomainEvents.Should().ContainSingle(e => e is ProductCategoryAddedEvent).Subject;
         var categoryEvent = (ProductCategoryAddedEvent)domainEvent;
-        Assert.Equal(product.Id, categoryEvent.ProductId);
-        Assert.Equal(category.Id, categoryEvent.CategoryId);
+        categoryEvent.ProductId.Should().Be(product.Id);
+        categoryEvent.CategoryId.Should().Be(category.Id);
     }
 
     [Fact]
@@ -169,39 +169,39 @@ public class ProductEventTests
     {
         // Arrange
         var productSlugResult = Slug.Create("test-product");
-        Assert.True(productSlugResult.IsSuccess);
+        productSlugResult.IsSuccess.Should().BeTrue();
         var productSlug = productSlugResult.Value;
 
         var moneyResult = Money.FromDollars(100);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var productResult = Product.Create("Test Product", productSlug, money);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var categorySlugResult = Slug.Create("test-category");
-        Assert.True(categorySlugResult.IsSuccess);
+        categorySlugResult.IsSuccess.Should().BeTrue();
         var categorySlug = categorySlugResult.Value;
 
         var categoryResult = Category.Create("Test Category", categorySlug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
 
         var addCategoryResult = product.AddCategory(category);
-        Assert.True(addCategoryResult.IsSuccess);
+        addCategoryResult.IsSuccess.Should().BeTrue();
 
         product.ClearDomainEvents(); // Clear previous events
 
         // Act
         var result = product.RemoveCategory(category);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(product.DomainEvents, e => e is ProductCategoryRemovedEvent);
+        var domainEvent = product.DomainEvents.Should().ContainSingle(e => e is ProductCategoryRemovedEvent).Subject;
         var categoryEvent = (ProductCategoryRemovedEvent)domainEvent;
-        Assert.Equal(product.Id, categoryEvent.ProductId);
-        Assert.Equal(category.Id, categoryEvent.CategoryId);
+        categoryEvent.ProductId.Should().Be(product.Id);
+        categoryEvent.CategoryId.Should().Be(category.Id);
     }
 
     [Fact]
@@ -209,35 +209,35 @@ public class ProductEventTests
     {
         // Arrange
         var productSlugResult = Slug.Create("test-product");
-        Assert.True(productSlugResult.IsSuccess);
+        productSlugResult.IsSuccess.Should().BeTrue();
         var productSlug = productSlugResult.Value;
 
         var moneyResult = Money.FromDollars(100);
-        Assert.True(moneyResult.IsSuccess);
+        moneyResult.IsSuccess.Should().BeTrue();
         var money = moneyResult.Value;
 
         var productResult = Product.Create("Test Product", productSlug, money);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var variantPriceResult = Money.FromDollars(120);
-        Assert.True(variantPriceResult.IsSuccess);
+        variantPriceResult.IsSuccess.Should().BeTrue();
         var variantPrice = variantPriceResult.Value;
 
         var variantResult = ProductVariant.Create(product.Id, "V1", variantPrice, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         product.ClearDomainEvents(); // Clear the creation event
 
         // Act
         var result = product.AddVariant(variant);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(product.DomainEvents, e => e is ProductVariantAddedEvent);
+        var domainEvent = product.DomainEvents.Should().ContainSingle(e => e is ProductVariantAddedEvent).Subject;
         var variantEvent = (ProductVariantAddedEvent)domainEvent;
-        Assert.Equal(product.Id, variantEvent.ProductId);
-        Assert.Equal(variant.Id, variantEvent.VariantId);
+        variantEvent.ProductId.Should().Be(product.Id);
+        variantEvent.VariantId.Should().Be(variant.Id);
     }
 }

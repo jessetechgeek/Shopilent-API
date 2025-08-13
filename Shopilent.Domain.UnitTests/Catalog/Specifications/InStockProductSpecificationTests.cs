@@ -12,15 +12,15 @@ public class InStockProductSpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var specification = new InStockProductSpecification();
@@ -29,7 +29,7 @@ public class InStockProductSpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -37,23 +37,23 @@ public class InStockProductSpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var variantResult = ProductVariant.Create(product.Id, "IP-BLK-64", price, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var addVariantResult = product.AddVariant(variant);
-        Assert.True(addVariantResult.IsSuccess);
+        addVariantResult.IsSuccess.Should().BeTrue();
 
         var specification = new InStockProductSpecification();
 
@@ -61,7 +61,7 @@ public class InStockProductSpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -69,23 +69,23 @@ public class InStockProductSpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var variantResult = ProductVariant.CreateOutOfStock(product, "IP-BLK-64", price);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var addVariantResult = product.AddVariant(variant);
-        Assert.True(addVariantResult.IsSuccess);
+        addVariantResult.IsSuccess.Should().BeTrue();
 
         var specification = new InStockProductSpecification();
 
@@ -93,7 +93,7 @@ public class InStockProductSpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -101,23 +101,23 @@ public class InStockProductSpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var outOfStockVariantResult = ProductVariant.CreateOutOfStock(product, "IP-BLK-64", price);
-        Assert.True(outOfStockVariantResult.IsSuccess);
+        outOfStockVariantResult.IsSuccess.Should().BeTrue();
         var outOfStockVariant = outOfStockVariantResult.Value;
 
         var inStockVariantResult = ProductVariant.Create(product.Id, "IP-WHT-64", price, 5);
-        Assert.True(inStockVariantResult.IsSuccess);
+        inStockVariantResult.IsSuccess.Should().BeTrue();
         var inStockVariant = inStockVariantResult.Value;
 
         product.AddVariant(outOfStockVariant);
@@ -129,7 +129,7 @@ public class InStockProductSpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -137,26 +137,26 @@ public class InStockProductSpecificationTests
     {
         // Arrange
         var slugResult = Slug.Create("iphone");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
 
         var priceResult = Money.FromDollars(999);
-        Assert.True(priceResult.IsSuccess);
+        priceResult.IsSuccess.Should().BeTrue();
         var price = priceResult.Value;
 
         var productResult = Product.Create("iPhone", slug, price);
-        Assert.True(productResult.IsSuccess);
+        productResult.IsSuccess.Should().BeTrue();
         var product = productResult.Value;
 
         var variantResult = ProductVariant.Create(product.Id, "IP-BLK-64", price, 10);
-        Assert.True(variantResult.IsSuccess);
+        variantResult.IsSuccess.Should().BeTrue();
         var variant = variantResult.Value;
 
         var deactivateResult = variant.Deactivate();
-        Assert.True(deactivateResult.IsSuccess);
+        deactivateResult.IsSuccess.Should().BeTrue();
 
         var addVariantResult = product.AddVariant(variant);
-        Assert.True(addVariantResult.IsSuccess);
+        addVariantResult.IsSuccess.Should().BeTrue();
 
         var specification = new InStockProductSpecification();
 
@@ -164,6 +164,6 @@ public class InStockProductSpecificationTests
         var result = specification.IsSatisfiedBy(product);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 }

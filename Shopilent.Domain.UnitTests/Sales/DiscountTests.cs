@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Sales.Enums;
 using Shopilent.Domain.Sales.ValueObjects;
 
@@ -16,11 +17,11 @@ public class DiscountTests
         var result = Discount.CreatePercentage(percentage, code);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var discount = result.Value;
-        Assert.Equal(percentage, discount.Value);
-        Assert.Equal(DiscountType.Percentage, discount.Type);
-        Assert.Equal(code, discount.Code);
+        discount.Value.Should().Be(percentage);
+        discount.Type.Should().Be(DiscountType.Percentage);
+        discount.Code.Should().Be(code);
     }
 
     [Fact]
@@ -33,11 +34,11 @@ public class DiscountTests
         var result = Discount.CreatePercentage(percentage);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var discount = result.Value;
-        Assert.Equal(percentage, discount.Value);
-        Assert.Equal(DiscountType.Percentage, discount.Type);
-        Assert.Null(discount.Code);
+        discount.Value.Should().Be(percentage);
+        discount.Type.Should().Be(DiscountType.Percentage);
+        discount.Code.Should().BeNull();
     }
 
     [Fact]
@@ -50,8 +51,8 @@ public class DiscountTests
         var result = Discount.CreatePercentage(percentage);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.NegativeDiscount", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.NegativeDiscount");
     }
 
     [Fact]
@@ -64,8 +65,8 @@ public class DiscountTests
         var result = Discount.CreatePercentage(percentage);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.InvalidDiscountPercentage", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.InvalidDiscountPercentage");
     }
 
     [Fact]
@@ -79,11 +80,11 @@ public class DiscountTests
         var result = Discount.CreateFixedAmount(amount, code);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var discount = result.Value;
-        Assert.Equal(amount, discount.Value);
-        Assert.Equal(DiscountType.FixedAmount, discount.Type);
-        Assert.Equal(code, discount.Code);
+        discount.Value.Should().Be(amount);
+        discount.Type.Should().Be(DiscountType.FixedAmount);
+        discount.Code.Should().Be(code);
     }
 
     [Fact]
@@ -96,11 +97,11 @@ public class DiscountTests
         var result = Discount.CreateFixedAmount(amount);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var discount = result.Value;
-        Assert.Equal(amount, discount.Value);
-        Assert.Equal(DiscountType.FixedAmount, discount.Type);
-        Assert.Null(discount.Code);
+        discount.Value.Should().Be(amount);
+        discount.Type.Should().Be(DiscountType.FixedAmount);
+        discount.Code.Should().BeNull();
     }
 
     [Fact]
@@ -113,8 +114,8 @@ public class DiscountTests
         var result = Discount.CreateFixedAmount(amount);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Order.NegativeDiscount", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Order.NegativeDiscount");
     }
 
     [Fact]
@@ -122,21 +123,21 @@ public class DiscountTests
     {
         // Arrange
         var baseAmountResult = Money.FromDollars(100);
-        Assert.True(baseAmountResult.IsSuccess);
+        baseAmountResult.IsSuccess.Should().BeTrue();
         var baseAmount = baseAmountResult.Value;
 
         var discountResult = Discount.CreatePercentage(15);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
         var calculatedResult = discount.CalculateDiscount(baseAmount);
 
         // Assert
-        Assert.True(calculatedResult.IsSuccess);
+        calculatedResult.IsSuccess.Should().BeTrue();
         var calculatedDiscount = calculatedResult.Value;
-        Assert.Equal(15m, calculatedDiscount.Amount);
-        Assert.Equal(baseAmount.Currency, calculatedDiscount.Currency);
+        calculatedDiscount.Amount.Should().Be(15m);
+        calculatedDiscount.Currency.Should().Be(baseAmount.Currency);
     }
 
     [Fact]
@@ -144,21 +145,21 @@ public class DiscountTests
     {
         // Arrange
         var baseAmountResult = Money.FromDollars(100);
-        Assert.True(baseAmountResult.IsSuccess);
+        baseAmountResult.IsSuccess.Should().BeTrue();
         var baseAmount = baseAmountResult.Value;
 
         var discountResult = Discount.CreateFixedAmount(25);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
         var calculatedResult = discount.CalculateDiscount(baseAmount);
 
         // Assert
-        Assert.True(calculatedResult.IsSuccess);
+        calculatedResult.IsSuccess.Should().BeTrue();
         var calculatedDiscount = calculatedResult.Value;
-        Assert.Equal(25m, calculatedDiscount.Amount);
-        Assert.Equal(baseAmount.Currency, calculatedDiscount.Currency);
+        calculatedDiscount.Amount.Should().Be(25m);
+        calculatedDiscount.Currency.Should().Be(baseAmount.Currency);
     }
 
     [Fact]
@@ -166,21 +167,21 @@ public class DiscountTests
     {
         // Arrange
         var baseAmountResult = Money.FromDollars(50);
-        Assert.True(baseAmountResult.IsSuccess);
+        baseAmountResult.IsSuccess.Should().BeTrue();
         var baseAmount = baseAmountResult.Value;
 
         var discountResult = Discount.CreateFixedAmount(75);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
         var calculatedResult = discount.CalculateDiscount(baseAmount);
 
         // Assert
-        Assert.True(calculatedResult.IsSuccess);
+        calculatedResult.IsSuccess.Should().BeTrue();
         var calculatedDiscount = calculatedResult.Value;
-        Assert.Equal(50m, calculatedDiscount.Amount); // Capped at base amount
-        Assert.Equal(baseAmount.Currency, calculatedDiscount.Currency);
+        calculatedDiscount.Amount.Should().Be(50m); // Capped at base amount
+        calculatedDiscount.Currency.Should().Be(baseAmount.Currency);
     }
 
     [Fact]
@@ -190,15 +191,15 @@ public class DiscountTests
         Money baseAmount = null;
 
         var discountResult = Discount.CreatePercentage(15);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
         var calculatedResult = discount.CalculateDiscount(baseAmount);
 
         // Assert
-        Assert.True(calculatedResult.IsFailure);
-        Assert.Equal("Order.InvalidAmount", calculatedResult.Error.Code);
+        calculatedResult.IsFailure.Should().BeTrue();
+        calculatedResult.Error.Code.Should().Be("Order.InvalidAmount");
     }
 
     [Fact]
@@ -206,21 +207,21 @@ public class DiscountTests
     {
         // Arrange
         var baseAmountResult = Money.FromDollars(100);
-        Assert.True(baseAmountResult.IsSuccess);
+        baseAmountResult.IsSuccess.Should().BeTrue();
         var baseAmount = baseAmountResult.Value;
 
         var discountResult = Discount.CreatePercentage(15);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
         var discountedResult = discount.ApplyDiscount(baseAmount);
 
         // Assert
-        Assert.True(discountedResult.IsSuccess);
+        discountedResult.IsSuccess.Should().BeTrue();
         var discountedAmount = discountedResult.Value;
-        Assert.Equal(85m, discountedAmount.Amount); // $100 - 15%
-        Assert.Equal(baseAmount.Currency, discountedAmount.Currency);
+        discountedAmount.Amount.Should().Be(85m); // $100 - 15%
+        discountedAmount.Currency.Should().Be(baseAmount.Currency);
     }
 
     [Fact]
@@ -228,21 +229,21 @@ public class DiscountTests
     {
         // Arrange
         var baseAmountResult = Money.FromDollars(100);
-        Assert.True(baseAmountResult.IsSuccess);
+        baseAmountResult.IsSuccess.Should().BeTrue();
         var baseAmount = baseAmountResult.Value;
 
         var discountResult = Discount.CreateFixedAmount(25);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
         var discountedResult = discount.ApplyDiscount(baseAmount);
 
         // Assert
-        Assert.True(discountedResult.IsSuccess);
+        discountedResult.IsSuccess.Should().BeTrue();
         var discountedAmount = discountedResult.Value;
-        Assert.Equal(75m, discountedAmount.Amount); // $100 - $25
-        Assert.Equal(baseAmount.Currency, discountedAmount.Currency);
+        discountedAmount.Amount.Should().Be(75m); // $100 - $25
+        discountedAmount.Currency.Should().Be(baseAmount.Currency);
     }
 
     [Fact]
@@ -250,21 +251,21 @@ public class DiscountTests
     {
         // Arrange
         var baseAmountResult = Money.FromDollars(50);
-        Assert.True(baseAmountResult.IsSuccess);
+        baseAmountResult.IsSuccess.Should().BeTrue();
         var baseAmount = baseAmountResult.Value;
 
         var discountResult = Discount.CreateFixedAmount(75);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
         var discountedResult = discount.ApplyDiscount(baseAmount);
 
         // Assert
-        Assert.True(discountedResult.IsSuccess);
+        discountedResult.IsSuccess.Should().BeTrue();
         var discountedAmount = discountedResult.Value;
-        Assert.Equal(0m, discountedAmount.Amount); // $50 - $75 = $0 (not negative)
-        Assert.Equal(baseAmount.Currency, discountedAmount.Currency);
+        discountedAmount.Amount.Should().Be(0m); // $50 - $75 = $0 (not negative)
+        discountedAmount.Currency.Should().Be(baseAmount.Currency);
     }
 
     [Fact]
@@ -273,7 +274,7 @@ public class DiscountTests
         // Arrange
         var percentage = 15.5m;
         var discountResult = Discount.CreatePercentage(percentage);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
         var expected = "15.5%";
 
@@ -281,7 +282,7 @@ public class DiscountTests
         var result = discount.ToString();
 
         // Assert
-        Assert.Equal(expected, result);
+        result.Should().Be(expected);
     }
 
     [Fact]
@@ -290,7 +291,7 @@ public class DiscountTests
         // Arrange
         var amount = 25m;
         var discountResult = Discount.CreateFixedAmount(amount);
-        Assert.True(discountResult.IsSuccess);
+        discountResult.IsSuccess.Should().BeTrue();
         var discount = discountResult.Value;
 
         // Act
@@ -298,7 +299,7 @@ public class DiscountTests
 
         // The exact format will depend on the current culture's currency format
         // So we just check that it contains the amount
-        Assert.Contains("25", result);
+        result.Should().Contain("25");
     }
 
     [Fact]
@@ -308,13 +309,13 @@ public class DiscountTests
         var discount1Result = Discount.CreatePercentage(15, "SUMMER15");
         var discount2Result = Discount.CreatePercentage(15, "SUMMER15");
 
-        Assert.True(discount1Result.IsSuccess);
-        Assert.True(discount2Result.IsSuccess);
+        discount1Result.IsSuccess.Should().BeTrue();
+        discount2Result.IsSuccess.Should().BeTrue();
 
         var discount1 = discount1Result.Value;
         var discount2 = discount2Result.Value;
 
         // Act & Assert
-        Assert.Equal(discount1, discount2);
+        discount1.Should().Be(discount2);
     }
 }

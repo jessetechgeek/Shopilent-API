@@ -12,16 +12,16 @@ public class CategoryEventTests
     {
         // Arrange & Act
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         
         var result = Category.Create("Electronics", slugResult.Value);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var category = result.Value;
-        var domainEvent = Assert.Single(category.DomainEvents, e => e is CategoryCreatedEvent);
+        var domainEvent = category.DomainEvents.Should().ContainSingle(e => e is CategoryCreatedEvent).Subject;
         var createdEvent = (CategoryCreatedEvent)domainEvent;
-        Assert.Equal(category.Id, createdEvent.CategoryId);
+        createdEvent.CategoryId.Should().Be(category.Id);
     }
 
     [Fact]
@@ -29,27 +29,27 @@ public class CategoryEventTests
     {
         // Arrange
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
         
         var categoryResult = Category.Create("Electronics", slug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         category.ClearDomainEvents(); // Clear the creation event
 
         var newSlugResult = Slug.Create("updated-electronics");
-        Assert.True(newSlugResult.IsSuccess);
+        newSlugResult.IsSuccess.Should().BeTrue();
         var newSlug = newSlugResult.Value;
 
         // Act
         var updateResult = category.Update("Updated Electronics", newSlug, "Updated description");
-        Assert.True(updateResult.IsSuccess);
+        updateResult.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(category.DomainEvents, e => e is CategoryUpdatedEvent);
+        var domainEvent = category.DomainEvents.Should().ContainSingle(e => e is CategoryUpdatedEvent).Subject;
         var updatedEvent = (CategoryUpdatedEvent)domainEvent;
-        Assert.Equal(category.Id, updatedEvent.CategoryId);
+        updatedEvent.CategoryId.Should().Be(category.Id);
     }
 
     [Fact]
@@ -57,24 +57,24 @@ public class CategoryEventTests
     {
         // Arrange
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
         
         var categoryResult = Category.CreateInactive("Electronics", slug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         category.ClearDomainEvents(); // Clear the creation event
 
         // Act
         var result = category.Activate();
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(category.DomainEvents, e => e is CategoryStatusChangedEvent);
+        var domainEvent = category.DomainEvents.Should().ContainSingle(e => e is CategoryStatusChangedEvent).Subject;
         var statusEvent = (CategoryStatusChangedEvent)domainEvent;
-        Assert.Equal(category.Id, statusEvent.CategoryId);
-        Assert.True(statusEvent.IsActive);
+        statusEvent.CategoryId.Should().Be(category.Id);
+        statusEvent.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -82,24 +82,24 @@ public class CategoryEventTests
     {
         // Arrange
         var slugResult = Slug.Create("electronics");
-        Assert.True(slugResult.IsSuccess);
+        slugResult.IsSuccess.Should().BeTrue();
         var slug = slugResult.Value;
         
         var categoryResult = Category.Create("Electronics", slug);
-        Assert.True(categoryResult.IsSuccess);
+        categoryResult.IsSuccess.Should().BeTrue();
         var category = categoryResult.Value;
         
         category.ClearDomainEvents(); // Clear the creation event
 
         // Act
         var result = category.Deactivate();
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(category.DomainEvents, e => e is CategoryStatusChangedEvent);
+        var domainEvent = category.DomainEvents.Should().ContainSingle(e => e is CategoryStatusChangedEvent).Subject;
         var statusEvent = (CategoryStatusChangedEvent)domainEvent;
-        Assert.Equal(category.Id, statusEvent.CategoryId);
-        Assert.False(statusEvent.IsActive);
+        statusEvent.CategoryId.Should().Be(category.Id);
+        statusEvent.IsActive.Should().BeFalse();
     }
 
     [Fact]
@@ -107,30 +107,30 @@ public class CategoryEventTests
     {
         // Arrange
         var parentSlugResult = Slug.Create("electronics");
-        Assert.True(parentSlugResult.IsSuccess);
+        parentSlugResult.IsSuccess.Should().BeTrue();
         var parentSlug = parentSlugResult.Value;
         
         var parentResult = Category.Create("Electronics", parentSlug);
-        Assert.True(parentResult.IsSuccess);
+        parentResult.IsSuccess.Should().BeTrue();
         var parent = parentResult.Value;
         
         var childSlugResult = Slug.Create("phones");
-        Assert.True(childSlugResult.IsSuccess);
+        childSlugResult.IsSuccess.Should().BeTrue();
         var childSlug = childSlugResult.Value;
         
         var childResult = Category.Create("Phones", childSlug);
-        Assert.True(childResult.IsSuccess);
+        childResult.IsSuccess.Should().BeTrue();
         var child = childResult.Value;
         
         child.ClearDomainEvents(); // Clear the creation event
 
         // Act
         var result = child.SetParent(parent);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(child.DomainEvents, e => e is CategoryHierarchyChangedEvent);
+        var domainEvent = child.DomainEvents.Should().ContainSingle(e => e is CategoryHierarchyChangedEvent).Subject;
         var hierarchyEvent = (CategoryHierarchyChangedEvent)domainEvent;
-        Assert.Equal(child.Id, hierarchyEvent.CategoryId);
+        hierarchyEvent.CategoryId.Should().Be(child.Id);
     }
 }
