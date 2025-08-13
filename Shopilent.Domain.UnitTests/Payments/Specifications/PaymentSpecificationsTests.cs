@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Payments;
@@ -22,7 +23,7 @@ public class PaymentSpecificationsTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -35,13 +36,13 @@ public class PaymentSpecificationsTests
             "Country",
             "12345");
             
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         
         var addressResult = Address.CreateShipping(
             user,
             postalAddressResult.Value);
             
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         return addressResult.Value;
     }
 
@@ -51,9 +52,9 @@ public class PaymentSpecificationsTests
         var taxResult = Money.Create(10, "USD");
         var shippingCostResult = Money.Create(5, "USD");
         
-        Assert.True(subtotalResult.IsSuccess);
-        Assert.True(taxResult.IsSuccess);
-        Assert.True(shippingCostResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
+        taxResult.IsSuccess.Should().BeTrue();
+        shippingCostResult.IsSuccess.Should().BeTrue();
         
         var orderResult = Order.Create(
             user,
@@ -63,7 +64,7 @@ public class PaymentSpecificationsTests
             taxResult.Value,
             shippingCostResult.Value);
             
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         return orderResult.Value;
     }
 
@@ -73,14 +74,14 @@ public class PaymentSpecificationsTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
             user,
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetailsResult.Value);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var specification = new ActivePaymentMethodSpecification();
@@ -89,7 +90,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(paymentMethod);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -98,18 +99,18 @@ public class PaymentSpecificationsTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
             user,
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetailsResult.Value);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var deactivateResult = paymentMethod.Deactivate();
-        Assert.True(deactivateResult.IsSuccess);
+        deactivateResult.IsSuccess.Should().BeTrue();
 
         var specification = new ActivePaymentMethodSpecification();
 
@@ -117,7 +118,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(paymentMethod);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -126,7 +127,7 @@ public class PaymentSpecificationsTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
             user,
@@ -134,7 +135,7 @@ public class PaymentSpecificationsTests
             "tok_visa_123",
             cardDetailsResult.Value,
             isDefault: true);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var specification = new DefaultPaymentMethodSpecification();
@@ -143,7 +144,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(paymentMethod);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -152,7 +153,7 @@ public class PaymentSpecificationsTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
             user,
@@ -160,7 +161,7 @@ public class PaymentSpecificationsTests
             "tok_visa_123",
             cardDetailsResult.Value,
             isDefault: false);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var specification = new DefaultPaymentMethodSpecification();
@@ -169,7 +170,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(paymentMethod);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -180,7 +181,7 @@ public class PaymentSpecificationsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -188,7 +189,7 @@ public class PaymentSpecificationsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
 
         var specification = new PaymentByOrderSpecification(order.Id);
@@ -197,7 +198,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(payment);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -210,7 +211,7 @@ public class PaymentSpecificationsTests
         var differentOrderId = Guid.NewGuid();
 
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -218,7 +219,7 @@ public class PaymentSpecificationsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
 
         var specification = new PaymentByOrderSpecification(differentOrderId);
@@ -227,7 +228,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(payment);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -238,7 +239,7 @@ public class PaymentSpecificationsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -246,11 +247,11 @@ public class PaymentSpecificationsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
 
         var successResult = payment.MarkAsSucceeded("txn_123");
-        Assert.True(successResult.IsSuccess);
+        successResult.IsSuccess.Should().BeTrue();
 
         var specification = new SuccessfulPaymentSpecification();
 
@@ -258,7 +259,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(payment);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -269,7 +270,7 @@ public class PaymentSpecificationsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -277,7 +278,7 @@ public class PaymentSpecificationsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
 
         // Still pending
@@ -288,7 +289,7 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(payment);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -299,7 +300,7 @@ public class PaymentSpecificationsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -307,11 +308,11 @@ public class PaymentSpecificationsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
 
         var failedResult = payment.MarkAsFailed("Payment failed");
-        Assert.True(failedResult.IsSuccess);
+        failedResult.IsSuccess.Should().BeTrue();
 
         var specification = new SuccessfulPaymentSpecification();
 
@@ -319,6 +320,6 @@ public class PaymentSpecificationsTests
         var result = specification.IsSatisfiedBy(payment);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 }

@@ -23,8 +23,8 @@ public class EmailTests
             var result = Email.Create(validEmail);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(validEmail.ToLowerInvariant(), result.Value.Value);
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Value.Should().Be(validEmail.ToLowerInvariant());
         }
     }
 
@@ -54,13 +54,13 @@ public class EmailTests
             // Assert
             if (string.IsNullOrWhiteSpace(invalidEmail))
             {
-                Assert.True(result.IsFailure);
-                Assert.Equal("User.EmailRequired", result.Error.Code);
+                result.IsFailure.Should().BeTrue();
+                result.Error.Code.Should().Be("User.EmailRequired");
             }
             else
             {
-                Assert.True(result.IsFailure);
-                Assert.Equal("User.InvalidEmailFormat", result.Error.Code);
+                result.IsFailure.Should().BeTrue();
+                result.Error.Code.Should().Be("User.InvalidEmailFormat");
             }
         }
     }
@@ -76,8 +76,8 @@ public class EmailTests
         var result = Email.Create(mixedCaseEmail);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedEmail, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expectedEmail);
     }
 
     [Fact]
@@ -90,9 +90,9 @@ public class EmailTests
         var result = Email.TryCreate(validEmail);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(result.Value);
-        Assert.Equal(validEmail, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Value.Should().Be(validEmail);
     }
 
     [Fact]
@@ -105,8 +105,8 @@ public class EmailTests
         var result = Email.TryCreate(invalidEmail);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.InvalidEmailFormat", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.InvalidEmailFormat");
     }
 
     [Fact]
@@ -116,16 +116,16 @@ public class EmailTests
         var email1Result = Email.Create("user@example.com");
         var email2Result = Email.Create("user@example.com");
         
-        Assert.True(email1Result.IsSuccess);
-        Assert.True(email2Result.IsSuccess);
+        email1Result.IsSuccess.Should().BeTrue();
+        email2Result.IsSuccess.Should().BeTrue();
         
         var email1 = email1Result.Value;
         var email2 = email2Result.Value;
 
         // Act & Assert
-        Assert.True(email1.Equals(email2));
-        Assert.True(email1 == email2);
-        Assert.False(email1 != email2);
+        email1.Equals(email2).Should().BeTrue();
+        (email1 == email2).Should().BeTrue();
+        (email1 != email2).Should().BeFalse();
     }
 
     [Fact]
@@ -135,16 +135,16 @@ public class EmailTests
         var email1Result = Email.Create("user1@example.com");
         var email2Result = Email.Create("user2@example.com");
         
-        Assert.True(email1Result.IsSuccess);
-        Assert.True(email2Result.IsSuccess);
+        email1Result.IsSuccess.Should().BeTrue();
+        email2Result.IsSuccess.Should().BeTrue();
         
         var email1 = email1Result.Value;
         var email2 = email2Result.Value;
 
         // Act & Assert
-        Assert.False(email1.Equals(email2));
-        Assert.False(email1 == email2);
-        Assert.True(email1 != email2);
+        email1.Equals(email2).Should().BeFalse();
+        (email1 == email2).Should().BeFalse();
+        (email1 != email2).Should().BeTrue();
     }
 
     [Fact]
@@ -153,13 +153,13 @@ public class EmailTests
         // Arrange
         var emailValue = "user@example.com";
         var emailResult = Email.Create(emailValue);
-        Assert.True(emailResult.IsSuccess);
+        emailResult.IsSuccess.Should().BeTrue();
         var email = emailResult.Value;
 
         // Act
         var result = email.ToString();
 
         // Assert
-        Assert.Equal(emailValue, result);
+        result.Should().Be(emailValue);
     }
 }

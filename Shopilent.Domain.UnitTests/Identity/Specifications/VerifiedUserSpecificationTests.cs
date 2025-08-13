@@ -17,7 +17,7 @@ public class VerifiedUserSpecificationTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         var user = userResult.Value;
         var specification = new VerifiedUserSpecification();
 
@@ -25,7 +25,7 @@ public class VerifiedUserSpecificationTests
         var result = specification.IsSatisfiedBy(user);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class VerifiedUserSpecificationTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         var user = userResult.Value;
         var specification = new VerifiedUserSpecification();
 
@@ -47,7 +47,7 @@ public class VerifiedUserSpecificationTests
         var result = specification.IsSatisfiedBy(user);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -61,21 +61,21 @@ public class VerifiedUserSpecificationTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         var user = userResult.Value;
 
         // Initial check
         var specification = new VerifiedUserSpecification();
-        Assert.False(specification.IsSatisfiedBy(user));
+        specification.IsSatisfiedBy(user).Should().BeFalse();
 
         // Verify the user
         var verifyResult = user.VerifyEmail();
-        Assert.True(verifyResult.IsSuccess);
+        verifyResult.IsSuccess.Should().BeTrue();
 
         // Act
         var result = specification.IsSatisfiedBy(user);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 }

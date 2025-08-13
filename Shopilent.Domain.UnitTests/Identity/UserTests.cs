@@ -14,14 +14,14 @@ public class UserTests
     private Email CreateTestEmail()
     {
         var result = Email.Create("test@example.com");
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         return result.Value;
     }
 
     private FullName CreateTestFullName()
     {
         var result = FullName.Create("John", "Doe");
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         return result.Value;
     }
 
@@ -32,7 +32,7 @@ public class UserTests
             "hashed_password",
             CreateTestFullName());
 
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         return result.Value;
     }
 
@@ -48,19 +48,19 @@ public class UserTests
         var result = User.Create(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var user = result.Value;
-        Assert.Equal(email, user.Email);
-        Assert.Equal(passwordHash, user.PasswordHash);
-        Assert.Equal(fullName, user.FullName);
-        Assert.Equal(UserRole.Customer, user.Role);
-        Assert.True(user.IsActive);
-        Assert.False(user.EmailVerified);
-        Assert.Equal(0, user.FailedLoginAttempts);
-        Assert.Empty(user.Addresses);
-        Assert.Empty(user.RefreshTokens);
-        Assert.Empty(user.Orders);
-        Assert.Contains(user.DomainEvents, e => e is UserCreatedEvent);
+        user.Email.Should().Be(email);
+        user.PasswordHash.Should().Be(passwordHash);
+        user.FullName.Should().Be(fullName);
+        user.Role.Should().Be(UserRole.Customer);
+        user.IsActive.Should().BeTrue();
+        user.EmailVerified.Should().BeFalse();
+        user.FailedLoginAttempts.Should().Be(0);
+        user.Addresses.Should().BeEmpty();
+        user.RefreshTokens.Should().BeEmpty();
+        user.Orders.Should().BeEmpty();
+        user.DomainEvents.Should().Contain(e => e is UserCreatedEvent);
     }
 
     [Fact]
@@ -75,8 +75,8 @@ public class UserTests
         var result = User.Create(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.EmailRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.EmailRequired");
     }
 
     [Fact]
@@ -91,8 +91,8 @@ public class UserTests
         var result = User.Create(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.PasswordRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.PasswordRequired");
     }
 
     [Fact]
@@ -108,8 +108,8 @@ public class UserTests
         var result = User.Create(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.FirstNameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.FirstNameRequired");
     }
 
     [Fact]
@@ -126,8 +126,8 @@ public class UserTests
         var result = User.Create(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.FirstNameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.FirstNameRequired");
     }
 
     [Fact]
@@ -142,15 +142,15 @@ public class UserTests
         var result = User.CreatePreVerified(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var user = result.Value;
-        Assert.Equal(email, user.Email);
-        Assert.Equal(passwordHash, user.PasswordHash);
-        Assert.Equal(fullName, user.FullName);
-        Assert.Equal(UserRole.Customer, user.Role);
-        Assert.True(user.IsActive);
-        Assert.True(user.EmailVerified);
-        Assert.Contains(user.DomainEvents, e => e is UserCreatedEvent);
+        user.Email.Should().Be(email);
+        user.PasswordHash.Should().Be(passwordHash);
+        user.FullName.Should().Be(fullName);
+        user.Role.Should().Be(UserRole.Customer);
+        user.IsActive.Should().BeTrue();
+        user.EmailVerified.Should().BeTrue();
+        user.DomainEvents.Should().Contain(e => e is UserCreatedEvent);
     }
 
     [Fact]
@@ -165,14 +165,14 @@ public class UserTests
         var result = User.CreateAdmin(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var user = result.Value;
-        Assert.Equal(email, user.Email);
-        Assert.Equal(passwordHash, user.PasswordHash);
-        Assert.Equal(fullName, user.FullName);
-        Assert.Equal(UserRole.Admin, user.Role);
-        Assert.True(user.IsActive);
-        Assert.Contains(user.DomainEvents, e => e is UserCreatedEvent);
+        user.Email.Should().Be(email);
+        user.PasswordHash.Should().Be(passwordHash);
+        user.FullName.Should().Be(fullName);
+        user.Role.Should().Be(UserRole.Admin);
+        user.IsActive.Should().BeTrue();
+        user.DomainEvents.Should().Contain(e => e is UserCreatedEvent);
     }
 
     [Fact]
@@ -187,14 +187,14 @@ public class UserTests
         var result = User.CreateManager(email, passwordHash, fullName);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var user = result.Value;
-        Assert.Equal(email, user.Email);
-        Assert.Equal(passwordHash, user.PasswordHash);
-        Assert.Equal(fullName, user.FullName);
-        Assert.Equal(UserRole.Manager, user.Role);
-        Assert.True(user.IsActive);
-        Assert.Contains(user.DomainEvents, e => e is UserCreatedEvent);
+        user.Email.Should().Be(email);
+        user.PasswordHash.Should().Be(passwordHash);
+        user.FullName.Should().Be(fullName);
+        user.Role.Should().Be(UserRole.Manager);
+        user.IsActive.Should().BeTrue();
+        user.DomainEvents.Should().Contain(e => e is UserCreatedEvent);
     }
 
     [Fact]
@@ -203,21 +203,21 @@ public class UserTests
         // Arrange
         var user = CreateTestUser();
         var newFullNameResult = FullName.Create("Jane", "Smith");
-        Assert.True(newFullNameResult.IsSuccess);
+        newFullNameResult.IsSuccess.Should().BeTrue();
         var newFullName = newFullNameResult.Value;
         
         var newPhoneResult = PhoneNumber.Create("555-123-4567");
-        Assert.True(newPhoneResult.IsSuccess);
+        newPhoneResult.IsSuccess.Should().BeTrue();
         var newPhone = newPhoneResult.Value;
 
         // Act
         var result = user.UpdatePersonalInfo(newFullName, newPhone);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newFullName, user.FullName);
-        Assert.Equal(newPhone, user.Phone);
-        Assert.Contains(user.DomainEvents, e => e is UserUpdatedEvent);
+        result.IsSuccess.Should().BeTrue();
+        user.FullName.Should().Be(newFullName);
+        user.Phone.Should().Be(newPhone);
+        user.DomainEvents.Should().Contain(e => e is UserUpdatedEvent);
     }
 
     [Fact]
@@ -229,24 +229,24 @@ public class UserTests
             "hashed_password",
             CreateTestFullName());
 
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         var user = userResult.Value;
-        Assert.True(user.EmailVerified);
+        user.EmailVerified.Should().BeTrue();
 
         var newEmailResult = Email.Create("new-email@example.com");
-        Assert.True(newEmailResult.IsSuccess);
+        newEmailResult.IsSuccess.Should().BeTrue();
         var newEmail = newEmailResult.Value;
 
         // Act
         var updateResult = user.UpdateEmail(newEmail);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(newEmail, user.Email);
-        Assert.False(user.EmailVerified);
-        Assert.NotNull(user.EmailVerificationToken);
-        Assert.NotNull(user.EmailVerificationExpires);
-        Assert.Contains(user.DomainEvents, e => e is UserEmailChangedEvent);
+        updateResult.IsSuccess.Should().BeTrue();
+        user.Email.Should().Be(newEmail);
+        user.EmailVerified.Should().BeFalse();
+        user.EmailVerificationToken.Should().NotBeNull();
+        user.EmailVerificationExpires.Should().NotBeNull();
+        user.DomainEvents.Should().Contain(e => e is UserEmailChangedEvent);
     }
 
     [Fact]
@@ -256,9 +256,9 @@ public class UserTests
         var user = CreateTestUser();
 
         var tokenResult = user.AddRefreshToken("refresh_token", DateTime.UtcNow.AddDays(7));
-        Assert.True(tokenResult.IsSuccess);
-        Assert.Single(user.RefreshTokens);
-        Assert.True(user.RefreshTokens.First().IsActive);
+        tokenResult.IsSuccess.Should().BeTrue();
+        user.RefreshTokens.Should().HaveCount(1);
+        user.RefreshTokens.First().IsActive.Should().BeTrue();
 
         var newPasswordHash = "new_hashed_password";
 
@@ -266,11 +266,11 @@ public class UserTests
         var result = user.UpdatePassword(newPasswordHash);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newPasswordHash, user.PasswordHash);
-        Assert.Single(user.RefreshTokens);
-        Assert.False(user.RefreshTokens.First().IsActive);
-        Assert.Contains(user.DomainEvents, e => e is UserPasswordChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        user.PasswordHash.Should().Be(newPasswordHash);
+        user.RefreshTokens.Should().HaveCount(1);
+        user.RefreshTokens.First().IsActive.Should().BeFalse();
+        user.DomainEvents.Should().Contain(e => e is UserPasswordChangedEvent);
     }
 
     [Fact]
@@ -278,15 +278,15 @@ public class UserTests
     {
         // Arrange
         var user = CreateTestUser();
-        Assert.Equal(UserRole.Customer, user.Role);
+        user.Role.Should().Be(UserRole.Customer);
 
         // Act
         var result = user.SetRole(UserRole.Manager);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(UserRole.Manager, user.Role);
-        Assert.Contains(user.DomainEvents, e => e is UserRoleChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        user.Role.Should().Be(UserRole.Manager);
+        user.DomainEvents.Should().Contain(e => e is UserRoleChangedEvent);
     }
 
     [Fact]
@@ -295,18 +295,18 @@ public class UserTests
         // Arrange
         var user = CreateTestUser();
         var failResult = user.RecordLoginFailure(); // Set failed attempt
-        Assert.True(failResult.IsSuccess);
-        Assert.Equal(1, user.FailedLoginAttempts);
-        Assert.NotNull(user.LastFailedAttempt);
+        failResult.IsSuccess.Should().BeTrue();
+        user.FailedLoginAttempts.Should().Be(1);
+        user.LastFailedAttempt.Should().NotBeNull();
 
         // Act
         var result = user.RecordLoginSuccess();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(user.LastLogin);
-        Assert.Equal(0, user.FailedLoginAttempts);
-        Assert.Null(user.LastFailedAttempt);
+        result.IsSuccess.Should().BeTrue();
+        user.LastLogin.Should().NotBeNull();
+        user.FailedLoginAttempts.Should().Be(0);
+        user.LastFailedAttempt.Should().BeNull();
     }
 
     [Fact]
@@ -314,15 +314,15 @@ public class UserTests
     {
         // Arrange
         var user = CreateTestUser();
-        Assert.Equal(0, user.FailedLoginAttempts);
+        user.FailedLoginAttempts.Should().Be(0);
 
         // Act
         var result = user.RecordLoginFailure();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(1, user.FailedLoginAttempts);
-        Assert.NotNull(user.LastFailedAttempt);
+        result.IsSuccess.Should().BeTrue();
+        user.FailedLoginAttempts.Should().Be(1);
+        user.LastFailedAttempt.Should().NotBeNull();
     }
 
     [Fact]
@@ -335,17 +335,17 @@ public class UserTests
         for (int i = 0; i < 4; i++)
         {
             var result = user.RecordLoginFailure();
-            Assert.True(result.IsSuccess);
+            result.IsSuccess.Should().BeTrue();
         }
 
         // Act - record the 5th failure that should lock the account
         var lastResult = user.RecordLoginFailure();
 
         // Assert
-        Assert.True(lastResult.IsFailure);
-        Assert.Equal(5, user.FailedLoginAttempts);
-        Assert.False(user.IsActive); // Account should be locked
-        Assert.Contains(user.DomainEvents, e => e is UserLockedOutEvent);
+        lastResult.IsFailure.Should().BeTrue();
+        user.FailedLoginAttempts.Should().Be(5);
+        user.IsActive.Should().BeFalse(); // Account should be locked
+        user.DomainEvents.Should().Contain(e => e is UserLockedOutEvent);
     }
 
     [Fact]
@@ -354,18 +354,18 @@ public class UserTests
         // Arrange
         var user = CreateTestUser();
         var deactivateResult = user.Deactivate();
-        Assert.True(deactivateResult.IsSuccess);
-        Assert.False(user.IsActive);
+        deactivateResult.IsSuccess.Should().BeTrue();
+        user.IsActive.Should().BeFalse();
 
         // Act
         var result = user.Activate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(user.IsActive);
-        Assert.Equal(0, user.FailedLoginAttempts);
-        Assert.Null(user.LastFailedAttempt);
-        Assert.Contains(user.DomainEvents, e => e is UserStatusChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        user.IsActive.Should().BeTrue();
+        user.FailedLoginAttempts.Should().Be(0);
+        user.LastFailedAttempt.Should().BeNull();
+        user.DomainEvents.Should().Contain(e => e is UserStatusChangedEvent);
     }
 
     [Fact]
@@ -373,22 +373,22 @@ public class UserTests
     {
         // Arrange
         var user = CreateTestUser();
-        Assert.True(user.IsActive);
+        user.IsActive.Should().BeTrue();
 
         var tokenResult = user.AddRefreshToken("refresh_token", DateTime.UtcNow.AddDays(7));
-        Assert.True(tokenResult.IsSuccess);
-        Assert.Single(user.RefreshTokens);
-        Assert.True(user.RefreshTokens.First().IsActive);
+        tokenResult.IsSuccess.Should().BeTrue();
+        user.RefreshTokens.Should().HaveCount(1);
+        user.RefreshTokens.First().IsActive.Should().BeTrue();
 
         // Act
         var result = user.Deactivate();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.False(user.IsActive);
-        Assert.Single(user.RefreshTokens);
-        Assert.False(user.RefreshTokens.First().IsActive);
-        Assert.Contains(user.DomainEvents, e => e is UserStatusChangedEvent);
+        result.IsSuccess.Should().BeTrue();
+        user.IsActive.Should().BeFalse();
+        user.RefreshTokens.Should().HaveCount(1);
+        user.RefreshTokens.First().IsActive.Should().BeFalse();
+        user.DomainEvents.Should().Contain(e => e is UserStatusChangedEvent);
     }
 
     [Fact]
@@ -397,20 +397,20 @@ public class UserTests
         // Arrange
         var user = CreateTestUser();
         var tokenResult = user.GenerateEmailVerificationToken();
-        Assert.True(tokenResult.IsSuccess);
-        Assert.False(user.EmailVerified);
-        Assert.NotNull(user.EmailVerificationToken);
-        Assert.NotNull(user.EmailVerificationExpires);
+        tokenResult.IsSuccess.Should().BeTrue();
+        user.EmailVerified.Should().BeFalse();
+        user.EmailVerificationToken.Should().NotBeNull();
+        user.EmailVerificationExpires.Should().NotBeNull();
 
         // Act
         var result = user.VerifyEmail();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(user.EmailVerified);
-        Assert.Null(user.EmailVerificationToken);
-        Assert.Null(user.EmailVerificationExpires);
-        Assert.Contains(user.DomainEvents, e => e is UserEmailVerifiedEvent);
+        result.IsSuccess.Should().BeTrue();
+        user.EmailVerified.Should().BeTrue();
+        user.EmailVerificationToken.Should().BeNull();
+        user.EmailVerificationExpires.Should().BeNull();
+        user.DomainEvents.Should().Contain(e => e is UserEmailVerifiedEvent);
     }
 
     [Fact]
@@ -418,17 +418,17 @@ public class UserTests
     {
         // Arrange
         var user = CreateTestUser();
-        Assert.Null(user.EmailVerificationToken);
-        Assert.Null(user.EmailVerificationExpires);
+        user.EmailVerificationToken.Should().BeNull();
+        user.EmailVerificationExpires.Should().BeNull();
 
         // Act
         var result = user.GenerateEmailVerificationToken();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(user.EmailVerificationToken);
-        Assert.NotNull(user.EmailVerificationExpires);
-        Assert.True(user.EmailVerificationExpires > DateTime.UtcNow);
+        result.IsSuccess.Should().BeTrue();
+        user.EmailVerificationToken.Should().NotBeNull();
+        user.EmailVerificationExpires.Should().NotBeNull();
+        user.EmailVerificationExpires.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Fact]
@@ -436,17 +436,17 @@ public class UserTests
     {
         // Arrange
         var user = CreateTestUser();
-        Assert.Null(user.PasswordResetToken);
-        Assert.Null(user.PasswordResetExpires);
+        user.PasswordResetToken.Should().BeNull();
+        user.PasswordResetExpires.Should().BeNull();
 
         // Act
         var result = user.GeneratePasswordResetToken();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(user.PasswordResetToken);
-        Assert.NotNull(user.PasswordResetExpires);
-        Assert.True(user.PasswordResetExpires > DateTime.UtcNow);
+        result.IsSuccess.Should().BeTrue();
+        user.PasswordResetToken.Should().NotBeNull();
+        user.PasswordResetExpires.Should().NotBeNull();
+        user.PasswordResetExpires.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Fact]
@@ -455,17 +455,17 @@ public class UserTests
         // Arrange
         var user = CreateTestUser();
         var tokenResult = user.GeneratePasswordResetToken();
-        Assert.True(tokenResult.IsSuccess);
-        Assert.NotNull(user.PasswordResetToken);
-        Assert.NotNull(user.PasswordResetExpires);
+        tokenResult.IsSuccess.Should().BeTrue();
+        user.PasswordResetToken.Should().NotBeNull();
+        user.PasswordResetExpires.Should().NotBeNull();
 
         // Act
         var result = user.ClearPasswordResetToken();
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Null(user.PasswordResetToken);
-        Assert.Null(user.PasswordResetExpires);
+        result.IsSuccess.Should().BeTrue();
+        user.PasswordResetToken.Should().BeNull();
+        user.PasswordResetExpires.Should().BeNull();
     }
 
     [Fact]
@@ -482,14 +482,14 @@ public class UserTests
         var result = user.AddRefreshToken(token, expiresAt, ipAddress, userAgent);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Single(user.RefreshTokens);
+        result.IsSuccess.Should().BeTrue();
+        user.RefreshTokens.Should().HaveCount(1);
         var refreshToken = result.Value;
-        Assert.Equal(token, refreshToken.Token);
-        Assert.Equal(expiresAt, refreshToken.ExpiresAt);
-        Assert.Equal(ipAddress, refreshToken.IpAddress);
-        Assert.Equal(userAgent, refreshToken.UserAgent);
-        Assert.True(refreshToken.IsActive);
+        refreshToken.Token.Should().Be(token);
+        refreshToken.ExpiresAt.Should().Be(expiresAt);
+        refreshToken.IpAddress.Should().Be(ipAddress);
+        refreshToken.UserAgent.Should().Be(userAgent);
+        refreshToken.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -500,18 +500,18 @@ public class UserTests
         var token = "refresh_token";
         var expiresAt = DateTime.UtcNow.AddDays(7);
         var tokenResult = user.AddRefreshToken(token, expiresAt);
-        Assert.True(tokenResult.IsSuccess);
+        tokenResult.IsSuccess.Should().BeTrue();
         var refreshToken = tokenResult.Value;
-        Assert.True(refreshToken.IsActive);
+        refreshToken.IsActive.Should().BeTrue();
         var reason = "Test revocation";
 
         // Act
         var result = user.RevokeRefreshToken(token, reason);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.False(refreshToken.IsActive);
-        Assert.Equal(reason, refreshToken.RevokedReason);
+        result.IsSuccess.Should().BeTrue();
+        refreshToken.IsActive.Should().BeFalse();
+        refreshToken.RevokedReason.Should().Be(reason);
     }
 
     [Fact]
@@ -524,18 +524,18 @@ public class UserTests
         var token2Result = user.AddRefreshToken("token2", DateTime.UtcNow.AddDays(7));
         var token3Result = user.AddRefreshToken("token3", DateTime.UtcNow.AddDays(7));
 
-        Assert.True(token1Result.IsSuccess);
-        Assert.True(token2Result.IsSuccess);
-        Assert.True(token3Result.IsSuccess);
+        token1Result.IsSuccess.Should().BeTrue();
+        token2Result.IsSuccess.Should().BeTrue();
+        token3Result.IsSuccess.Should().BeTrue();
 
         var token1 = token1Result.Value;
         var token2 = token2Result.Value;
         var token3 = token3Result.Value;
 
-        Assert.Equal(3, user.RefreshTokens.Count);
-        Assert.True(token1.IsActive);
-        Assert.True(token2.IsActive);
-        Assert.True(token3.IsActive);
+        user.RefreshTokens.Should().HaveCount(3);
+        token1.IsActive.Should().BeTrue();
+        token2.IsActive.Should().BeTrue();
+        token3.IsActive.Should().BeTrue();
 
         var reason = "Security measure";
 
@@ -543,10 +543,10 @@ public class UserTests
         var result = user.RevokeAllRefreshTokens(reason);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(3, user.RefreshTokens.Count);
-        Assert.All(user.RefreshTokens, token => Assert.False(token.IsActive));
-        Assert.All(user.RefreshTokens, token => Assert.Equal(reason, token.RevokedReason));
+        result.IsSuccess.Should().BeTrue();
+        user.RefreshTokens.Should().HaveCount(3);
+        user.RefreshTokens.Should().AllSatisfy(token => token.IsActive.Should().BeFalse());
+        user.RefreshTokens.Should().AllSatisfy(token => token.RevokedReason.Should().Be(reason));
     }
 
     [Fact]
@@ -561,7 +561,7 @@ public class UserTests
             "State",
             "Country",
             "12345");
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var addressType = AddressType.Shipping;
@@ -572,12 +572,12 @@ public class UserTests
             addressType);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Single(user.Addresses);
+        result.IsSuccess.Should().BeTrue();
+        user.Addresses.Should().HaveCount(1);
         var address = result.Value;
-        Assert.Equal(postalAddress, address.PostalAddress);
-        Assert.Equal(addressType, address.AddressType);
-        Assert.False(address.IsDefault);
+        address.PostalAddress.Should().Be(postalAddress);
+        address.AddressType.Should().Be(addressType);
+        address.IsDefault.Should().BeFalse();
     }
 
     [Fact]
@@ -593,7 +593,7 @@ public class UserTests
             "State",
             "Country",
             "12345");
-        Assert.True(firstPostalAddressResult.IsSuccess);
+        firstPostalAddressResult.IsSuccess.Should().BeTrue();
         var firstPostalAddress = firstPostalAddressResult.Value;
 
         var firstAddressResult = user.AddAddress(
@@ -602,9 +602,9 @@ public class UserTests
             null,
             true);
 
-        Assert.True(firstAddressResult.IsSuccess);
+        firstAddressResult.IsSuccess.Should().BeTrue();
         var firstAddress = firstAddressResult.Value;
-        Assert.True(firstAddress.IsDefault);
+        firstAddress.IsDefault.Should().BeTrue();
 
         // Act - add second default shipping address
         var secondPostalAddressResult = PostalAddress.Create(
@@ -613,7 +613,7 @@ public class UserTests
             "State",
             "Country",
             "67890");
-        Assert.True(secondPostalAddressResult.IsSuccess);
+        secondPostalAddressResult.IsSuccess.Should().BeTrue();
         var secondPostalAddress = secondPostalAddressResult.Value;
 
         var secondAddressResult = user.AddAddress(
@@ -623,11 +623,11 @@ public class UserTests
             true);
 
         // Assert
-        Assert.True(secondAddressResult.IsSuccess);
+        secondAddressResult.IsSuccess.Should().BeTrue();
         var secondAddress = secondAddressResult.Value;
-        Assert.Equal(2, user.Addresses.Count);
-        Assert.False(firstAddress.IsDefault);
-        Assert.True(secondAddress.IsDefault);
+        user.Addresses.Should().HaveCount(2);
+        firstAddress.IsDefault.Should().BeFalse();
+        secondAddress.IsDefault.Should().BeTrue();
     }
 
     [Fact]
@@ -642,20 +642,20 @@ public class UserTests
             "State",
             "Country",
             "12345");
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
         var addressResult = user.AddAddress(postalAddress);
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         var address = addressResult.Value;
-        Assert.Single(user.Addresses);
+        user.Addresses.Should().HaveCount(1);
 
         // Act
         var result = user.RemoveAddress(address.Id);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Empty(user.Addresses);
+        result.IsSuccess.Should().BeTrue();
+        user.Addresses.Should().BeEmpty();
     }
 
     [Fact]
@@ -669,7 +669,7 @@ public class UserTests
         var result = user.RemoveAddress(invalidAddressId);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Address.NotFound", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Address.NotFound");
     }
 }

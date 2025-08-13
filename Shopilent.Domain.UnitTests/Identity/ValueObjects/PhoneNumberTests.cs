@@ -15,8 +15,8 @@ public class PhoneNumberTests
         var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Fact]
@@ -29,8 +29,8 @@ public class PhoneNumberTests
         var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.PhoneRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.PhoneRequired");
     }
 
     [Fact]
@@ -43,8 +43,8 @@ public class PhoneNumberTests
         var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.PhoneRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.PhoneRequired");
     }
 
     [Fact]
@@ -57,8 +57,8 @@ public class PhoneNumberTests
         var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.InvalidPhoneFormat", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.InvalidPhoneFormat");
     }
 
     [Fact]
@@ -72,8 +72,8 @@ public class PhoneNumberTests
         var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Fact]
@@ -87,8 +87,8 @@ public class PhoneNumberTests
         var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Fact]
@@ -101,8 +101,8 @@ public class PhoneNumberTests
         var result = PhoneNumber.Create(phoneNumberStr);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.InvalidPhoneFormat", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.InvalidPhoneFormat");
     }
 
     [Fact]
@@ -123,15 +123,15 @@ public class PhoneNumberTests
         foreach (var number in phoneNumberVariations)
         {
             var result = PhoneNumber.Create(number);
-            Assert.True(result.IsSuccess);
+            result.IsSuccess.Should().BeTrue();
             
             if (number.StartsWith("+"))
             {
-                Assert.Equal(expected, result.Value.Value);
+                result.Value.Value.Should().Be(expected);
             }
             else
             {
-                Assert.Equal(expectedWithoutPlus, result.Value.Value);
+                result.Value.Value.Should().Be(expectedWithoutPlus);
             }
         }
     }
@@ -143,16 +143,16 @@ public class PhoneNumberTests
         var result1 = PhoneNumber.Create("+1-555-123-4567");
         var result2 = PhoneNumber.Create("+1 (555) 123-4567");
         
-        Assert.True(result1.IsSuccess);
-        Assert.True(result2.IsSuccess);
+        result1.IsSuccess.Should().BeTrue();
+        result2.IsSuccess.Should().BeTrue();
         
         var phoneNumber1 = result1.Value;
         var phoneNumber2 = result2.Value;
 
         // Act & Assert
-        Assert.True(phoneNumber1.Equals(phoneNumber2));
-        Assert.True(phoneNumber1 == phoneNumber2);
-        Assert.False(phoneNumber1 != phoneNumber2);
+        phoneNumber1.Equals(phoneNumber2).Should().BeTrue();
+        (phoneNumber1 == phoneNumber2).Should().BeTrue();
+        (phoneNumber1 != phoneNumber2).Should().BeFalse();
     }
 
     [Fact]
@@ -162,16 +162,16 @@ public class PhoneNumberTests
         var result1 = PhoneNumber.Create("+1-555-123-4567");
         var result2 = PhoneNumber.Create("+1-555-123-4568");
         
-        Assert.True(result1.IsSuccess);
-        Assert.True(result2.IsSuccess);
+        result1.IsSuccess.Should().BeTrue();
+        result2.IsSuccess.Should().BeTrue();
         
         var phoneNumber1 = result1.Value;
         var phoneNumber2 = result2.Value;
 
         // Act & Assert
-        Assert.False(phoneNumber1.Equals(phoneNumber2));
-        Assert.False(phoneNumber1 == phoneNumber2);
-        Assert.True(phoneNumber1 != phoneNumber2);
+        phoneNumber1.Equals(phoneNumber2).Should().BeFalse();
+        (phoneNumber1 == phoneNumber2).Should().BeFalse();
+        (phoneNumber1 != phoneNumber2).Should().BeTrue();
     }
 
     [Fact]
@@ -181,13 +181,13 @@ public class PhoneNumberTests
         var phoneNumberStr = "+1-555-123-4567";
         var expected = "+15551234567";
         var result = PhoneNumber.Create(phoneNumberStr);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var phoneNumber = result.Value;
 
         // Act
         var stringResult = phoneNumber.ToString();
 
         // Assert
-        Assert.Equal(expected, stringResult);
+        stringResult.Should().Be(expected);
     }
 }

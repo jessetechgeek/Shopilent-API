@@ -16,11 +16,11 @@ public class FullNameTests
         var result = FullName.Create(firstName, lastName, middleName);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var fullName = result.Value;
-        Assert.Equal(firstName, fullName.FirstName);
-        Assert.Equal(lastName, fullName.LastName);
-        Assert.Equal(middleName, fullName.MiddleName);
+        fullName.FirstName.Should().Be(firstName);
+        fullName.LastName.Should().Be(lastName);
+        fullName.MiddleName.Should().Be(middleName);
     }
 
     [Fact]
@@ -34,11 +34,11 @@ public class FullNameTests
         var result = FullName.Create(firstName, lastName);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var fullName = result.Value;
-        Assert.Equal(firstName, fullName.FirstName);
-        Assert.Equal(lastName, fullName.LastName);
-        Assert.Null(fullName.MiddleName);
+        fullName.FirstName.Should().Be(firstName);
+        fullName.LastName.Should().Be(lastName);
+        fullName.MiddleName.Should().BeNull();
     }
 
     [Fact]
@@ -52,8 +52,8 @@ public class FullNameTests
         var result = FullName.Create(firstName, lastName);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.FirstNameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.FirstNameRequired");
     }
 
     [Fact]
@@ -67,8 +67,8 @@ public class FullNameTests
         var result = FullName.Create(firstName, lastName);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("User.LastNameRequired", result.Error.Code);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("User.LastNameRequired");
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class FullNameTests
         var lastName = "Doe";
         var middleName = "Smith";
         var fullNameResult = FullName.Create(firstName, lastName, middleName);
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
         var fullName = fullNameResult.Value;
         var expected = "John Smith Doe";
 
@@ -87,7 +87,7 @@ public class FullNameTests
         var result = fullName.ToString();
 
         // Assert
-        Assert.Equal(expected, result);
+        result.Should().Be(expected);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class FullNameTests
         var firstName = "John";
         var lastName = "Doe";
         var fullNameResult = FullName.Create(firstName, lastName);
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
         var fullName = fullNameResult.Value;
         var expected = "John Doe";
 
@@ -105,7 +105,7 @@ public class FullNameTests
         var result = fullName.ToString();
 
         // Assert
-        Assert.Equal(expected, result);
+        result.Should().Be(expected);
     }
 
     [Fact]
@@ -115,16 +115,16 @@ public class FullNameTests
         var fullName1Result = FullName.Create("John", "Doe", "Smith");
         var fullName2Result = FullName.Create("John", "Doe", "Smith");
         
-        Assert.True(fullName1Result.IsSuccess);
-        Assert.True(fullName2Result.IsSuccess);
+        fullName1Result.IsSuccess.Should().BeTrue();
+        fullName2Result.IsSuccess.Should().BeTrue();
         
         var fullName1 = fullName1Result.Value;
         var fullName2 = fullName2Result.Value;
 
         // Act & Assert
-        Assert.True(fullName1.Equals(fullName2));
-        Assert.True(fullName1 == fullName2);
-        Assert.False(fullName1 != fullName2);
+        fullName1.Equals(fullName2).Should().BeTrue();
+        (fullName1 == fullName2).Should().BeTrue();
+        (fullName1 != fullName2).Should().BeFalse();
     }
 
     [Fact]
@@ -134,16 +134,16 @@ public class FullNameTests
         var fullName1Result = FullName.Create("John", "Doe", "Smith");
         var fullName2Result = FullName.Create("Jane", "Doe", "Smith");
         
-        Assert.True(fullName1Result.IsSuccess);
-        Assert.True(fullName2Result.IsSuccess);
+        fullName1Result.IsSuccess.Should().BeTrue();
+        fullName2Result.IsSuccess.Should().BeTrue();
         
         var fullName1 = fullName1Result.Value;
         var fullName2 = fullName2Result.Value;
 
         // Act & Assert
-        Assert.False(fullName1.Equals(fullName2));
-        Assert.False(fullName1 == fullName2);
-        Assert.True(fullName1 != fullName2);
+        fullName1.Equals(fullName2).Should().BeFalse();
+        (fullName1 == fullName2).Should().BeFalse();
+        (fullName1 != fullName2).Should().BeTrue();
     }
 
     [Fact]
@@ -153,16 +153,16 @@ public class FullNameTests
         var fullName1Result = FullName.Create("John", "Doe", "Smith");
         var fullName2Result = FullName.Create("John", "Smith", "Smith");
         
-        Assert.True(fullName1Result.IsSuccess);
-        Assert.True(fullName2Result.IsSuccess);
+        fullName1Result.IsSuccess.Should().BeTrue();
+        fullName2Result.IsSuccess.Should().BeTrue();
         
         var fullName1 = fullName1Result.Value;
         var fullName2 = fullName2Result.Value;
 
         // Act & Assert
-        Assert.False(fullName1.Equals(fullName2));
-        Assert.False(fullName1 == fullName2);
-        Assert.True(fullName1 != fullName2);
+        fullName1.Equals(fullName2).Should().BeFalse();
+        (fullName1 == fullName2).Should().BeFalse();
+        (fullName1 != fullName2).Should().BeTrue();
     }
 
     [Fact]
@@ -172,16 +172,16 @@ public class FullNameTests
         var fullName1Result = FullName.Create("John", "Doe", "Smith");
         var fullName2Result = FullName.Create("John", "Doe", "Jones");
         
-        Assert.True(fullName1Result.IsSuccess);
-        Assert.True(fullName2Result.IsSuccess);
+        fullName1Result.IsSuccess.Should().BeTrue();
+        fullName2Result.IsSuccess.Should().BeTrue();
         
         var fullName1 = fullName1Result.Value;
         var fullName2 = fullName2Result.Value;
 
         // Act & Assert
-        Assert.False(fullName1.Equals(fullName2));
-        Assert.False(fullName1 == fullName2);
-        Assert.True(fullName1 != fullName2);
+        fullName1.Equals(fullName2).Should().BeFalse();
+        (fullName1 == fullName2).Should().BeFalse();
+        (fullName1 != fullName2).Should().BeTrue();
     }
 
     [Fact]
@@ -192,16 +192,16 @@ public class FullNameTests
         var fullName2Result = FullName.Create("John", "Doe");
         var fullName3Result = FullName.Create("John", "Doe", "Smith");
         
-        Assert.True(fullName1Result.IsSuccess);
-        Assert.True(fullName2Result.IsSuccess);
-        Assert.True(fullName3Result.IsSuccess);
+        fullName1Result.IsSuccess.Should().BeTrue();
+        fullName2Result.IsSuccess.Should().BeTrue();
+        fullName3Result.IsSuccess.Should().BeTrue();
         
         var fullName1 = fullName1Result.Value;
         var fullName2 = fullName2Result.Value;
         var fullName3 = fullName3Result.Value;
 
         // Act & Assert
-        Assert.True(fullName1.Equals(fullName2));
-        Assert.False(fullName1.Equals(fullName3));
+        fullName1.Equals(fullName2).Should().BeTrue();
+        fullName1.Equals(fullName3).Should().BeFalse();
     }
 }
