@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Payments;
@@ -21,7 +22,7 @@ public class PaymentEventsTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -34,13 +35,13 @@ public class PaymentEventsTests
             "Country",
             "12345");
             
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
         
         var addressResult = Address.CreateShipping(
             user,
             postalAddressResult.Value);
             
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         return addressResult.Value;
     }
 
@@ -50,9 +51,9 @@ public class PaymentEventsTests
         var taxResult = Money.Create(10, "USD");
         var shippingCostResult = Money.Create(5, "USD");
         
-        Assert.True(subtotalResult.IsSuccess);
-        Assert.True(taxResult.IsSuccess);
-        Assert.True(shippingCostResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
+        taxResult.IsSuccess.Should().BeTrue();
+        shippingCostResult.IsSuccess.Should().BeTrue();
         
         var orderResult = Order.Create(
             user,
@@ -62,7 +63,7 @@ public class PaymentEventsTests
             taxResult.Value,
             shippingCostResult.Value);
             
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         return orderResult.Value;
     }
 
@@ -76,7 +77,7 @@ public class PaymentEventsTests
 
         // Act
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -86,11 +87,11 @@ public class PaymentEventsTests
             PaymentProvider.Stripe);
 
         // Assert
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
-        var domainEvent = Assert.Single(payment.DomainEvents, e => e is PaymentCreatedEvent);
+        var domainEvent = payment.DomainEvents.Should().ContainSingle(e => e is PaymentCreatedEvent).Subject;
         var createdEvent = (PaymentCreatedEvent)domainEvent;
-        Assert.Equal(payment.Id, createdEvent.PaymentId);
+        createdEvent.PaymentId.Should().Be(payment.Id);
     }
 
     [Fact]
@@ -101,7 +102,7 @@ public class PaymentEventsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -109,7 +110,7 @@ public class PaymentEventsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
         
         payment.ClearDomainEvents(); // Clear the creation event
@@ -119,14 +120,14 @@ public class PaymentEventsTests
 
         // Act
         var updateResult = payment.UpdateStatus(newStatus);
-        Assert.True(updateResult.IsSuccess);
+        updateResult.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(payment.DomainEvents, e => e is PaymentStatusChangedEvent);
+        var domainEvent = payment.DomainEvents.Should().ContainSingle(e => e is PaymentStatusChangedEvent).Subject;
         var statusEvent = (PaymentStatusChangedEvent)domainEvent;
-        Assert.Equal(payment.Id, statusEvent.PaymentId);
-        Assert.Equal(oldStatus, statusEvent.OldStatus);
-        Assert.Equal(newStatus, statusEvent.NewStatus);
+        statusEvent.PaymentId.Should().Be(payment.Id);
+        statusEvent.OldStatus.Should().Be(oldStatus);
+        statusEvent.NewStatus.Should().Be(newStatus);
     }
 
     [Fact]
@@ -137,7 +138,7 @@ public class PaymentEventsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -145,7 +146,7 @@ public class PaymentEventsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
         
         payment.ClearDomainEvents(); // Clear the creation event
@@ -153,13 +154,13 @@ public class PaymentEventsTests
 
         // Act
         var succeededResult = payment.MarkAsSucceeded(transactionId);
-        Assert.True(succeededResult.IsSuccess);
+        succeededResult.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(payment.DomainEvents, e => e is PaymentSucceededEvent);
+        var domainEvent = payment.DomainEvents.Should().ContainSingle(e => e is PaymentSucceededEvent).Subject;
         var succeededEvent = (PaymentSucceededEvent)domainEvent;
-        Assert.Equal(payment.Id, succeededEvent.PaymentId);
-        Assert.Equal(order.Id, succeededEvent.OrderId);
+        succeededEvent.PaymentId.Should().Be(payment.Id);
+        succeededEvent.OrderId.Should().Be(order.Id);
     }
 
     [Fact]
@@ -170,7 +171,7 @@ public class PaymentEventsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -178,7 +179,7 @@ public class PaymentEventsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
         
         payment.ClearDomainEvents(); // Clear the creation event
@@ -186,14 +187,14 @@ public class PaymentEventsTests
 
         // Act
         var failedResult = payment.MarkAsFailed(errorMessage);
-        Assert.True(failedResult.IsSuccess);
+        failedResult.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(payment.DomainEvents, e => e is PaymentFailedEvent);
+        var domainEvent = payment.DomainEvents.Should().ContainSingle(e => e is PaymentFailedEvent).Subject;
         var failedEvent = (PaymentFailedEvent)domainEvent;
-        Assert.Equal(payment.Id, failedEvent.PaymentId);
-        Assert.Equal(order.Id, failedEvent.OrderId);
-        Assert.Equal(errorMessage, failedEvent.ErrorMessage);
+        failedEvent.PaymentId.Should().Be(payment.Id);
+        failedEvent.OrderId.Should().Be(order.Id);
+        failedEvent.ErrorMessage.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -204,7 +205,7 @@ public class PaymentEventsTests
         var address = CreateTestAddress(user);
         var order = CreateTestOrder(user, address);
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
         
         var paymentResult = Payment.Create(
             order,
@@ -212,24 +213,24 @@ public class PaymentEventsTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
         
         // First mark as succeeded
         var succeededResult = payment.MarkAsSucceeded("txn_123");
-        Assert.True(succeededResult.IsSuccess);
+        succeededResult.IsSuccess.Should().BeTrue();
         
         payment.ClearDomainEvents(); // Clear previous events
         var refundId = "ref_123";
 
         // Act
         var refundedResult = payment.MarkAsRefunded(refundId);
-        Assert.True(refundedResult.IsSuccess);
+        refundedResult.IsSuccess.Should().BeTrue();
 
         // Assert
-        var domainEvent = Assert.Single(payment.DomainEvents, e => e is PaymentRefundedEvent);
+        var domainEvent = payment.DomainEvents.Should().ContainSingle(e => e is PaymentRefundedEvent).Subject;
         var refundedEvent = (PaymentRefundedEvent)domainEvent;
-        Assert.Equal(payment.Id, refundedEvent.PaymentId);
-        Assert.Equal(order.Id, refundedEvent.OrderId);
+        refundedEvent.PaymentId.Should().Be(payment.Id);
+        refundedEvent.OrderId.Should().Be(order.Id);
     }
 }

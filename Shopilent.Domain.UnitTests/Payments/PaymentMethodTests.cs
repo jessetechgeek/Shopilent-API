@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Payments;
@@ -17,7 +18,7 @@ public class PaymentMethodTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -29,7 +30,7 @@ public class PaymentMethodTests
         var provider = PaymentProvider.Stripe;
         var token = "tok_visa_123";
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         var isDefault = true;
 
@@ -42,19 +43,19 @@ public class PaymentMethodTests
             isDefault);
 
         // Assert
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
-        Assert.Equal(user.Id, paymentMethod.UserId);
-        Assert.Equal(PaymentMethodType.CreditCard, paymentMethod.Type);
-        Assert.Equal(provider, paymentMethod.Provider);
-        Assert.Equal(token, paymentMethod.Token);
-        Assert.Equal("Visa ending in 4242", paymentMethod.DisplayName);
-        Assert.Equal(cardDetails.Brand, paymentMethod.CardBrand);
-        Assert.Equal(cardDetails.LastFourDigits, paymentMethod.LastFourDigits);
-        Assert.Equal(cardDetails.ExpiryDate, paymentMethod.ExpiryDate);
-        Assert.Equal(isDefault, paymentMethod.IsDefault);
-        Assert.True(paymentMethod.IsActive);
-        Assert.Empty(paymentMethod.Metadata);
+        paymentMethod.UserId.Should().Be(user.Id);
+        paymentMethod.Type.Should().Be(PaymentMethodType.CreditCard);
+        paymentMethod.Provider.Should().Be(provider);
+        paymentMethod.Token.Should().Be(token);
+        paymentMethod.DisplayName.Should().Be("Visa ending in 4242");
+        paymentMethod.CardBrand.Should().Be(cardDetails.Brand);
+        paymentMethod.LastFourDigits.Should().Be(cardDetails.LastFourDigits);
+        paymentMethod.ExpiryDate.Should().Be(cardDetails.ExpiryDate);
+        paymentMethod.IsDefault.Should().Be(isDefault);
+        paymentMethod.IsActive.Should().BeTrue();
+        paymentMethod.Metadata.Should().BeEmpty();
     }
 
     [Fact]
@@ -65,7 +66,7 @@ public class PaymentMethodTests
         var provider = PaymentProvider.Stripe;
         var token = "tok_visa_123";
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
 
         // Act
@@ -76,8 +77,8 @@ public class PaymentMethodTests
             cardDetails);
 
         // Assert
-        Assert.True(paymentMethodResult.IsFailure);
-        Assert.Equal("User.NotFound", paymentMethodResult.Error.Code);
+        paymentMethodResult.IsFailure.Should().BeTrue();
+        paymentMethodResult.Error.Code.Should().Be("User.NotFound");
     }
 
     [Fact]
@@ -88,7 +89,7 @@ public class PaymentMethodTests
         var provider = PaymentProvider.Stripe;
         var token = string.Empty;
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
 
         // Act
@@ -99,8 +100,8 @@ public class PaymentMethodTests
             cardDetails);
 
         // Assert
-        Assert.True(paymentMethodResult.IsFailure);
-        Assert.Equal("PaymentMethod.TokenRequired", paymentMethodResult.Error.Code);
+        paymentMethodResult.IsFailure.Should().BeTrue();
+        paymentMethodResult.Error.Code.Should().Be("PaymentMethod.TokenRequired");
     }
 
     [Fact]
@@ -120,8 +121,8 @@ public class PaymentMethodTests
             cardDetails);
 
         // Assert
-        Assert.True(paymentMethodResult.IsFailure);
-        Assert.Equal("PaymentMethod.InvalidCardDetails", paymentMethodResult.Error.Code);
+        paymentMethodResult.IsFailure.Should().BeTrue();
+        paymentMethodResult.Error.Code.Should().Be("PaymentMethod.InvalidCardDetails");
     }
 
     [Fact]
@@ -141,20 +142,20 @@ public class PaymentMethodTests
             isDefault);
 
         // Assert
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
-        Assert.Equal(user.Id, paymentMethod.UserId);
-        Assert.Equal(PaymentMethodType.PayPal, paymentMethod.Type);
-        Assert.Equal(PaymentProvider.PayPal, paymentMethod.Provider);
-        Assert.Equal(token, paymentMethod.Token);
-        Assert.Equal($"PayPal ({email})", paymentMethod.DisplayName);
-        Assert.Null(paymentMethod.CardBrand);
-        Assert.Null(paymentMethod.LastFourDigits);
-        Assert.Null(paymentMethod.ExpiryDate);
-        Assert.Equal(isDefault, paymentMethod.IsDefault);
-        Assert.True(paymentMethod.IsActive);
-        Assert.True(paymentMethod.Metadata.ContainsKey("email"));
-        Assert.Equal(email, paymentMethod.Metadata["email"]);
+        paymentMethod.UserId.Should().Be(user.Id);
+        paymentMethod.Type.Should().Be(PaymentMethodType.PayPal);
+        paymentMethod.Provider.Should().Be(PaymentProvider.PayPal);
+        paymentMethod.Token.Should().Be(token);
+        paymentMethod.DisplayName.Should().Be($"PayPal ({email})");
+        paymentMethod.CardBrand.Should().BeNull();
+        paymentMethod.LastFourDigits.Should().BeNull();
+        paymentMethod.ExpiryDate.Should().BeNull();
+        paymentMethod.IsDefault.Should().Be(isDefault);
+        paymentMethod.IsActive.Should().BeTrue();
+        paymentMethod.Metadata.Should().ContainKey("email");
+        paymentMethod.Metadata["email"].Should().Be(email);
     }
 
     [Fact]
@@ -163,7 +164,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -171,7 +172,7 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var newDisplayName = "My Primary Card";
@@ -180,8 +181,8 @@ public class PaymentMethodTests
         var updateResult = paymentMethod.UpdateDisplayName(newDisplayName);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(newDisplayName, paymentMethod.DisplayName);
+        updateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.DisplayName.Should().Be(newDisplayName);
     }
 
     [Fact]
@@ -190,7 +191,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -198,7 +199,7 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var emptyName = string.Empty;
@@ -207,8 +208,8 @@ public class PaymentMethodTests
         var updateResult = paymentMethod.UpdateDisplayName(emptyName);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("PaymentMethod.DisplayNameRequired", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("PaymentMethod.DisplayNameRequired");
     }
 
     [Fact]
@@ -217,7 +218,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -226,17 +227,17 @@ public class PaymentMethodTests
             "tok_visa_123",
             cardDetails,
             false);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
-        Assert.False(paymentMethod.IsDefault);
+        paymentMethod.IsDefault.Should().BeFalse();
 
         // Act
         var updateResult = paymentMethod.SetDefault(true);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.True(paymentMethod.IsDefault);
+        updateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.IsDefault.Should().BeTrue();
     }
 
     [Fact]
@@ -245,7 +246,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -253,19 +254,19 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var deactivateResult = paymentMethod.Deactivate();
-        Assert.True(deactivateResult.IsSuccess);
-        Assert.False(paymentMethod.IsActive);
+        deactivateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.IsActive.Should().BeFalse();
 
         // Act
         var activateResult = paymentMethod.Activate();
 
         // Assert
-        Assert.True(activateResult.IsSuccess);
-        Assert.True(paymentMethod.IsActive);
+        activateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -274,7 +275,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -282,17 +283,17 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
-        Assert.True(paymentMethod.IsActive);
+        paymentMethod.IsActive.Should().BeTrue();
 
         // Act
         var deactivateResult = paymentMethod.Deactivate();
 
         // Assert
-        Assert.True(deactivateResult.IsSuccess);
-        Assert.False(paymentMethod.IsActive);
+        deactivateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.IsActive.Should().BeFalse();
     }
 
     [Fact]
@@ -301,7 +302,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -309,7 +310,7 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var newToken = "tok_visa_456";
@@ -318,8 +319,8 @@ public class PaymentMethodTests
         var updateResult = paymentMethod.UpdateToken(newToken);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(newToken, paymentMethod.Token);
+        updateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.Token.Should().Be(newToken);
     }
 
     [Fact]
@@ -328,7 +329,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -336,7 +337,7 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var emptyToken = string.Empty;
@@ -345,8 +346,8 @@ public class PaymentMethodTests
         var updateResult = paymentMethod.UpdateToken(emptyToken);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("PaymentMethod.TokenRequired", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("PaymentMethod.TokenRequired");
     }
 
     [Fact]
@@ -355,7 +356,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var oldCardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(oldCardDetailsResult.IsSuccess);
+        oldCardDetailsResult.IsSuccess.Should().BeTrue();
         var oldCardDetails = oldCardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -363,22 +364,22 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             oldCardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var newCardDetailsResult = PaymentCardDetails.Create("Mastercard", "5678", DateTime.UtcNow.AddYears(2));
-        Assert.True(newCardDetailsResult.IsSuccess);
+        newCardDetailsResult.IsSuccess.Should().BeTrue();
         var newCardDetails = newCardDetailsResult.Value;
 
         // Act
         var updateResult = paymentMethod.UpdateCardDetails(newCardDetails);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.Equal(newCardDetails.Brand, paymentMethod.CardBrand);
-        Assert.Equal(newCardDetails.LastFourDigits, paymentMethod.LastFourDigits);
-        Assert.Equal(newCardDetails.ExpiryDate, paymentMethod.ExpiryDate);
-        Assert.Equal($"{newCardDetails.Brand} ending in {newCardDetails.LastFourDigits}", paymentMethod.DisplayName);
+        updateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.CardBrand.Should().Be(newCardDetails.Brand);
+        paymentMethod.LastFourDigits.Should().Be(newCardDetails.LastFourDigits);
+        paymentMethod.ExpiryDate.Should().Be(newCardDetails.ExpiryDate);
+        paymentMethod.DisplayName.Should().Be($"{newCardDetails.Brand} ending in {newCardDetails.LastFourDigits}");
     }
 
     [Fact]
@@ -387,7 +388,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -395,7 +396,7 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         PaymentCardDetails newCardDetails = null;
@@ -404,8 +405,8 @@ public class PaymentMethodTests
         var updateResult = paymentMethod.UpdateCardDetails(newCardDetails);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("PaymentMethod.InvalidCardDetails", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("PaymentMethod.InvalidCardDetails");
     }
 
     [Fact]
@@ -417,19 +418,19 @@ public class PaymentMethodTests
             user,
             "paypal_token_123",
             "customer@example.com");
-        Assert.True(paypalMethodResult.IsSuccess);
+        paypalMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paypalMethodResult.Value;
 
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
 
         // Act
         var updateResult = paymentMethod.UpdateCardDetails(cardDetails);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("PaymentMethod.InvalidCardDetails", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("PaymentMethod.InvalidCardDetails");
     }
 
     [Fact]
@@ -438,7 +439,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -446,7 +447,7 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var key = "billing_zip";
@@ -456,9 +457,9 @@ public class PaymentMethodTests
         var updateResult = paymentMethod.UpdateMetadata(key, value);
 
         // Assert
-        Assert.True(updateResult.IsSuccess);
-        Assert.True(paymentMethod.Metadata.ContainsKey(key));
-        Assert.Equal(value, paymentMethod.Metadata[key]);
+        updateResult.IsSuccess.Should().BeTrue();
+        paymentMethod.Metadata.Should().ContainKey(key);
+        paymentMethod.Metadata[key].Should().Be(value);
     }
 
     [Fact]
@@ -467,7 +468,7 @@ public class PaymentMethodTests
         // Arrange
         var user = CreateTestUser();
         var cardDetailsResult = PaymentCardDetails.Create("Visa", "4242", DateTime.UtcNow.AddYears(1));
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
         
         var paymentMethodResult = PaymentMethod.CreateCardMethod(
@@ -475,7 +476,7 @@ public class PaymentMethodTests
             PaymentProvider.Stripe,
             "tok_visa_123",
             cardDetails);
-        Assert.True(paymentMethodResult.IsSuccess);
+        paymentMethodResult.IsSuccess.Should().BeTrue();
         var paymentMethod = paymentMethodResult.Value;
 
         var emptyKey = string.Empty;
@@ -485,7 +486,7 @@ public class PaymentMethodTests
         var updateResult = paymentMethod.UpdateMetadata(emptyKey, value);
 
         // Assert
-        Assert.True(updateResult.IsFailure);
-        Assert.Equal("PaymentMethod.InvalidMetadataKey", updateResult.Error.Code);
+        updateResult.IsFailure.Should().BeTrue();
+        updateResult.Error.Code.Should().Be("PaymentMethod.InvalidMetadataKey");
     }
 }

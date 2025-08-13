@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Payments.ValueObjects;
 
 namespace Shopilent.Domain.Tests.Payments.ValueObjects;
@@ -16,11 +17,11 @@ public class PaymentCardDetailsTests
         var cardDetailsResult = PaymentCardDetails.Create(brand, lastFourDigits, expiryDate);
 
         // Assert
-        Assert.True(cardDetailsResult.IsSuccess);
+        cardDetailsResult.IsSuccess.Should().BeTrue();
         var cardDetails = cardDetailsResult.Value;
-        Assert.Equal(brand, cardDetails.Brand);
-        Assert.Equal(lastFourDigits, cardDetails.LastFourDigits);
-        Assert.Equal(expiryDate, cardDetails.ExpiryDate);
+        cardDetails.Brand.Should().Be(brand);
+        cardDetails.LastFourDigits.Should().Be(lastFourDigits);
+        cardDetails.ExpiryDate.Should().Be(expiryDate);
     }
 
     [Fact]
@@ -35,8 +36,8 @@ public class PaymentCardDetailsTests
         var cardDetailsResult = PaymentCardDetails.Create(brand, lastFourDigits, expiryDate);
 
         // Assert
-        Assert.True(cardDetailsResult.IsFailure);
-        Assert.Equal("PaymentMethod.InvalidCardDetails", cardDetailsResult.Error.Code);
+        cardDetailsResult.IsFailure.Should().BeTrue();
+        cardDetailsResult.Error.Code.Should().Be("PaymentMethod.InvalidCardDetails");
     }
 
     [Fact]
@@ -51,8 +52,8 @@ public class PaymentCardDetailsTests
         var cardDetailsResult = PaymentCardDetails.Create(brand, lastFourDigits, expiryDate);
 
         // Assert
-        Assert.True(cardDetailsResult.IsFailure);
-        Assert.Equal("PaymentMethod.InvalidCardDetails", cardDetailsResult.Error.Code);
+        cardDetailsResult.IsFailure.Should().BeTrue();
+        cardDetailsResult.Error.Code.Should().Be("PaymentMethod.InvalidCardDetails");
     }
 
     [Fact]
@@ -67,8 +68,8 @@ public class PaymentCardDetailsTests
         var cardDetailsResult = PaymentCardDetails.Create(brand, lastFourDigits, expiryDate);
 
         // Assert
-        Assert.True(cardDetailsResult.IsFailure);
-        Assert.Equal("PaymentMethod.InvalidCardDetails", cardDetailsResult.Error.Code);
+        cardDetailsResult.IsFailure.Should().BeTrue();
+        cardDetailsResult.Error.Code.Should().Be("PaymentMethod.InvalidCardDetails");
     }
 
     [Fact]
@@ -83,8 +84,8 @@ public class PaymentCardDetailsTests
         var cardDetailsResult = PaymentCardDetails.Create(brand, lastFourDigits, expiryDate);
 
         // Assert
-        Assert.True(cardDetailsResult.IsFailure);
-        Assert.Equal("PaymentMethod.ExpiredCard", cardDetailsResult.Error.Code);
+        cardDetailsResult.IsFailure.Should().BeTrue();
+        cardDetailsResult.Error.Code.Should().Be("PaymentMethod.ExpiredCard");
     }
 
     [Fact]
@@ -95,16 +96,16 @@ public class PaymentCardDetailsTests
         var detailsResult1 = PaymentCardDetails.Create("Visa", "4242", expiryDate);
         var detailsResult2 = PaymentCardDetails.Create("Visa", "4242", expiryDate);
         
-        Assert.True(detailsResult1.IsSuccess);
-        Assert.True(detailsResult2.IsSuccess);
+        detailsResult1.IsSuccess.Should().BeTrue();
+        detailsResult2.IsSuccess.Should().BeTrue();
         
         var details1 = detailsResult1.Value;
         var details2 = detailsResult2.Value;
 
         // Act & Assert
-        Assert.True(details1.Equals(details2));
-        Assert.True(details1 == details2);
-        Assert.False(details1 != details2);
+        details1.Equals(details2).Should().BeTrue();
+        (details1 == details2).Should().BeTrue();
+        (details1 != details2).Should().BeFalse();
     }
 
     [Fact]
@@ -115,16 +116,16 @@ public class PaymentCardDetailsTests
         var detailsResult1 = PaymentCardDetails.Create("Visa", "4242", expiryDate);
         var detailsResult2 = PaymentCardDetails.Create("Mastercard", "4242", expiryDate);
         
-        Assert.True(detailsResult1.IsSuccess);
-        Assert.True(detailsResult2.IsSuccess);
+        detailsResult1.IsSuccess.Should().BeTrue();
+        detailsResult2.IsSuccess.Should().BeTrue();
         
         var details1 = detailsResult1.Value;
         var details2 = detailsResult2.Value;
 
         // Act & Assert
-        Assert.False(details1.Equals(details2));
-        Assert.False(details1 == details2);
-        Assert.True(details1 != details2);
+        details1.Equals(details2).Should().BeFalse();
+        (details1 == details2).Should().BeFalse();
+        (details1 != details2).Should().BeTrue();
     }
 
     [Fact]
@@ -135,16 +136,16 @@ public class PaymentCardDetailsTests
         var detailsResult1 = PaymentCardDetails.Create("Visa", "4242", expiryDate);
         var detailsResult2 = PaymentCardDetails.Create("Visa", "5555", expiryDate);
         
-        Assert.True(detailsResult1.IsSuccess);
-        Assert.True(detailsResult2.IsSuccess);
+        detailsResult1.IsSuccess.Should().BeTrue();
+        detailsResult2.IsSuccess.Should().BeTrue();
         
         var details1 = detailsResult1.Value;
         var details2 = detailsResult2.Value;
 
         // Act & Assert
-        Assert.False(details1.Equals(details2));
-        Assert.False(details1 == details2);
-        Assert.True(details1 != details2);
+        details1.Equals(details2).Should().BeFalse();
+        (details1 == details2).Should().BeFalse();
+        (details1 != details2).Should().BeTrue();
     }
 
     [Fact]
@@ -154,15 +155,15 @@ public class PaymentCardDetailsTests
         var detailsResult1 = PaymentCardDetails.Create("Visa", "4242", new DateTime(2025, 12, 31));
         var detailsResult2 = PaymentCardDetails.Create("Visa", "4242", new DateTime(2026, 12, 31));
         
-        Assert.True(detailsResult1.IsSuccess);
-        Assert.True(detailsResult2.IsSuccess);
+        detailsResult1.IsSuccess.Should().BeTrue();
+        detailsResult2.IsSuccess.Should().BeTrue();
         
         var details1 = detailsResult1.Value;
         var details2 = detailsResult2.Value;
 
         // Act & Assert
-        Assert.False(details1.Equals(details2));
-        Assert.False(details1 == details2);
-        Assert.True(details1 != details2);
+        details1.Equals(details2).Should().BeFalse();
+        (details1 == details2).Should().BeFalse();
+        (details1 != details2).Should().BeTrue();
     }
 }

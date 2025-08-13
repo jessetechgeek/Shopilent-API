@@ -17,7 +17,7 @@ public class ActiveUserSpecificationTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         var user = userResult.Value;
         var specification = new ActiveUserSpecification();
 
@@ -25,7 +25,7 @@ public class ActiveUserSpecificationTests
         var result = specification.IsSatisfiedBy(user);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -39,10 +39,10 @@ public class ActiveUserSpecificationTests
             "hashed_password",
             fullNameResult.Value);
             
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         var user = userResult.Value;
         var deactivateResult = user.Deactivate();
-        Assert.True(deactivateResult.IsSuccess);
+        deactivateResult.IsSuccess.Should().BeTrue();
         
         var specification = new ActiveUserSpecification();
 
@@ -50,6 +50,6 @@ public class ActiveUserSpecificationTests
         var result = specification.IsSatisfiedBy(user);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 }

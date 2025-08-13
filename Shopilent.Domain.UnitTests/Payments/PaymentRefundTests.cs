@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Payments;
@@ -15,17 +16,17 @@ public class PaymentRefundTests
     private User CreateTestUser()
     {
         var emailResult = Email.Create("test@example.com");
-        Assert.True(emailResult.IsSuccess);
+        emailResult.IsSuccess.Should().BeTrue();
 
         var fullNameResult = FullName.Create("Test", "User");
-        Assert.True(fullNameResult.IsSuccess);
+        fullNameResult.IsSuccess.Should().BeTrue();
 
         var userResult = User.Create(
             emailResult.Value,
             "hashed_password",
             fullNameResult.Value);
 
-        Assert.True(userResult.IsSuccess);
+        userResult.IsSuccess.Should().BeTrue();
         return userResult.Value;
     }
 
@@ -38,13 +39,13 @@ public class PaymentRefundTests
             "Country",
             "12345");
 
-        Assert.True(postalAddressResult.IsSuccess);
+        postalAddressResult.IsSuccess.Should().BeTrue();
 
         var addressResult = Address.CreateShipping(
             user,
             postalAddressResult.Value);
 
-        Assert.True(addressResult.IsSuccess);
+        addressResult.IsSuccess.Should().BeTrue();
         return addressResult.Value;
     }
 
@@ -54,9 +55,9 @@ public class PaymentRefundTests
         var taxResult = Money.Create(10, "USD");
         var shippingCostResult = Money.Create(5, "USD");
 
-        Assert.True(subtotalResult.IsSuccess);
-        Assert.True(taxResult.IsSuccess);
-        Assert.True(shippingCostResult.IsSuccess);
+        subtotalResult.IsSuccess.Should().BeTrue();
+        taxResult.IsSuccess.Should().BeTrue();
+        shippingCostResult.IsSuccess.Should().BeTrue();
 
         var orderResult = Order.Create(
             user,
@@ -66,14 +67,14 @@ public class PaymentRefundTests
             taxResult.Value,
             shippingCostResult.Value);
 
-        Assert.True(orderResult.IsSuccess);
+        orderResult.IsSuccess.Should().BeTrue();
         return orderResult.Value;
     }
 
     private Payment CreateTestPayment(Order order, User user)
     {
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
 
         var paymentResult = Payment.Create(
             order,
@@ -82,13 +83,13 @@ public class PaymentRefundTests
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
 
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
 
         // Mark as succeeded before refund tests
         var succeededResult = payment.MarkAsSucceeded("txn_123");
-        Assert.True(succeededResult.IsSuccess);
-        Assert.Equal(PaymentStatus.Succeeded, payment.Status);
+        succeededResult.IsSuccess.Should().BeTrue();
+        payment.Status.Should().Be(PaymentStatus.Succeeded);
 
         payment.ClearDomainEvents(); // Clear previous events
         return payment;
@@ -108,14 +109,14 @@ public class PaymentRefundTests
         var refundResult = payment.MarkAsRefunded(refundTransactionId);
 
         // Assert
-        Assert.True(refundResult.IsSuccess);
-        Assert.Equal(PaymentStatus.Refunded, payment.Status);
-        Assert.Equal(refundTransactionId, payment.TransactionId);
+        refundResult.IsSuccess.Should().BeTrue();
+        payment.Status.Should().Be(PaymentStatus.Refunded);
+        payment.TransactionId.Should().Be(refundTransactionId);
         
-        var domainEvent = Assert.Single(payment.DomainEvents, e => e is PaymentRefundedEvent);
+        var domainEvent = payment.DomainEvents.Should().ContainSingle(e => e is PaymentRefundedEvent).Subject;
         var refundedEvent = (PaymentRefundedEvent)domainEvent;
-        Assert.Equal(payment.Id, refundedEvent.PaymentId);
-        Assert.Equal(order.Id, refundedEvent.OrderId);
+        refundedEvent.PaymentId.Should().Be(payment.Id);
+        refundedEvent.OrderId.Should().Be(order.Id);
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public class PaymentRefundTests
         
         // Create payment but don't mark as succeeded
         var amountResult = Money.Create(115, "USD");
-        Assert.True(amountResult.IsSuccess);
+        amountResult.IsSuccess.Should().BeTrue();
 
         var paymentResult = Payment.Create(
             order,
@@ -136,7 +137,7 @@ public class PaymentRefundTests
             amountResult.Value,
             PaymentMethodType.CreditCard,
             PaymentProvider.Stripe);
-        Assert.True(paymentResult.IsSuccess);
+        paymentResult.IsSuccess.Should().BeTrue();
         var payment = paymentResult.Value;
         
         var refundTransactionId = "ref_123";
@@ -145,9 +146,9 @@ public class PaymentRefundTests
         var refundResult = payment.MarkAsRefunded(refundTransactionId);
 
         // Assert
-        Assert.True(refundResult.IsFailure);
-        Assert.Equal("Payment.InvalidStatus", refundResult.Error.Code);
-        Assert.Equal(PaymentStatus.Pending, payment.Status);
+        refundResult.IsFailure.Should().BeTrue();
+        refundResult.Error.Code.Should().Be("Payment.InvalidStatus");
+        payment.Status.Should().Be(PaymentStatus.Pending);
     }
 
     [Fact]
@@ -164,9 +165,9 @@ public class PaymentRefundTests
         var refundResult = payment.MarkAsRefunded(emptyTransactionId);
 
         // Assert
-        Assert.True(refundResult.IsFailure);
-        Assert.Equal("Payment.TokenRequired", refundResult.Error.Code);
-        Assert.Equal(PaymentStatus.Succeeded, payment.Status); // Unchanged
+        refundResult.IsFailure.Should().BeTrue();
+        refundResult.Error.Code.Should().Be("Payment.TokenRequired");
+        payment.Status.Should().Be(PaymentStatus.Succeeded); // Unchanged
     }
 
     [Fact]
@@ -180,8 +181,8 @@ public class PaymentRefundTests
         
         // First refund
         var firstResult = payment.MarkAsRefunded("ref_123");
-        Assert.True(firstResult.IsSuccess);
-        Assert.Equal(PaymentStatus.Refunded, payment.Status);
+        firstResult.IsSuccess.Should().BeTrue();
+        payment.Status.Should().Be(PaymentStatus.Refunded);
         
         payment.ClearDomainEvents(); // Clear events from first refund
         
@@ -189,9 +190,9 @@ public class PaymentRefundTests
         var secondResult = payment.MarkAsRefunded("ref_456");
 
         // Assert
-        Assert.True(secondResult.IsSuccess);
-        Assert.Equal(PaymentStatus.Refunded, payment.Status);
-        Assert.Equal("ref_123", payment.TransactionId); // Original transaction ID should be preserved
-        Assert.Empty(payment.DomainEvents); // No events should be raised
+        secondResult.IsSuccess.Should().BeTrue();
+        payment.Status.Should().Be(PaymentStatus.Refunded);
+        payment.TransactionId.Should().Be("ref_123"); // Original transaction ID should be preserved
+        payment.DomainEvents.Should().BeEmpty(); // No events should be raised
     }
 }
