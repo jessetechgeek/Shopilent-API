@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -71,14 +72,14 @@ public class CreateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         
         // Verify the category was created and saved correctly
-        Assert.NotNull(capturedCategory);
-        Assert.Equal(command.Name, capturedCategory.Name);
-        Assert.Equal(command.Slug, capturedCategory.Slug.Value);
-        Assert.Equal(command.Description, capturedCategory.Description);
-        Assert.True(capturedCategory.IsActive);
+        capturedCategory.Should().NotBeNull();
+        capturedCategory.Name.Should().Be(command.Name);
+        capturedCategory.Slug.Value.Should().Be(command.Slug);
+        capturedCategory.Description.Should().Be(command.Description);
+        capturedCategory.IsActive.Should().BeTrue();
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
@@ -106,8 +107,8 @@ public class CreateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.DuplicateSlug(command.Slug).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.DuplicateSlug(command.Slug).Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
@@ -156,12 +157,12 @@ public class CreateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(capturedCategory);
-        Assert.Equal(command.Name, capturedCategory.Name);
-        Assert.Equal(command.ParentId, capturedCategory.ParentId);
-        Assert.Equal(1, capturedCategory.Level); // Level 1 because it's a child
-        Assert.Equal("/parent-category/child-category", capturedCategory.Path);
+        result.IsSuccess.Should().BeTrue();
+        capturedCategory.Should().NotBeNull();
+        capturedCategory.Name.Should().Be(command.Name);
+        capturedCategory.ParentId.Should().Be(command.ParentId);
+        capturedCategory.Level.Should().Be(1); // Level 1 because it's a child
+        capturedCategory.Path.Should().Be("/parent-category/child-category");
     }
     
     [Fact]
@@ -191,7 +192,7 @@ public class CreateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(nonExistentParentId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(nonExistentParentId).Code);
     }
 }

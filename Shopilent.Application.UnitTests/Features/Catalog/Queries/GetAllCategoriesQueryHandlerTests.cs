@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Moq;
 using Shopilent.Application.Features.Catalog.Queries.GetAllCategories.V1;
 using Shopilent.Application.UnitTests.Common;
@@ -67,11 +68,11 @@ public class GetAllCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(3, result.Value.Count);
-        Assert.Contains(result.Value, c => c.Name == "Root Category 1");
-        Assert.Contains(result.Value, c => c.Name == "Root Category 2");
-        Assert.Contains(result.Value, c => c.Name == "Child Category 1");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Count.Should().Be(3);
+        result.Value.Should().Contain(c => c.Name == "Root Category 1");
+        result.Value.Should().Contain(c => c.Name == "Root Category 2");
+        result.Value.Should().Contain(c => c.Name == "Child Category 1");
     }
 
     [Fact]
@@ -89,8 +90,8 @@ public class GetAllCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
     }
 
     [Fact]
@@ -108,9 +109,9 @@ public class GetAllCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Categories.GetAllFailed", result.Error.Code);
-        Assert.Contains("Test exception", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Categories.GetAllFailed");
+        result.Error.Message.Should().Contain("Test exception");
     }
     
     [Fact]
@@ -128,9 +129,9 @@ public class GetAllCategoriesQueryHandlerTests : TestBase
         await _handler.Handle(query, CancellationToken);
 
         // Assert that cache settings are properly configured
-        Assert.Equal("all-categories", query.CacheKey);
-        Assert.NotNull(query.Expiration);
-        Assert.Equal(TimeSpan.FromMinutes(30), query.Expiration);
+        query.CacheKey.Should().Be("all-categories");
+        query.Expiration.Should().NotBeNull();
+        query.Expiration.Should().Be(TimeSpan.FromMinutes(30));
     }
     
     [Fact]
@@ -164,10 +165,10 @@ public class GetAllCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert - ensure both active and inactive categories are returned
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value.Count);
-        Assert.Contains(result.Value, c => c.Name == "Active Category");
-        Assert.Contains(result.Value, c => c.Name == "Inactive Category");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Count.Should().Be(2);
+        result.Value.Should().Contain(c => c.Name == "Active Category");
+        result.Value.Should().Contain(c => c.Name == "Inactive Category");
         
         // Verify we're using ListAllAsync and not filtering by activity status
         Fixture.MockCategoryReadRepository.Verify(

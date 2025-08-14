@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -54,7 +55,7 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with correct parameters
         Fixture.MockAuthenticationService.Verify(auth => auth.ChangePasswordAsync(
@@ -81,8 +82,8 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.PasswordMismatch", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.PasswordMismatch");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(auth => auth.ChangePasswordAsync(
@@ -118,8 +119,8 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.InvalidCredentials.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.InvalidCredentials.Code);
     }
 
     [Fact]
@@ -140,8 +141,8 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Validation.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Validation.Failed");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(auth => auth.ChangePasswordAsync(
@@ -168,12 +169,8 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.PasswordTooShort.Code, result.Error.Code);
-
-        // Check for multiple password validation errors
-        // Assert.NotNull(result.Error.Metadata);
-        // Assert.Contains("NewPassword", result.Error.Metadata.Keys);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.PasswordTooShort.Code);
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(auth => auth.ChangePasswordAsync(
@@ -199,12 +196,12 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Validation.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Validation.Failed");
 
         // Verify metadata contains user id validation error
-        Assert.NotNull(result.Error.Metadata);
-        Assert.Contains("UserId", result.Error.Metadata.Keys);
+        result.Error.Metadata.Should().NotBeNull();
+        result.Error.Metadata.Keys.Should().Contain("UserId");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(auth => auth.ChangePasswordAsync(
@@ -231,8 +228,8 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.PasswordRequired.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.PasswordRequired.Code);
     }
 
     [Fact]
@@ -261,9 +258,9 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("ChangePassword.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("ChangePassword.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 
     [Fact]
@@ -292,7 +289,7 @@ public class ChangePasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.NotFound(userId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.NotFound(userId).Code);
     }
 }

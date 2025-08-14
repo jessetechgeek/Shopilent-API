@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -47,7 +48,7 @@ public class VerifyEmailCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with correct token
         Fixture.MockAuthenticationService.Verify(
@@ -70,8 +71,8 @@ public class VerifyEmailCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Validation.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Validation.Failed");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(
@@ -103,8 +104,8 @@ public class VerifyEmailCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("EmailVerification.InvalidToken", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("EmailVerification.InvalidToken");
     }
 
     [Fact]
@@ -129,8 +130,8 @@ public class VerifyEmailCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("EmailVerification.ExpiredToken", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("EmailVerification.ExpiredToken");
     }
 
     [Fact]
@@ -153,7 +154,7 @@ public class VerifyEmailCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
@@ -176,8 +177,8 @@ public class VerifyEmailCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("VerifyEmail.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("VerifyEmail.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 }

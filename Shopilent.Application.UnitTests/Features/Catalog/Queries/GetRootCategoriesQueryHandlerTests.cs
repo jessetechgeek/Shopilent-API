@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Moq;
 using Shopilent.Application.Features.Catalog.Queries.GetRootCategories.V1;
 using Shopilent.Application.UnitTests.Common;
@@ -57,17 +58,13 @@ public class GetRootCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value.Count);
-        Assert.Contains(result.Value, c => c.Name == "Root Category 1");
-        Assert.Contains(result.Value, c => c.Name == "Root Category 2");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Count.Should().Be(2);
+        result.Value.Should().Contain(c => c.Name == "Root Category 1");
+        result.Value.Should().Contain(c => c.Name == "Root Category 2");
         
         // Verify all categories are actually root categories (level 0, null parent)
-        Assert.All(result.Value, c => 
-        {
-            Assert.Equal(0, c.Level);
-            Assert.Null(c.ParentId);
-        });
+        result.Value.Should().OnlyContain(c => c.Level == 0 && c.ParentId == null);
     }
 
     [Fact]
@@ -85,8 +82,8 @@ public class GetRootCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
     }
 
     [Fact]
@@ -104,9 +101,9 @@ public class GetRootCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Categories.GetRootCategoriesFailed", result.Error.Code);
-        Assert.Contains("Test exception", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Categories.GetRootCategoriesFailed");
+        result.Error.Message.Should().Contain("Test exception");
     }
     
     [Fact]
@@ -124,8 +121,8 @@ public class GetRootCategoriesQueryHandlerTests : TestBase
         await _handler.Handle(query, CancellationToken);
 
         // Assert that cache settings are properly configured
-        Assert.Equal("root-categories", query.CacheKey);
-        Assert.NotNull(query.Expiration);
-        Assert.Equal(TimeSpan.FromMinutes(30), query.Expiration);
+        query.CacheKey.Should().Be("root-categories");
+        query.Expiration.Should().NotBeNull();
+        query.Expiration.Should().Be(TimeSpan.FromMinutes(30));
     }
 }

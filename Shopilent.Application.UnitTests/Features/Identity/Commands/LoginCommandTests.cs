@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -62,9 +63,9 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedResponse.AccessToken, result.Value.AccessToken);
-        Assert.Equal(expectedResponse.RefreshToken, result.Value.RefreshToken);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.AccessToken.Should().Be(expectedResponse.AccessToken);
+        result.Value.RefreshToken.Should().Be(expectedResponse.RefreshToken);
 
         // Verify that the Authentication service was called with the correct parameters
         Fixture.MockAuthenticationService.Verify(
@@ -93,12 +94,12 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Validation.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Validation.Failed");
 
         // Verify metadata contains email validation error
-        Assert.NotNull(result.Error.Metadata);
-        Assert.Contains("Email", result.Error.Metadata.Keys);
+        result.Error.Metadata.Should().NotBeNull();
+        result.Error.Metadata.Keys.Should().Contain("Email");
 
         // Verify that the Authentication service was not called
         Fixture.MockAuthenticationService.Verify(
@@ -137,8 +138,8 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.InvalidCredentials.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.InvalidCredentials.Code);
     }
 
     [Fact]
@@ -157,9 +158,9 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.EmailRequired", result.Error.Code);
-        Assert.Contains("Email cannot be empty.", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.EmailRequired");
+        result.Error.Message.Should().Contain("Email cannot be empty.");
     }
 
     [Fact]
@@ -178,9 +179,9 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.PasswordRequired", result.Error.Code);
-        Assert.Contains("Password hash cannot be empty.", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.PasswordRequired");
+        result.Error.Message.Should().Contain("Password hash cannot be empty.");
     }
 
     [Fact]
@@ -209,8 +210,8 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.AccountInactive.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.AccountInactive.Code);
     }
 
     [Fact]
@@ -239,8 +240,8 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.EmailNotVerified.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.EmailNotVerified.Code);
     }
 
     [Fact]
@@ -269,8 +270,8 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Login.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Login.Failed");
     }
 
     [Fact]
@@ -311,14 +312,14 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedResponse.AccessToken, result.Value.AccessToken);
-        Assert.Equal(expectedResponse.RefreshToken, result.Value.RefreshToken);
-        Assert.NotNull(result.Value.User);
-        Assert.Same(user, result.Value.User);
-        Assert.Equal(command.Email, result.Value.User.Email.Value);
-        Assert.Equal("John", result.Value.User.FullName.FirstName);
-        Assert.Equal("Doe", result.Value.User.FullName.LastName);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.AccessToken.Should().Be(expectedResponse.AccessToken);
+        result.Value.RefreshToken.Should().Be(expectedResponse.RefreshToken);
+        result.Value.User.Should().NotBeNull();
+        result.Value.User.Should().BeSameAs(user);
+        result.Value.User.Email.Value.Should().Be(command.Email);
+        result.Value.User.FullName.FirstName.Should().Be("John");
+        result.Value.User.FullName.LastName.Should().Be("Doe");
     }
 
     [Theory]
@@ -357,7 +358,7 @@ public class LoginCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify the auth service was called with exactly the provided parameters
         Fixture.MockAuthenticationService.Verify(

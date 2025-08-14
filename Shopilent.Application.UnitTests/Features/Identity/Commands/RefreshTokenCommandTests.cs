@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -65,10 +66,10 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedResponse.AccessToken, result.Value.AccessToken);
-        Assert.Equal(expectedResponse.RefreshToken, result.Value.RefreshToken);
-        Assert.Same(user, result.Value.User);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.AccessToken.Should().Be(expectedResponse.AccessToken);
+        result.Value.RefreshToken.Should().Be(expectedResponse.RefreshToken);
+        result.Value.User.Should().BeSameAs(user);
 
         // Verify auth service was called with correct parameters
         Fixture.MockAuthenticationService.Verify(
@@ -104,8 +105,8 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RefreshTokenErrors.EmptyToken.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(RefreshTokenErrors.EmptyToken.Code);
     }
 
     [Fact]
@@ -133,8 +134,8 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RefreshTokenErrors.NotFound(nonExistentToken).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(RefreshTokenErrors.NotFound(nonExistentToken).Code);
     }
 
     [Fact]
@@ -161,8 +162,8 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RefreshTokenErrors.Expired.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(RefreshTokenErrors.Expired.Code);
     }
 
     [Fact]
@@ -191,9 +192,9 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RefreshTokenErrors.Revoked(reason).Code, result.Error.Code);
-        Assert.Contains(reason, result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(RefreshTokenErrors.Revoked(reason).Code);
+        result.Error.Message.Should().Contain(reason);
     }
 
     [Fact]
@@ -220,8 +221,8 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.AccountInactive.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.AccountInactive.Code);
     }
 
     [Fact]
@@ -248,9 +249,9 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("RefreshToken.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("RefreshToken.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 
     [Theory]
@@ -292,7 +293,7 @@ public class RefreshTokenCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with the provided parameters (even if null)
         Fixture.MockAuthenticationService.Verify(
