@@ -1,3 +1,5 @@
+using FluentAssertions;
+using FluentAssertions.Specialized;
 using Moq;
 using Shopilent.Application.Features.Catalog.Queries.GetCategoriesDatatable.V1;
 using Shopilent.Application.UnitTests.Common;
@@ -100,34 +102,34 @@ public class GetCategoriesDatatableQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify datatable metadata
-        Assert.Equal(1, result.Value.Draw);
-        Assert.Equal(25, result.Value.RecordsTotal);
-        Assert.Equal(2, result.Value.RecordsFiltered);
-        Assert.Equal(2, result.Value.Data.Count);
+        result.Value.Draw.Should().Be(1);
+        result.Value.RecordsTotal.Should().Be(25);
+        result.Value.RecordsFiltered.Should().Be(2);
+        result.Value.Data.Count.Should().Be(2);
 
         // Verify the CategoryDatatableDto properties
         var firstCategory = result.Value.Data.First(c => c.Name == "Test Category 1");
-        Assert.Equal(categories[0].Id, firstCategory.Id);
-        Assert.Equal("test-category-1", firstCategory.Slug);
-        Assert.Equal("Test description 1", firstCategory.Description);
-        Assert.Equal(parentId1, firstCategory.ParentId);
-        Assert.Equal("Parent Category 1", firstCategory.ParentName);
-        Assert.Equal(1, firstCategory.Level);
-        Assert.True(firstCategory.IsActive);
-        Assert.Equal(2, firstCategory.ProductCount);
+        firstCategory.Id.Should().Be(categories[0].Id);
+        firstCategory.Slug.Should().Be("test-category-1");
+        firstCategory.Description.Should().Be("Test description 1");
+        firstCategory.ParentId.Should().Be(parentId1);
+        firstCategory.ParentName.Should().Be("Parent Category 1");
+        firstCategory.Level.Should().Be(1);
+        firstCategory.IsActive.Should().BeTrue();
+        firstCategory.ProductCount.Should().Be(2);
 
         var secondCategory = result.Value.Data.First(c => c.Name == "Test Category 2");
-        Assert.Equal(categories[1].Id, secondCategory.Id);
-        Assert.Equal("test-category-2", secondCategory.Slug);
-        Assert.Equal("Test description 2", secondCategory.Description);
-        Assert.Equal(parentId2, secondCategory.ParentId);
-        Assert.Equal("Parent Category 2", secondCategory.ParentName);
-        Assert.Equal(1, secondCategory.Level);
-        Assert.False(secondCategory.IsActive);
-        Assert.Equal(1, secondCategory.ProductCount);
+        secondCategory.Id.Should().Be(categories[1].Id);
+        secondCategory.Slug.Should().Be("test-category-2");
+        secondCategory.Description.Should().Be("Test description 2");
+        secondCategory.ParentId.Should().Be(parentId2);
+        secondCategory.ParentName.Should().Be("Parent Category 2");
+        secondCategory.Level.Should().Be(1);
+        secondCategory.IsActive.Should().BeFalse();
+        secondCategory.ProductCount.Should().Be(1);
     }
 
     [Fact]
@@ -188,14 +190,14 @@ public class GetCategoriesDatatableQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(1, result.Value.Data.Count);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Data.Count.Should().Be(1);
 
         var categoryDto = result.Value.Data.First();
-        Assert.Equal("Orphan Category", categoryDto.Name);
-        Assert.Equal(nonExistentParentId, categoryDto.ParentId);
-        Assert.Null(categoryDto.ParentName); // Parent name should be null
-        Assert.Equal(0, categoryDto.ProductCount); // No products
+        categoryDto.Name.Should().Be("Orphan Category");
+        categoryDto.ParentId.Should().Be(nonExistentParentId);
+        categoryDto.ParentName.Should().BeNull(); // Parent name should be null
+        categoryDto.ProductCount.Should().Be(0); // No products
     }
 
     [Fact]
@@ -223,9 +225,9 @@ public class GetCategoriesDatatableQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Categories.GetDataTableFailed", result.Error.Code);
-        Assert.Contains("Test exception", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Categories.GetDataTableFailed");
+        result.Error.Message.Should().Contain("Test exception");
     }
 
     [Fact]
@@ -238,9 +240,9 @@ public class GetCategoriesDatatableQueryHandlerTests : TestBase
         };
 
         // Act & Assert
-        // Using await Assert.ThrowsAsync instead of just Assert.ThrowsAsync
-        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            await _handler.Handle(query, CancellationToken));
+        await FluentActions.Invoking(async () =>
+            await _handler.Handle(query, CancellationToken))
+            .Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
@@ -275,7 +277,7 @@ public class GetCategoriesDatatableQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(0, result.Value.Draw); // Draw number should be preserved
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Draw.Should().Be(0); // Draw number should be preserved
     }
 }

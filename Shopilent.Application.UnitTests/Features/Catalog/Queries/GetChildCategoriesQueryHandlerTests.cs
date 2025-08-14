@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shopilent.Application.Features.Catalog.Queries.GetChildCategories.V1;
@@ -73,10 +74,10 @@ public class GetChildCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value.Count);
-        Assert.Contains(result.Value, c => c.Name == "Child Category 1");
-        Assert.Contains(result.Value, c => c.Name == "Child Category 2");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Count.Should().Be(2);
+        result.Value.Should().Contain(c => c.Name == "Child Category 1");
+        result.Value.Should().Contain(c => c.Name == "Child Category 2");
     }
 
     [Fact]
@@ -95,8 +96,8 @@ public class GetChildCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(nonExistentParentId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(nonExistentParentId).Code);
     }
 
     [Fact]
@@ -128,8 +129,8 @@ public class GetChildCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
     }
 
     [Fact]
@@ -161,8 +162,8 @@ public class GetChildCategoriesQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Categories.GetChildCategoriesFailed", result.Error.Code);
-        Assert.Contains("Test exception", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Categories.GetChildCategoriesFailed");
+        result.Error.Message.Should().Contain("Test exception");
     }
 }

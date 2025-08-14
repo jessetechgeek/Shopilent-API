@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Moq;
 using Shopilent.Application.Features.Catalog.Queries.GetCategory.V1;
 using Shopilent.Application.UnitTests.Common;
@@ -49,10 +50,10 @@ public class GetCategoryQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(categoryId, result.Value.Id);
-        Assert.Equal(categoryDto.Name, result.Value.Name);
-        Assert.Equal(categoryDto.Slug, result.Value.Slug);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Id.Should().Be(categoryId);
+        result.Value.Name.Should().Be(categoryDto.Name);
+        result.Value.Slug.Should().Be(categoryDto.Slug);
     }
     
     [Fact]
@@ -71,8 +72,8 @@ public class GetCategoryQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(categoryId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(categoryId).Code);
     }
     
     [Fact]
@@ -91,8 +92,8 @@ public class GetCategoryQueryHandlerTests : TestBase
         var result = await _handler.Handle(query, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Category.GetFailed", result.Error.Code);
-        Assert.Contains("Test exception", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Category.GetFailed");
+        result.Error.Message.Should().Contain("Test exception");
     }
 }

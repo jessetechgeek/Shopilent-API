@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -9,6 +10,7 @@ using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity;
 using Shopilent.Domain.Identity.Errors;
 using Shopilent.Domain.Identity.ValueObjects;
+using Xunit;
 
 namespace Shopilent.Application.UnitTests.Features.Identity.Commands;
 
@@ -67,9 +69,9 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedResponse.AccessToken, result.Value.AccessToken);
-        Assert.Equal(expectedResponse.RefreshToken, result.Value.RefreshToken);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.AccessToken.Should().Be(expectedResponse.AccessToken);
+        result.Value.RefreshToken.Should().Be(expectedResponse.RefreshToken);
 
         // Verify auth service was called with correct parameters
         Fixture.MockAuthenticationService.Verify(auth => auth.RegisterAsync(
@@ -122,7 +124,7 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with null phone
         Fixture.MockAuthenticationService.Verify(auth => auth.RegisterAsync(
@@ -175,7 +177,7 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify specific IP and user agent were passed
         Fixture.MockAuthenticationService.Verify(auth => auth.RegisterAsync(
@@ -208,12 +210,12 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Validation.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Validation.Failed");
 
         // Verify metadata contains email validation error
-        Assert.NotNull(result.Error.Metadata);
-        Assert.Contains("Email", result.Error.Metadata.Keys);
+        result.Error.Metadata.Should().NotBeNull();
+        result.Error.Metadata.Keys.Should().Contain("Email");
 
         // Auth service should not be called for invalid input
         Fixture.MockAuthenticationService.Verify(auth => auth.RegisterAsync(
@@ -259,8 +261,8 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.EmailAlreadyExists(command.Email).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.EmailAlreadyExists(command.Email).Code);
     }
 
     [Fact]
@@ -282,14 +284,9 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.PasswordTooShort.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.PasswordTooShort.Code);
 
-        // Check multiple password validation errors in metadata
-        // Assert.NotNull(result.Error.Metadata);
-        // Assert.Contains("Password", result.Error.Metadata.Keys);
-        // var passwordErrors = result.Error.Metadata["Password"];
-        // Assert.Contains("Password must be at least 8 characters long.", passwordErrors);
     }
 
     [Theory]
@@ -313,20 +310,16 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        // Assert.Equal("Validation.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
 
-        // Check for validation errors in metadata
-        // Assert.NotNull(result.Error.Metadata);
         if (string.IsNullOrEmpty(firstName))
         {
-            Assert.Equal("User.FirstNameRequired", result.Error.Code);
+            result.Error.Code.Should().Be("User.FirstNameRequired");
         }
 
         if (string.IsNullOrEmpty(lastName))
         {
-            // Assert.Contains("LastName", result.Error.Metadata.Keys);
-            Assert.Contains("User.LastNameRequired", result.Error.Code);
+            result.Error.Code.Should().Contain("User.LastNameRequired");
         }
     }
 
@@ -349,10 +342,8 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.InvalidPhoneFormat", result.Error.Code);
-        // Assert.NotNull(result.Error.Metadata);
-        // Assert.Contains("Phone", result.Error.Metadata.Keys);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.InvalidPhoneFormat");
     }
 
     [Fact]
@@ -387,9 +378,9 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Registration.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Registration.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 
     [Fact]
@@ -437,13 +428,13 @@ public class RegisterCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(expectedResponse.AccessToken, result.Value.AccessToken);
-        Assert.Equal(expectedResponse.RefreshToken, result.Value.RefreshToken);
-        Assert.NotNull(result.Value.User);
-        Assert.Same(user, result.Value.User);
-        Assert.Equal(command.Email, result.Value.User.Email.Value);
-        Assert.Equal(command.FirstName, result.Value.User.FullName.FirstName);
-        Assert.Equal(command.LastName, result.Value.User.FullName.LastName);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.AccessToken.Should().Be(expectedResponse.AccessToken);
+        result.Value.RefreshToken.Should().Be(expectedResponse.RefreshToken);
+        result.Value.User.Should().NotBeNull();
+        result.Value.User.Should().BeSameAs(user);
+        result.Value.User.Email.Value.Should().Be(command.Email);
+        result.Value.User.FullName.FirstName.Should().Be(command.FirstName);
+        result.Value.User.FullName.LastName.Should().Be(command.LastName);
     }
 }

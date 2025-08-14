@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -49,7 +50,7 @@ public class ForgotPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with correct email
         Fixture.MockAuthenticationService.Verify(auth => auth.RequestPasswordResetAsync(
@@ -70,8 +71,8 @@ public class ForgotPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.InvalidEmailFormat", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.InvalidEmailFormat");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(auth => auth.RequestPasswordResetAsync(
@@ -92,8 +93,8 @@ public class ForgotPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.EmailRequired.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.EmailRequired.Code);
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(auth => auth.RequestPasswordResetAsync(
@@ -122,7 +123,7 @@ public class ForgotPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Even though user doesn't exist, we should still call the service
         // and return success to prevent user enumeration attacks
@@ -153,8 +154,8 @@ public class ForgotPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Email.SendingFailed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Email.SendingFailed");
     }
 
     [Fact]
@@ -177,8 +178,8 @@ public class ForgotPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("ForgotPassword.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("ForgotPassword.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 }

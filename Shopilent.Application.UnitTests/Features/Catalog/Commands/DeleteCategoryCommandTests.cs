@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -78,7 +79,7 @@ public class DeleteCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         
         // Verify category was deleted
         Fixture.MockCategoryWriteRepository.Verify(
@@ -111,8 +112,8 @@ public class DeleteCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(categoryId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(categoryId).Code);
         
         // Verify category was not deleted
         Fixture.MockCategoryWriteRepository.Verify(
@@ -162,8 +163,8 @@ public class DeleteCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.CannotDeleteWithChildren.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.CannotDeleteWithChildren.Code);
         
         // Verify category was not deleted
         Fixture.MockCategoryWriteRepository.Verify(
@@ -218,8 +219,8 @@ public class DeleteCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.CannotDeleteWithProducts.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.CannotDeleteWithProducts.Code);
         
         // Verify category was not deleted
         Fixture.MockCategoryWriteRepository.Verify(
@@ -273,8 +274,8 @@ public class DeleteCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Category.DeleteFailed", result.Error.Code);
-        Assert.Contains("Failed to delete category", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Category.DeleteFailed");
+        result.Error.Message.Should().Contain("Failed to delete category");
     }
 }

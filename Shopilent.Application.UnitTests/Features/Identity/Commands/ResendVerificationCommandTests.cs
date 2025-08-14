@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -49,7 +50,7 @@ public class ResendVerificationCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with correct email
         Fixture.MockAuthenticationService.Verify(
@@ -72,8 +73,8 @@ public class ResendVerificationCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.InvalidEmailFormat", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.InvalidEmailFormat");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(
@@ -96,8 +97,8 @@ public class ResendVerificationCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.EmailRequired", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.EmailRequired");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(
@@ -127,8 +128,8 @@ public class ResendVerificationCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.NotFound(Guid.Empty).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.NotFound(Guid.Empty).Code);
     }
 
     [Fact]
@@ -151,7 +152,7 @@ public class ResendVerificationCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
@@ -176,8 +177,8 @@ public class ResendVerificationCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Email.SendingFailed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Email.SendingFailed");
     }
 
     [Fact]
@@ -200,8 +201,8 @@ public class ResendVerificationCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("ResendVerification.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("ResendVerification.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 }

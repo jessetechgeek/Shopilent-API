@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -49,7 +50,7 @@ public class LogoutCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with correct parameters
         Fixture.MockAuthenticationService.Verify(
@@ -82,8 +83,8 @@ public class LogoutCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RefreshTokenErrors.EmptyToken.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(RefreshTokenErrors.EmptyToken.Code);
     }
 
     [Fact]
@@ -108,8 +109,8 @@ public class LogoutCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RefreshTokenErrors.NotFound(command.RefreshToken).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(RefreshTokenErrors.NotFound(command.RefreshToken).Code);
     }
 
     [Fact]
@@ -134,8 +135,8 @@ public class LogoutCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RefreshTokenErrors.AlreadyRevoked.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(RefreshTokenErrors.AlreadyRevoked.Code);
     }
 
     [Fact]
@@ -161,7 +162,7 @@ public class LogoutCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with the custom reason
         Fixture.MockAuthenticationService.Verify(
@@ -194,8 +195,8 @@ public class LogoutCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Logout.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Logout.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 }

@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -51,7 +52,7 @@ public class ResetPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         // Verify auth service was called with correct parameters
         Fixture.MockAuthenticationService.Verify(
@@ -77,8 +78,8 @@ public class ResetPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("User.PasswordMismatch", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("User.PasswordMismatch");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(
@@ -104,8 +105,8 @@ public class ResetPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Validation.Failed", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Validation.Failed");
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(
@@ -131,8 +132,8 @@ public class ResetPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.PasswordTooShort.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(UserErrors.PasswordTooShort.Code);
 
         // Verify auth service was not called
         Fixture.MockAuthenticationService.Verify(
@@ -168,8 +169,8 @@ public class ResetPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("PasswordReset.InvalidToken", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("PasswordReset.InvalidToken");
     }
 
     [Fact]
@@ -197,8 +198,8 @@ public class ResetPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("PasswordReset.ExpiredToken", result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("PasswordReset.ExpiredToken");
     }
 
     [Fact]
@@ -224,8 +225,8 @@ public class ResetPasswordCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("ResetPassword.Failed", result.Error.Code);
-        Assert.Contains("Unexpected error", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("ResetPassword.Failed");
+        result.Error.Message.Should().Contain("Unexpected error");
     }
 }

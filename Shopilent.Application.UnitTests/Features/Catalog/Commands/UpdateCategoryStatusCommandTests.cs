@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -70,8 +71,8 @@ public class UpdateCategoryStatusCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(category.IsActive); // Verify category was activated
+        result.IsSuccess.Should().BeTrue();
+        category.IsActive.Should().BeTrue(); // Verify category was activated
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
@@ -111,8 +112,8 @@ public class UpdateCategoryStatusCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.False(category.IsActive); // Verify category was deactivated
+        result.IsSuccess.Should().BeTrue();
+        category.IsActive.Should().BeFalse(); // Verify category was deactivated
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
@@ -141,8 +142,8 @@ public class UpdateCategoryStatusCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(categoryId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(categoryId).Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
@@ -182,8 +183,8 @@ public class UpdateCategoryStatusCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(category.IsActive); // Still active
+        result.IsSuccess.Should().BeTrue();
+        category.IsActive.Should().BeTrue(); // Still active
         
         // Verify the category was saved (even though no real change occurred)
         Fixture.MockUnitOfWork.Verify(
@@ -223,8 +224,8 @@ public class UpdateCategoryStatusCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Category.UpdateStatusFailed", result.Error.Code);
-        Assert.Contains("Test exception", result.Error.Message);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be("Category.UpdateStatusFailed");
+        result.Error.Message.Should().Contain("Test exception");
     }
 }

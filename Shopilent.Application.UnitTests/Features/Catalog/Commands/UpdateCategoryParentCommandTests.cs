@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -88,11 +89,11 @@ public class UpdateCategoryParentCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(categoryId, result.Value.Id);
-        Assert.Equal(parentId, result.Value.ParentId);
-        Assert.Equal("Parent Category", result.Value.ParentName);
-        Assert.Equal(1, result.Value.Level); // Level 1 as child of parent
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Id.Should().Be(categoryId);
+        result.Value.ParentId.Should().Be(parentId);
+        result.Value.ParentName.Should().Be("Parent Category");
+        result.Value.Level.Should().Be(1); // Level 1 as child of parent
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
@@ -140,11 +141,11 @@ public class UpdateCategoryParentCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(categoryId, result.Value.Id);
-        Assert.Null(result.Value.ParentId);
-        Assert.Null(result.Value.ParentName);
-        Assert.Equal(0, result.Value.Level); // Level 0 as root category
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Id.Should().Be(categoryId);
+        result.Value.ParentId.Should().BeNull();
+        result.Value.ParentName.Should().BeNull();
+        result.Value.Level.Should().Be(0); // Level 0 as root category
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
@@ -174,8 +175,8 @@ public class UpdateCategoryParentCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(categoryId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(categoryId).Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
@@ -215,8 +216,8 @@ public class UpdateCategoryParentCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(nonExistentParentId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(nonExistentParentId).Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
@@ -251,8 +252,8 @@ public class UpdateCategoryParentCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.CircularReference.Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.CircularReference.Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(

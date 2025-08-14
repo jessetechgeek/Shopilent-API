@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -75,11 +76,11 @@ public class UpdateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(categoryId, result.Value.Id);
-        Assert.Equal(command.Name, result.Value.Name);
-        Assert.Equal(command.Slug, result.Value.Slug);
-        Assert.Equal(command.Description, result.Value.Description);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Id.Should().Be(categoryId);
+        result.Value.Name.Should().Be(command.Name);
+        result.Value.Slug.Should().Be(command.Slug);
+        result.Value.Description.Should().Be(command.Description);
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
@@ -109,8 +110,8 @@ public class UpdateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(categoryId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(categoryId).Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
@@ -151,8 +152,8 @@ public class UpdateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.DuplicateSlug(command.Slug).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.DuplicateSlug(command.Slug).Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
@@ -177,8 +178,8 @@ public class UpdateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(CategoryErrors.NotFound(categoryId).Code, result.Error.Code);
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Code.Should().Be(CategoryErrors.NotFound(categoryId).Code);
         
         // Verify the category was not saved
         Fixture.MockUnitOfWork.Verify(
@@ -225,8 +226,8 @@ public class UpdateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(result.Value.IsActive);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.IsActive.Should().BeTrue();
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
@@ -272,8 +273,8 @@ public class UpdateCategoryCommandTests : TestBase
         var result = await _mediator.Send(command, CancellationToken);
         
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.False(result.Value.IsActive);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.IsActive.Should().BeFalse();
         
         // Verify the category was saved
         Fixture.MockUnitOfWork.Verify(
