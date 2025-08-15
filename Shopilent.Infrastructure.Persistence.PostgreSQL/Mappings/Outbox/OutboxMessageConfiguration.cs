@@ -31,7 +31,7 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
         // OutboxMessage specific properties
         builder.Property(o => o.Type)
             .HasColumnName("type")
-            .HasColumnType("varchar(500)")
+            .HasColumnType("text")
             .IsRequired();
 
         builder.Property(o => o.Content)

@@ -100,7 +100,8 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
         {
             phone.Property(p => p.Value)
                 .HasColumnName("phone")
-                .HasColumnType("varchar(50)");
+                .HasColumnType("varchar(50)")
+                .IsRequired(false);
         });
 
         // Relationships

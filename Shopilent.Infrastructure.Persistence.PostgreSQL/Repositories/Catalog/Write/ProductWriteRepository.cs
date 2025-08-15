@@ -40,7 +40,7 @@ public class ProductWriteRepository : AggregateWriteRepositoryBase<Product>, IPr
             .Include(p => p.Attributes)
             .Include(p => p.Variants)
             .ThenInclude(v => v.VariantAttributes)
-            .FirstOrDefaultAsync(p => EF.Property<string>(p, "Slug.Value") == slug, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Slug.Value == slug, cancellationToken);
     }
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null,
