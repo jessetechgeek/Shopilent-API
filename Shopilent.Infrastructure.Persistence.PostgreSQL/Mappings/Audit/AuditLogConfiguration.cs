@@ -28,7 +28,8 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         // AuditLog specific properties
         builder.Property(al => al.UserId)
             .HasColumnName("user_id")
-            .HasColumnType("uuid");
+            .HasColumnType("uuid")
+            .IsRequired(false);
 
         builder.Property(al => al.EntityType)
             .HasColumnName("entity_type")
@@ -50,6 +51,7 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.Property(al => al.OldValues)
             .HasColumnName("old_values")
             .HasColumnType("jsonb")
+            .IsRequired(false)
             .HasConversion(
                 v => v != null
                     ? JsonSerializer.Serialize(v, new JsonSerializerOptions { WriteIndented = false })
@@ -62,6 +64,7 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.Property(al => al.NewValues)
             .HasColumnName("new_values")
             .HasColumnType("jsonb")
+            .IsRequired(false)
             .HasConversion(
                 v => v != null
                     ? JsonSerializer.Serialize(v, new JsonSerializerOptions { WriteIndented = false })

@@ -21,6 +21,7 @@ public class CartReadRepository : AggregateReadRepositoryBase<Cart, CartDto>, IC
             SELECT 
                 c.id AS Id,
                 c.user_id AS UserId,
+                c.metadata AS Metadata,
                 c.created_at AS CreatedAt,
                 c.updated_at AS UpdatedAt
             FROM carts c
@@ -118,6 +119,7 @@ public class CartReadRepository : AggregateReadRepositoryBase<Cart, CartDto>, IC
             SELECT 
                 id AS Id,
                 user_id AS UserId,
+                metadata AS Metadata,
                 created_at AS CreatedAt,
                 updated_at AS UpdatedAt
             FROM carts

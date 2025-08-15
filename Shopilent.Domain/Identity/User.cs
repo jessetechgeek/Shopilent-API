@@ -289,8 +289,8 @@ public class User : AggregateRoot
 
         if (isDefault)
         {
-            // Update other addresses of the same type
-            foreach (var existingAddress in _addresses.FindAll(a => a.AddressType == addressType && a.IsDefault))
+            // Update all other default addresses (only one default address allowed per user)
+            foreach (var existingAddress in _addresses.FindAll(a => a.IsDefault))
             {
                 existingAddress.SetDefault(false);
             }

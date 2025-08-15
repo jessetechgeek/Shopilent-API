@@ -672,4 +672,210 @@ public class UserTests
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("Address.NotFound");
     }
+
+    [Fact]
+    public void AddAddress_WithDefaultBoth_ThenDefaultShipping_ShouldOnlyHaveOneDefault()
+    {
+        // Arrange
+        var user = CreateTestUser();
+
+        // Add first default "Both" address
+        var firstPostalAddressResult = PostalAddress.Create(
+            "123 Main St",
+            "Anytown",
+            "State",
+            "Country",
+            "12345");
+        firstPostalAddressResult.IsSuccess.Should().BeTrue();
+        var firstPostalAddress = firstPostalAddressResult.Value;
+
+        var firstAddressResult = user.AddAddress(
+            firstPostalAddress,
+            AddressType.Both,
+            null,
+            true);
+
+        firstAddressResult.IsSuccess.Should().BeTrue();
+        var firstAddress = firstAddressResult.Value;
+        firstAddress.IsDefault.Should().BeTrue();
+
+        // Act - add second default "Shipping" address
+        var secondPostalAddressResult = PostalAddress.Create(
+            "456 Oak Ave",
+            "Othertown",
+            "State",
+            "Country",
+            "67890");
+        secondPostalAddressResult.IsSuccess.Should().BeTrue();
+        var secondPostalAddress = secondPostalAddressResult.Value;
+
+        var secondAddressResult = user.AddAddress(
+            secondPostalAddress,
+            AddressType.Shipping,
+            null,
+            true);
+
+        // Assert - only one default address should exist
+        secondAddressResult.IsSuccess.Should().BeTrue();
+        var secondAddress = secondAddressResult.Value;
+        user.Addresses.Should().HaveCount(2);
+        
+        firstAddress.IsDefault.Should().BeFalse(); // "Both" address should lose default status
+        secondAddress.IsDefault.Should().BeTrue(); // "Shipping" address should be default
+        
+        user.Addresses.Count(a => a.IsDefault).Should().Be(1); // Exactly one default
+    }
+
+    [Fact]
+    public void AddAddress_WithDefaultShipping_ThenDefaultBoth_ShouldOnlyHaveOneDefault()
+    {
+        // Arrange
+        var user = CreateTestUser();
+
+        // Add first default "Shipping" address
+        var firstPostalAddressResult = PostalAddress.Create(
+            "123 Main St",
+            "Anytown",
+            "State",
+            "Country",
+            "12345");
+        firstPostalAddressResult.IsSuccess.Should().BeTrue();
+        var firstPostalAddress = firstPostalAddressResult.Value;
+
+        var firstAddressResult = user.AddAddress(
+            firstPostalAddress,
+            AddressType.Shipping,
+            null,
+            true);
+
+        firstAddressResult.IsSuccess.Should().BeTrue();
+        var firstAddress = firstAddressResult.Value;
+        firstAddress.IsDefault.Should().BeTrue();
+
+        // Act - add second default "Both" address
+        var secondPostalAddressResult = PostalAddress.Create(
+            "456 Oak Ave",
+            "Othertown",
+            "State",
+            "Country",
+            "67890");
+        secondPostalAddressResult.IsSuccess.Should().BeTrue();
+        var secondPostalAddress = secondPostalAddressResult.Value;
+
+        var secondAddressResult = user.AddAddress(
+            secondPostalAddress,
+            AddressType.Both,
+            null,
+            true);
+
+        // Assert - only one default address should exist
+        secondAddressResult.IsSuccess.Should().BeTrue();
+        var secondAddress = secondAddressResult.Value;
+        user.Addresses.Should().HaveCount(2);
+        
+        firstAddress.IsDefault.Should().BeFalse(); // "Shipping" address should lose default status
+        secondAddress.IsDefault.Should().BeTrue(); // "Both" address should be default
+        
+        user.Addresses.Count(a => a.IsDefault).Should().Be(1); // Exactly one default
+    }
+
+    [Fact]
+    public void AddAddress_WithDefaultBilling_ThenDefaultBoth_ShouldOnlyHaveOneDefault()
+    {
+        // Arrange
+        var user = CreateTestUser();
+
+        // Add first default "Billing" address
+        var firstPostalAddressResult = PostalAddress.Create(
+            "123 Main St",
+            "Anytown",
+            "State",
+            "Country",
+            "12345");
+        firstPostalAddressResult.IsSuccess.Should().BeTrue();
+        var firstPostalAddress = firstPostalAddressResult.Value;
+
+        var firstAddressResult = user.AddAddress(
+            firstPostalAddress,
+            AddressType.Billing,
+            null,
+            true);
+
+        firstAddressResult.IsSuccess.Should().BeTrue();
+        var firstAddress = firstAddressResult.Value;
+        firstAddress.IsDefault.Should().BeTrue();
+
+        // Act - add second default "Both" address
+        var secondPostalAddressResult = PostalAddress.Create(
+            "456 Oak Ave",
+            "Othertown",
+            "State",
+            "Country",
+            "67890");
+        secondPostalAddressResult.IsSuccess.Should().BeTrue();
+        var secondPostalAddress = secondPostalAddressResult.Value;
+
+        var secondAddressResult = user.AddAddress(
+            secondPostalAddress,
+            AddressType.Both,
+            null,
+            true);
+
+        // Assert - only one default address should exist
+        secondAddressResult.IsSuccess.Should().BeTrue();
+        var secondAddress = secondAddressResult.Value;
+        user.Addresses.Should().HaveCount(2);
+        
+        firstAddress.IsDefault.Should().BeFalse(); // "Billing" address should lose default status
+        secondAddress.IsDefault.Should().BeTrue(); // "Both" address should be default
+        
+        user.Addresses.Count(a => a.IsDefault).Should().Be(1); // Exactly one default
+    }
+
+    [Fact]
+    public void AddAddress_MultipleDefaults_ShouldAlwaysHaveExactlyOneDefault()
+    {
+        // Arrange
+        var user = CreateTestUser();
+
+        // Add multiple addresses with default = true in sequence
+        var addressTypes = new[] { AddressType.Shipping, AddressType.Billing, AddressType.Both };
+        var addresses = new List<Address>();
+
+        // Act - add multiple default addresses of different types
+        for (int i = 0; i < addressTypes.Length; i++)
+        {
+            var postalAddressResult = PostalAddress.Create(
+                $"{100 + i} Test St",
+                "Testtown",
+                "State",
+                "Country",
+                $"{12345 + i}");
+            postalAddressResult.IsSuccess.Should().BeTrue();
+
+            var addressResult = user.AddAddress(
+                postalAddressResult.Value,
+                addressTypes[i],
+                null,
+                true);
+
+            addressResult.IsSuccess.Should().BeTrue();
+            addresses.Add(addressResult.Value);
+
+            // Assert - exactly one default after each addition
+            user.Addresses.Count(a => a.IsDefault).Should().Be(1);
+            addresses[i].IsDefault.Should().BeTrue(); // Latest address should be default
+            
+            // All previous addresses should not be default
+            for (int j = 0; j < i; j++)
+            {
+                addresses[j].IsDefault.Should().BeFalse();
+            }
+        }
+
+        // Final assertions
+        user.Addresses.Should().HaveCount(3);
+        user.Addresses.Count(a => a.IsDefault).Should().Be(1);
+        addresses.Last().IsDefault.Should().BeTrue(); // Last added should be default
+    }
 }
