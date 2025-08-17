@@ -41,7 +41,7 @@ public static class LoggingConfiguration
                 retainedFileCountLimit: 30)
             // Optionally add Seq logging if configured
             .WriteTo.Conditional(
-                evt => !string.IsNullOrEmpty(configuration["Seq:ServerUrl"]),
+                evt => !string.IsNullOrWhiteSpace(configuration["Seq:ServerUrl"]),
                 wt => wt.Seq(configuration["Seq:ServerUrl"]!))
             .CreateLogger();
 

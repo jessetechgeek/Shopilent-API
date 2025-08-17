@@ -8,6 +8,7 @@ using Shopilent.Domain.Common.Repositories;
 using Shopilent.Domain.Identity.Repositories;
 using Shopilent.Domain.Identity.Repositories.Read;
 using Shopilent.Domain.Identity.Repositories.Write;
+using Shopilent.Domain.Outbox.Repositories.Read;
 using Shopilent.Domain.Outbox.Repositories.Write;
 using Shopilent.Domain.Payments.Repositories;
 using Shopilent.Domain.Payments.Repositories.Read;
@@ -59,7 +60,8 @@ public interface IUnitOfWork : IDisposable
     IAuditLogReadRepository AuditLogReader { get; }
     IAuditLogWriteRepository AuditLogWriter { get; }
 
-    IOutboxMessageWriteRepository OutboxMessageWriteWriter { get; }
+    IOutboxMessageReadRepository OutboxMessageReader { get; }
+    IOutboxMessageWriteRepository OutboxMessageWriter { get; }
 
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

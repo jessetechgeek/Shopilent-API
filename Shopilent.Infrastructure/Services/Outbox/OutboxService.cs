@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Shopilent.Application.Abstractions.Outbox;
 using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Outbox;
-using Shopilent.Domain.Outbox.Repositories.Write;
 
 namespace Shopilent.Infrastructure.Services.Outbox;
 
@@ -25,86 +24,35 @@ public class OutboxService : IOutboxService
         CancellationToken cancellationToken = default) where T : class
     {
         using var scope = _serviceScopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IOutboxMessageWriteRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         var outboxMessage = OutboxMessage.Create(message, scheduledAt);
-        await repository.AddAsync(outboxMessage, cancellationToken);
+        await unitOfWork.OutboxMessageWriter.AddAsync(outboxMessage, cancellationToken);
 
         // Save changes
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task ProcessMessagesAsync(CancellationToken cancellationToken = default)
     {
-        // using var scope = _serviceScopeFactory.CreateScope();
-        // var repository = scope.ServiceProvider.GetRequiredService<IOutboxMessageRepository>();
-        // var mediator = scope.ServiceProvider.GetRequiredService<MediatR.IPublisher>();
-        // var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        //
-        // const int batchSize = 50;
-        // var messages = await repository.GetUnprocessedMessagesAsync(batchSize, cancellationToken);
-        //
-        // foreach (var message in messages)
-        // {
-        //     try
-        //     {
-        //         // Deserialize and publish the message
-        //         var messageType = Type.GetType(message.Type);
-        //         if (messageType == null)
-        //         {
-        //             _logger.LogWarning("Cannot find type {MessageType} for outbox message {MessageId}", 
-        //                 message.Type, message.Id);
-        //             await repository.MarkAsFailedAsync(message.Id, 
-        //                 $"Cannot find type {message.Type}", cancellationToken);
-        //             continue;
-        //         }
-        //
-        //         var typedMessage = JsonSerializer.Deserialize(message.Content, messageType);
-        //         if (typedMessage == null)
-        //         {
-        //             await repository.MarkAsFailedAsync(message.Id, 
-        //                 "Failed to deserialize message content", cancellationToken);
-        //             continue;
-        //         }
-        //
-        //         // Publish the message
-        //         await mediator.Publish(typedMessage, cancellationToken);
-        //
-        //         // Mark as processed
-        //         await repository.MarkAsProcessedAsync(message.Id, cancellationToken);
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError(ex, "Error processing outbox message {MessageId}", message.Id);
-        //         await repository.MarkAsFailedAsync(message.Id, ex.Message, cancellationToken);
-        //
-        //         // Exponential backoff for retries
-        //         var retryDelay = TimeSpan.FromMinutes(Math.Pow(2, Math.Min(message.RetryCount, 6)));
-        //         message.Reschedule(retryDelay);
-        //         await unitOfWork.SaveChangesAsync(cancellationToken);
-        //     }
-        // }
         using var scope = _serviceScopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IOutboxMessageWriteRepository>();
-        var mediator = scope.ServiceProvider.GetRequiredService<MediatR.IPublisher>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var mediator = scope.ServiceProvider.GetRequiredService<MediatR.IPublisher>();
 
         const int batchSize = 50;
-        var messages = await repository.GetUnprocessedMessagesAsync(batchSize, cancellationToken);
+        var messages = await unitOfWork.OutboxMessageWriter.GetUnprocessedMessagesAsync(batchSize, cancellationToken);
 
         foreach (var message in messages)
         {
             try
             {
                 // Deserialize and publish the message
-                // var messageType = Type.GetType(message.Type);
-                Type messageType = ResolveActualType(message.Type);
+                var messageType = ResolveActualType(message.Type);
                 if (messageType == null)
                 {
                     _logger.LogWarning("Cannot find type {MessageType} for outbox message {MessageId}",
                         message.Type, message.Id);
-                    await repository.MarkAsFailedAsync(message.Id,
+                    await unitOfWork.OutboxMessageWriter.MarkAsFailedAsync(message.Id,
                         $"Cannot find type {message.Type}", cancellationToken);
                     continue;
                 }
@@ -112,7 +60,7 @@ public class OutboxService : IOutboxService
                 var typedMessage = JsonSerializer.Deserialize(message.Content, messageType);
                 if (typedMessage == null)
                 {
-                    await repository.MarkAsFailedAsync(message.Id,
+                    await unitOfWork.OutboxMessageWriter.MarkAsFailedAsync(message.Id,
                         "Failed to deserialize message content", cancellationToken);
                     continue;
                 }
@@ -121,12 +69,12 @@ public class OutboxService : IOutboxService
                 await mediator.Publish(typedMessage, cancellationToken);
 
                 // Mark as processed
-                await repository.MarkAsProcessedAsync(message.Id, cancellationToken);
+                await unitOfWork.OutboxMessageWriter.MarkAsProcessedAsync(message.Id, cancellationToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing outbox message {MessageId}", message.Id);
-                await repository.MarkAsFailedAsync(message.Id, ex.Message, cancellationToken);
+                await unitOfWork.OutboxMessageWriter.MarkAsFailedAsync(message.Id, ex.Message, cancellationToken);
 
                 // Exponential backoff for retries
                 var retryDelay = TimeSpan.FromMinutes(Math.Pow(2, Math.Min(message.RetryCount, 6)));
@@ -139,10 +87,10 @@ public class OutboxService : IOutboxService
     public async Task CleanupOldMessagesAsync(int daysToKeep = 7, CancellationToken cancellationToken = default)
     {
         using var scope = _serviceScopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IOutboxMessageWriteRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
-        var deletedCount = await repository.DeleteProcessedMessagesAsync(cutoffDate, cancellationToken);
+        var deletedCount = await unitOfWork.OutboxMessageWriter.DeleteProcessedMessagesAsync(cutoffDate, cancellationToken);
 
         _logger.LogInformation("Deleted {DeletedCount} processed outbox messages older than {CutoffDate}",
             deletedCount, cutoffDate);

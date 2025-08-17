@@ -10,6 +10,7 @@ using Shopilent.Domain.Common.Repositories;
 using Shopilent.Domain.Identity.Repositories;
 using Shopilent.Domain.Identity.Repositories.Read;
 using Shopilent.Domain.Identity.Repositories.Write;
+using Shopilent.Domain.Outbox.Repositories.Read;
 using Shopilent.Domain.Outbox.Repositories.Write;
 using Shopilent.Domain.Payments.Repositories;
 using Shopilent.Domain.Payments.Repositories.Read;
@@ -66,7 +67,8 @@ public class UnitOfWork : IUnitOfWork
     public IAuditLogReadRepository AuditLogReader { get; }
     public IAuditLogWriteRepository AuditLogWriter { get; }
     
-    public IOutboxMessageWriteRepository OutboxMessageWriteWriter { get; }
+    public IOutboxMessageReadRepository OutboxMessageReader { get; }
+    public IOutboxMessageWriteRepository OutboxMessageWriter { get; }
 
     public UnitOfWork(
         ApplicationDbContext dbContext,
@@ -94,6 +96,7 @@ public class UnitOfWork : IUnitOfWork
         IAddressWriteRepository addressWriter,
         IAuditLogReadRepository auditLogRepository,
         IAuditLogWriteRepository auditLogWriter,
+        IOutboxMessageReadRepository outboxMessageReader,
         IOutboxMessageWriteRepository outboxMessageWriteWriter)
     {
         _dbContext = dbContext;
@@ -121,7 +124,8 @@ public class UnitOfWork : IUnitOfWork
         AddressWriter = addressWriter;
         AuditLogReader = auditLogRepository;
         AuditLogWriter = auditLogWriter;
-        OutboxMessageWriteWriter = outboxMessageWriteWriter;
+        OutboxMessageReader = outboxMessageReader;
+        OutboxMessageWriter = outboxMessageWriteWriter;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
