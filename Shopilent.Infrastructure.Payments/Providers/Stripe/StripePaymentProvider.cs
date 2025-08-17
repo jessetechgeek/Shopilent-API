@@ -32,8 +32,8 @@ internal class StripePaymentProvider : PaymentProviderBase
         ILogger<StripePaymentProvider> logger,
         StripeWebhookHandlerFactory webhookHandlerFactory) : base(logger)
     {
-        _settings = settings.Value;
-        _webhookHandlerFactory = webhookHandlerFactory;
+        _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
+        _webhookHandlerFactory = webhookHandlerFactory ?? throw new ArgumentNullException(nameof(webhookHandlerFactory));
 
         StripeConfiguration.ApiKey = _settings.SecretKey;
 

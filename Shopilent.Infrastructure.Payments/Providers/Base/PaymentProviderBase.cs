@@ -14,7 +14,7 @@ public abstract class PaymentProviderBase : IPaymentProvider
 
     protected PaymentProviderBase(ILogger logger)
     {
-        Logger = logger;
+        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public abstract PaymentProvider Provider { get; }
