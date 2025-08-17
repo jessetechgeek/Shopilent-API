@@ -27,6 +27,7 @@ public static class InfrastructureServiceExtensions
         services.AddSingleton<IDateTimeProvider, DateTimeProviderService>();
 
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.Configure<EmailSettings>(configuration.GetSection("Email"));
 
         services.AddScoped<IImageService, ImageService>();

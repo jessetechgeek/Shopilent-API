@@ -3,7 +3,7 @@ using Shopilent.Domain.Common;
 
 namespace Shopilent.Domain.Outbox;
 
-public class OutboxMessage : Entity
+public class OutboxMessage : AggregateRoot
 {
     public string Type { get; private set; }
     public string Content { get; private set; }

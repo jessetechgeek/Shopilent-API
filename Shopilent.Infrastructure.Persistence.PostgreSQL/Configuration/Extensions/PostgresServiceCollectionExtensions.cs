@@ -12,6 +12,7 @@ using Shopilent.Domain.Catalog.Repositories.Read;
 using Shopilent.Domain.Catalog.Repositories.Write;
 using Shopilent.Domain.Identity.Repositories.Read;
 using Shopilent.Domain.Identity.Repositories.Write;
+using Shopilent.Domain.Outbox.Repositories.Read;
 using Shopilent.Domain.Outbox.Repositories.Write;
 using Shopilent.Domain.Payments.Repositories.Read;
 using Shopilent.Domain.Payments.Repositories.Write;
@@ -29,6 +30,7 @@ using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Catalog.Read;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Catalog.Write;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Identity.Read;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Identity.Write;
+using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Outbox.Read;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Outbox.Write;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Payments.Read;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Payments.Write;
@@ -144,6 +146,9 @@ public static class PostgresServiceCollectionExtensions
 
         // Audit repositories
         services.AddScoped<IAuditLogReadRepository, AuditLogReadRepository>();
+
+        // Outbox repositories
+        services.AddScoped<IOutboxMessageReadRepository, OutboxMessageReadRepository>();
     }
 
     private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
