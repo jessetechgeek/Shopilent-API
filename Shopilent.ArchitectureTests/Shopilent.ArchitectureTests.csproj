@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Core Testing -->
+        <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
+        <PackageReference Include="xunit" Version="2.9.2"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2"/>
+        <PackageReference Include="FluentAssertions" Version="7.2.0" />
+
+        <!-- Architecture Testing -->
+        <PackageReference Include="NetArchTest.Rules" Version="1.3.2"/>
+
+        <!-- Assembly Loading & Reflection -->
+        <PackageReference Include="System.Reflection.Metadata" Version="9.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit"/>
+        <Using Include="FluentAssertions"/>
+        <Using Include="NetArchTest.Rules"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Project References for Architecture Analysis -->
+        <ProjectReference Include="..\Shopilent.Domain\Shopilent.Domain.csproj"/>
+        <ProjectReference Include="..\Shopilent.Application\Shopilent.Application.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure\Shopilent.Infrastructure.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.Identity\Shopilent.Infrastructure.Identity.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.Cache.Redis\Shopilent.Infrastructure.Cache.Redis.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.S3ObjectStorage\Shopilent.Infrastructure.S3ObjectStorage.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.Search.Meilisearch\Shopilent.Infrastructure.Search.Meilisearch.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.Logging\Shopilent.Infrastructure.Logging.csproj"/>
+        <ProjectReference Include="..\Shopilent.Infrastructure.Realtime.SignalR\Shopilent.Infrastructure.Realtime.SignalR.csproj"/>
+        <ProjectReference Include="..\Shopilent.API\Shopilent.API.csproj"/>
+    </ItemGroup>
+
+</Project>
