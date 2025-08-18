@@ -153,9 +153,27 @@ public static class PostgresServiceCollectionExtensions
 
     private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
     {
-        services
-            .AddHealthChecks()
-            .AddNpgSql(configuration.GetConnectionString("PostgreSql")!);
+        var connectionConfig = new PostgresConnectionConfig
+        {
+            WriteConnectionString = configuration.GetConnectionString("PostgreSql") ?? string.Empty,
+            ReadConnectionStrings = configuration.GetSection("ConnectionStrings:PostgreSqlReadReplicas")
+                .Get<List<string>>() ?? new List<string>()
+        };
+
+        var healthChecks = services.AddHealthChecks();
+
+        // Add main write database health check
+        healthChecks.AddNpgSql(connectionConfig.WriteConnectionString, name: "postgresql-main");
+
+        // Add health checks for each read replica
+        for (int i = 0; i < connectionConfig.ReadConnectionStrings.Count; i++)
+        {
+            var replicaConnectionString = connectionConfig.ReadConnectionStrings[i];
+            if (!string.IsNullOrEmpty(replicaConnectionString))
+            {
+                healthChecks.AddNpgSql(replicaConnectionString, name: $"postgresql-replica-{i + 1}");
+            }
+        }
 
         return services;
     }
