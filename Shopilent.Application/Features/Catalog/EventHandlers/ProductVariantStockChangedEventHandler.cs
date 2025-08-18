@@ -7,7 +7,7 @@ using Shopilent.Domain.Catalog.Events;
 
 namespace Shopilent.Application.Features.Catalog.EventHandlers;
 
-public class ProductVariantStockChangedEventHandler : INotificationHandler<DomainEventNotification<ProductVariantStockChangedEvent>>
+internal sealed  class ProductVariantStockChangedEventHandler : INotificationHandler<DomainEventNotification<ProductVariantStockChangedEvent>>
 {
     private readonly ILogger<ProductVariantStockChangedEventHandler> _logger;
     private readonly ICacheService _cacheService;
@@ -28,22 +28,22 @@ public class ProductVariantStockChangedEventHandler : INotificationHandler<Domai
         var domainEvent = notification.DomainEvent;
 
         _logger.LogInformation(
-            "Product variant stock changed. ProductId: {ProductId}, VariantId: {VariantId}, Old Quantity: {OldQuantity}, New Quantity: {NewQuantity}", 
-            domainEvent.ProductId, 
-            domainEvent.VariantId, 
-            domainEvent.OldQuantity, 
+            "Product variant stock changed. ProductId: {ProductId}, VariantId: {VariantId}, Old Quantity: {OldQuantity}, New Quantity: {NewQuantity}",
+            domainEvent.ProductId,
+            domainEvent.VariantId,
+            domainEvent.OldQuantity,
             domainEvent.NewQuantity);
 
         // Invalidate product cache since stock levels affect availability
         await _cacheService.RemoveAsync($"product-{domainEvent.ProductId}", cancellationToken);
-        
+
         // Invalidate variant-specific caches
         await _cacheService.RemoveByPatternAsync($"variant-{domainEvent.VariantId}", cancellationToken);
         await _cacheService.RemoveByPatternAsync($"product-variants-{domainEvent.ProductId}", cancellationToken);
-        
+
         // Invalidate product listings that might show stock status
         await _cacheService.RemoveByPatternAsync("products-*", cancellationToken);
-        
+
         // Check for low stock conditions
         bool isLowStock = domainEvent.NewQuantity > 0 && domainEvent.NewQuantity <= 5;
         bool isOutOfStock = domainEvent.NewQuantity == 0;

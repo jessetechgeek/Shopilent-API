@@ -10,7 +10,7 @@ using Shopilent.Domain.Shipping.Events;
 
 namespace Shopilent.Application.Features.Shipping.EventHandlers;
 
-public class DefaultAddressChangedEventHandler : INotificationHandler<DomainEventNotification<DefaultAddressChangedEvent>>
+internal sealed  class DefaultAddressChangedEventHandler : INotificationHandler<DomainEventNotification<DefaultAddressChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DefaultAddressChangedEventHandler> _logger;
@@ -45,30 +45,30 @@ public class DefaultAddressChangedEventHandler : INotificationHandler<DomainEven
         try
         {
             // Clear default address caches
-            await _cacheService.RemoveByPatternAsync($"default-address-{domainEvent.AddressType}-{domainEvent.UserId}", 
+            await _cacheService.RemoveByPatternAsync($"default-address-{domainEvent.AddressType}-{domainEvent.UserId}",
                 cancellationToken);
-            
+
             // If the address type is 'Both', clear both shipping and billing default address caches
             if (domainEvent.AddressType == AddressType.Both)
             {
-                await _cacheService.RemoveByPatternAsync($"default-address-{AddressType.Shipping}-{domainEvent.UserId}", 
+                await _cacheService.RemoveByPatternAsync($"default-address-{AddressType.Shipping}-{domainEvent.UserId}",
                     cancellationToken);
-                await _cacheService.RemoveByPatternAsync($"default-address-{AddressType.Billing}-{domainEvent.UserId}", 
+                await _cacheService.RemoveByPatternAsync($"default-address-{AddressType.Billing}-{domainEvent.UserId}",
                     cancellationToken);
             }
-            
+
             // Clear all user addresses cache as the default flag has changed
-            await _cacheService.RemoveByPatternAsync($"user-addresses-{domainEvent.UserId}", 
+            await _cacheService.RemoveByPatternAsync($"user-addresses-{domainEvent.UserId}",
                 cancellationToken);
-            
+
             // Get user details
             var user = await _unitOfWork.UserReader.GetByIdAsync(domainEvent.UserId, cancellationToken);
-            
+
             if (user != null)
             {
                 // Get the address details
                 var address = await _unitOfWork.AddressReader.GetByIdAsync(domainEvent.AddressId, cancellationToken);
-                
+
                 if (address != null)
                 {
                     // Determine the address type description for the email
@@ -79,12 +79,12 @@ public class DefaultAddressChangedEventHandler : INotificationHandler<DomainEven
                         AddressType.Both => "shipping and billing",
                         _ => "default"
                     };
-                    
+
                     // Send notification email
                     string subject = $"Default {addressTypeDescription} Address Updated";
                     string message = $"Your default {addressTypeDescription} address has been updated. " +
                                      $"The new address will be used for future orders.";
-                    
+
                     await _emailService.SendEmailAsync(user.Email, subject, message);
                 }
             }

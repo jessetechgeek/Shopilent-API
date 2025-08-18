@@ -9,7 +9,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class PaymentRefundedEventHandler : INotificationHandler<DomainEventNotification<PaymentRefundedEvent>>
+internal sealed  class PaymentRefundedEventHandler : INotificationHandler<DomainEventNotification<PaymentRefundedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentRefundedEventHandler> _logger;

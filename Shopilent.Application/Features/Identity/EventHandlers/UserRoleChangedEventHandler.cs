@@ -9,7 +9,7 @@ using Shopilent.Domain.Identity.Events;
 
 namespace Shopilent.Application.Features.Identity.EventHandlers;
 
-public class UserRoleChangedEventHandler : INotificationHandler<DomainEventNotification<UserRoleChangedEvent>>
+internal sealed  class UserRoleChangedEventHandler : INotificationHandler<DomainEventNotification<UserRoleChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserRoleChangedEventHandler> _logger;

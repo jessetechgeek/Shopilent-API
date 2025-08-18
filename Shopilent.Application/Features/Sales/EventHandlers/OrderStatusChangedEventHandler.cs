@@ -10,7 +10,7 @@ using Shopilent.Domain.Sales.Events;
 
 namespace Shopilent.Application.Features.Sales.EventHandlers;
 
-public class OrderStatusChangedEventHandler : INotificationHandler<DomainEventNotification<OrderStatusChangedEvent>>
+internal sealed  class OrderStatusChangedEventHandler : INotificationHandler<DomainEventNotification<OrderStatusChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrderStatusChangedEventHandler> _logger;

@@ -9,7 +9,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class PaymentMethodRemovedEventHandler : INotificationHandler<DomainEventNotification<PaymentMethodRemovedEvent>>
+internal sealed  class PaymentMethodRemovedEventHandler : INotificationHandler<DomainEventNotification<PaymentMethodRemovedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentMethodRemovedEventHandler> _logger;
@@ -46,17 +46,17 @@ public class PaymentMethodRemovedEventHandler : INotificationHandler<DomainEvent
             await _cacheService.RemoveAsync($"payment-method-{domainEvent.PaymentMethodId}", cancellationToken);
             await _cacheService.RemoveByPatternAsync("payment-methods-*", cancellationToken);
             await _cacheService.RemoveByPatternAsync($"payment-methods-user-{domainEvent.UserId}", cancellationToken);
-            
+
             // Get user details
             var user = await _unitOfWork.UserReader.GetByIdAsync(domainEvent.UserId, cancellationToken);
-            
+
             if (user != null)
             {
                 // Notify the user about the removed payment method
                 string subject = "Payment Method Removed";
                 string message = "Your payment method has been successfully removed from your account. " +
                                  "If you did not perform this action, please contact our support team immediately.";
-                
+
                 await _emailService.SendEmailAsync(user.Email, subject, message);
             }
         }

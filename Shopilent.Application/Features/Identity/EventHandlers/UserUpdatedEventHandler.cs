@@ -8,7 +8,7 @@ using Shopilent.Domain.Identity.Events;
 
 namespace Shopilent.Application.Features.Identity.EventHandlers;
 
-public class UserUpdatedEventHandler : INotificationHandler<DomainEventNotification<UserUpdatedEvent>>
+internal sealed  class UserUpdatedEventHandler : INotificationHandler<DomainEventNotification<UserUpdatedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserUpdatedEventHandler> _logger;

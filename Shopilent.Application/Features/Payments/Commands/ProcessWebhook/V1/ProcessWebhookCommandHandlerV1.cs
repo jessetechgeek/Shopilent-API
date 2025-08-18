@@ -11,7 +11,7 @@ using Shopilent.Domain.Sales.Repositories.Write;
 
 namespace Shopilent.Application.Features.Payments.Commands.ProcessWebhook.V1;
 
-public class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookCommandV1, WebhookResult>
+internal sealed class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookCommandV1, WebhookResult>
 {
     private readonly IPaymentService _paymentService;
 
@@ -233,7 +233,7 @@ public class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookComm
 
         // Update payment status to disputed
         payment.UpdateStatus(Domain.Payments.Enums.PaymentStatus.Disputed);
-        
+
         _logger.LogInformation("Marked payment {PaymentId} as disputed for transaction {TransactionId}",
             payment.Id, transactionId);
     }
@@ -328,10 +328,10 @@ public class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookComm
     {
         // Setup intents don't directly create payments, but they set up payment methods for future use
         // We can track this in the payment method system if needed
-        
+
         var customerId = webhookResult.CustomerId;
         var paymentMethodId = webhookResult.EventData.GetValueOrDefault("payment_method_id")?.ToString();
-        
+
         if (!string.IsNullOrEmpty(customerId) && !string.IsNullOrEmpty(paymentMethodId))
         {
             // Here we could update the payment method status in the database
@@ -348,7 +348,7 @@ public class ProcessWebhookCommandHandlerV1 : ICommandHandler<ProcessWebhookComm
         // Setup intent was canceled - log for monitoring
         var customerId = webhookResult.CustomerId;
         var cancellationReason = webhookResult.EventData.GetValueOrDefault("cancellation_reason")?.ToString();
-        
+
         _logger.LogWarning(
             "Setup intent {SetupIntentId} was canceled for customer {CustomerId}, reason: {CancellationReason}",
             webhookResult.TransactionId, customerId, cancellationReason ?? "Unknown");

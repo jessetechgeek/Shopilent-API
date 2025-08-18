@@ -10,7 +10,7 @@ using Shopilent.Domain.Sales.Events;
 
 namespace Shopilent.Application.Features.Sales.EventHandlers;
 
-public class
+internal sealed  class
     OrderPaymentStatusChangedEventHandler : INotificationHandler<
     DomainEventNotification<OrderPaymentStatusChangedEvent>>
 {

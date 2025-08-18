@@ -9,7 +9,7 @@ using Shopilent.Domain.Sales.Events;
 
 namespace Shopilent.Application.Features.Sales.EventHandlers;
 
-public class OrderRefundedEventHandler : INotificationHandler<DomainEventNotification<OrderRefundedEvent>>
+internal sealed  class OrderRefundedEventHandler : INotificationHandler<DomainEventNotification<OrderRefundedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrderRefundedEventHandler> _logger;

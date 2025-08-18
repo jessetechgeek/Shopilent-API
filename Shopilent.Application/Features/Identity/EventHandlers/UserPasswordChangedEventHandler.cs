@@ -9,7 +9,7 @@ using Shopilent.Domain.Identity.Events;
 
 namespace Shopilent.Application.Features.Identity.EventHandlers;
 
-public class UserPasswordChangedEventHandler : INotificationHandler<DomainEventNotification<UserPasswordChangedEvent>>
+internal sealed  class UserPasswordChangedEventHandler : INotificationHandler<DomainEventNotification<UserPasswordChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserPasswordChangedEventHandler> _logger;
@@ -41,7 +41,7 @@ public class UserPasswordChangedEventHandler : INotificationHandler<DomainEventN
         {
             // Get user details
             var user = await _unitOfWork.UserReader.GetByIdAsync(domainEvent.UserId, cancellationToken);
-            
+
             if (user != null)
             {
                 // Revoke all active refresh tokens for this user
@@ -58,18 +58,18 @@ public class UserPasswordChangedEventHandler : INotificationHandler<DomainEventN
                             await _unitOfWork.RefreshTokenWriter.UpdateAsync(refreshToken, cancellationToken);
                         }
                     }
-                    
+
                     // Save changes to persist token revocations
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
                 }
-                
+
                 // Send notification email
                 string subject = "Your Password Has Been Changed";
                 string message = $"Hi {user.FirstName},\n\n" +
                                  $"Your password for Shopilent has been successfully changed.\n\n" +
                                  $"If you did not request this change, please contact our support team immediately.\n\n" +
                                  $"The Shopilent Team";
-                
+
                 await _emailService.SendEmailAsync(user.Email, subject, message);
             }
         }

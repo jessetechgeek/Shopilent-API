@@ -9,7 +9,7 @@ using Shopilent.Domain.Identity.Events;
 
 namespace Shopilent.Application.Features.Identity.EventHandlers;
 
-public class UserEmailChangedEventHandler : INotificationHandler<DomainEventNotification<UserEmailChangedEvent>>
+internal sealed  class UserEmailChangedEventHandler : INotificationHandler<DomainEventNotification<UserEmailChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserEmailChangedEventHandler> _logger;

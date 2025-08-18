@@ -7,7 +7,7 @@ using Shopilent.Domain.Catalog.Events;
 
 namespace Shopilent.Application.Features.Catalog.EventHandlers;
 
-public class CategoryUpdatedEventHandler : INotificationHandler<DomainEventNotification<CategoryUpdatedEvent>>
+internal sealed  class CategoryUpdatedEventHandler : INotificationHandler<DomainEventNotification<CategoryUpdatedEvent>>
 {
     private readonly ILogger<CategoryUpdatedEventHandler> _logger;
     private readonly ICacheService _cacheService;

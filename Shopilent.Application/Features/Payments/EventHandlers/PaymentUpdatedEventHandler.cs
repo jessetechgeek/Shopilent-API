@@ -8,7 +8,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class PaymentUpdatedEventHandler : INotificationHandler<DomainEventNotification<PaymentUpdatedEvent>>
+internal sealed  class PaymentUpdatedEventHandler : INotificationHandler<DomainEventNotification<PaymentUpdatedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentUpdatedEventHandler> _logger;
@@ -37,18 +37,18 @@ public class PaymentUpdatedEventHandler : INotificationHandler<DomainEventNotifi
         {
             // Clear payment cache
             await _cacheService.RemoveAsync($"payment-{domainEvent.PaymentId}", cancellationToken);
-            
+
             // Clear payment collections
             await _cacheService.RemoveByPatternAsync("payments-*", cancellationToken);
-            
+
             // Get payment details to clear more specific caches
             var payment = await _unitOfWork.PaymentReader.GetByIdAsync(domainEvent.PaymentId, cancellationToken);
-            
+
             if (payment != null)
             {
                 // Clear related order caches
                 await _cacheService.RemoveAsync($"order-{payment.OrderId}", cancellationToken);
-                
+
                 // If user is associated, clear user-related payment caches
                 if (payment.UserId.HasValue)
                 {
