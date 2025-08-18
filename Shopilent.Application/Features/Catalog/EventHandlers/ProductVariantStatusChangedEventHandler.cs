@@ -7,7 +7,7 @@ using Shopilent.Domain.Catalog.Events;
 
 namespace Shopilent.Application.Features.Catalog.EventHandlers;
 
-public class ProductVariantStatusChangedEventHandler : INotificationHandler<DomainEventNotification<ProductVariantStatusChangedEvent>>
+internal sealed  class ProductVariantStatusChangedEventHandler : INotificationHandler<DomainEventNotification<ProductVariantStatusChangedEvent>>
 {
     private readonly ILogger<ProductVariantStatusChangedEventHandler> _logger;
     private readonly ICacheService _cacheService;
@@ -28,16 +28,16 @@ public class ProductVariantStatusChangedEventHandler : INotificationHandler<Doma
         var domainEvent = notification.DomainEvent;
 
         _logger.LogInformation(
-            "Product variant status changed. ProductId: {ProductId}, VariantId: {VariantId}, IsActive: {IsActive}", 
-            domainEvent.ProductId, 
-            domainEvent.VariantId, 
+            "Product variant status changed. ProductId: {ProductId}, VariantId: {VariantId}, IsActive: {IsActive}",
+            domainEvent.ProductId,
+            domainEvent.VariantId,
             domainEvent.IsActive);
 
         // Invalidate product and variant caches
         await _cacheService.RemoveAsync($"product-{domainEvent.ProductId}", cancellationToken);
         await _cacheService.RemoveByPatternAsync($"variant-{domainEvent.VariantId}", cancellationToken);
         await _cacheService.RemoveByPatternAsync($"product-variants-{domainEvent.ProductId}", cancellationToken);
-        
+
         // Invalidate product listings
         await _cacheService.RemoveByPatternAsync("products-*", cancellationToken);
     }

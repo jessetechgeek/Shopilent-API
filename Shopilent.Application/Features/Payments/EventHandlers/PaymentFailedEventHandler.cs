@@ -10,7 +10,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class PaymentFailedEventHandler : INotificationHandler<DomainEventNotification<PaymentFailedEvent>>
+internal sealed  class PaymentFailedEventHandler : INotificationHandler<DomainEventNotification<PaymentFailedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentFailedEventHandler> _logger;

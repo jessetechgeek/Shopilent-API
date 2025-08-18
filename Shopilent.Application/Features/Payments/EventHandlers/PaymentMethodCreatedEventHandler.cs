@@ -9,7 +9,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class PaymentMethodCreatedEventHandler : INotificationHandler<DomainEventNotification<PaymentMethodCreatedEvent>>
+internal sealed  class PaymentMethodCreatedEventHandler : INotificationHandler<DomainEventNotification<PaymentMethodCreatedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentMethodCreatedEventHandler> _logger;
@@ -45,22 +45,22 @@ public class PaymentMethodCreatedEventHandler : INotificationHandler<DomainEvent
             await _cacheService.RemoveAsync($"payment-method-{domainEvent.PaymentMethodId}", cancellationToken);
             await _cacheService.RemoveByPatternAsync("payment-methods-*", cancellationToken);
             await _cacheService.RemoveByPatternAsync($"payment-methods-user-{domainEvent.UserId}", cancellationToken);
-            
+
             // Get user details
             var user = await _unitOfWork.UserReader.GetByIdAsync(domainEvent.UserId, cancellationToken);
-            
+
             if (user != null)
             {
                 // Get payment method details
                 var paymentMethod = await _unitOfWork.PaymentMethodReader.GetByIdAsync(domainEvent.PaymentMethodId, cancellationToken);
-                
+
                 if (paymentMethod != null)
                 {
                     // Notify the user about the added payment method
                     string subject = "New Payment Method Added";
                     string message = $"A new payment method ({paymentMethod.DisplayName}) has been added to your account. " +
                                      "If you did not perform this action, please contact our support team immediately.";
-                    
+
                     await _emailService.SendEmailAsync(user.Email, subject, message);
                 }
             }

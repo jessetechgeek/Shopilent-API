@@ -9,7 +9,7 @@ using Shopilent.Domain.Sales.Events;
 
 namespace Shopilent.Application.Features.Sales.EventHandlers;
 
-public class OrderPartiallyRefundedEventHandler : INotificationHandler<DomainEventNotification<OrderPartiallyRefundedEvent>>
+internal sealed  class OrderPartiallyRefundedEventHandler : INotificationHandler<DomainEventNotification<OrderPartiallyRefundedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrderPartiallyRefundedEventHandler> _logger;
@@ -35,8 +35,8 @@ public class OrderPartiallyRefundedEventHandler : INotificationHandler<DomainEve
     {
         var domainEvent = notification.DomainEvent;
 
-        _logger.LogInformation("Order partially refunded. OrderId: {OrderId}, Refund Amount: {Amount} {Currency}", 
-            domainEvent.OrderId, 
+        _logger.LogInformation("Order partially refunded. OrderId: {OrderId}, Refund Amount: {Amount} {Currency}",
+            domainEvent.OrderId,
             domainEvent.Amount.Amount,
             domainEvent.Amount.Currency);
 
@@ -44,13 +44,13 @@ public class OrderPartiallyRefundedEventHandler : INotificationHandler<DomainEve
         {
             // Get order details
             var order = await _unitOfWork.OrderReader.GetDetailByIdAsync(domainEvent.OrderId, cancellationToken);
-            
+
             if (order != null)
             {
                 // Clear caches
                 await _cacheService.RemoveAsync($"order-{domainEvent.OrderId}", cancellationToken);
                 await _cacheService.RemoveByPatternAsync("orders-*", cancellationToken);
-                
+
                 // If order has user, send partial refund notification email
                 if (order.UserId.HasValue)
                 {
@@ -61,12 +61,12 @@ public class OrderPartiallyRefundedEventHandler : INotificationHandler<DomainEve
                         string message = $"A partial refund of {domainEvent.Amount.Amount} {domainEvent.Amount.Currency} " +
                                          $"for order #{order.Id} has been processed. This amount will be " +
                                          $"credited back to your original payment method.";
-                        
+
                         if (!string.IsNullOrEmpty(domainEvent.Reason))
                         {
                             message += $"\n\nReason for refund: {domainEvent.Reason}";
                         }
-                        
+
                         await _emailService.SendEmailAsync(user.Email, subject, message);
                     }
                 }

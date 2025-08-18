@@ -7,7 +7,7 @@ using Shopilent.Domain.Catalog.Events;
 
 namespace Shopilent.Application.Features.Catalog.EventHandlers;
 
-public class
+internal sealed  class
     ProductVariantCreatedEventHandler : INotificationHandler<DomainEventNotification<ProductVariantCreatedEvent>>
 {
     private readonly ILogger<ProductVariantCreatedEventHandler> _logger;

@@ -9,7 +9,7 @@ using Shopilent.Domain.Identity.Events;
 
 namespace Shopilent.Application.Features.Identity.EventHandlers;
 
-public class UserLockedOutEventHandler : INotificationHandler<DomainEventNotification<UserLockedOutEvent>>
+internal sealed  class UserLockedOutEventHandler : INotificationHandler<DomainEventNotification<UserLockedOutEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserLockedOutEventHandler> _logger;

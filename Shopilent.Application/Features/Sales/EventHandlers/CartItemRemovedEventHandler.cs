@@ -8,7 +8,7 @@ using Shopilent.Domain.Sales.Events;
 
 namespace Shopilent.Application.Features.Sales.EventHandlers;
 
-public class CartItemRemovedEventHandler : INotificationHandler<DomainEventNotification<CartItemRemovedEvent>>
+internal sealed  class CartItemRemovedEventHandler : INotificationHandler<DomainEventNotification<CartItemRemovedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CartItemRemovedEventHandler> _logger;
@@ -39,10 +39,10 @@ public class CartItemRemovedEventHandler : INotificationHandler<DomainEventNotif
         {
             // Clear cart cache
             await _cacheService.RemoveAsync($"cart-{domainEvent.CartId}", cancellationToken);
-            
+
             // Get cart to check for user association
             var cart = await _unitOfWork.CartReader.GetByIdAsync(domainEvent.CartId, cancellationToken);
-            
+
             if (cart != null && cart.UserId.HasValue)
             {
                 // Clear user cart cache

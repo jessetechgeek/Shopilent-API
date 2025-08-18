@@ -8,7 +8,7 @@ using Shopilent.Domain.Catalog.Events;
 
 namespace Shopilent.Application.Features.Catalog.EventHandlers;
 
-public class ProductCategoryRemovedEventHandler : INotificationHandler<DomainEventNotification<ProductCategoryRemovedEvent>>
+internal sealed  class ProductCategoryRemovedEventHandler : INotificationHandler<DomainEventNotification<ProductCategoryRemovedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ProductCategoryRemovedEventHandler> _logger;
@@ -39,10 +39,10 @@ public class ProductCategoryRemovedEventHandler : INotificationHandler<DomainEve
         {
             // Invalidate product cache
             await _cacheService.RemoveAsync($"product-{domainEvent.ProductId}", cancellationToken);
-            
+
             // Invalidate category product lists
             await _cacheService.RemoveByPatternAsync($"category-products-{domainEvent.CategoryId}", cancellationToken);
-            
+
             // Invalidate product collections that might include this product
             await _cacheService.RemoveByPatternAsync("products-*", cancellationToken);
         }

@@ -8,7 +8,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class PaymentSucceededEventHandler : INotificationHandler<DomainEventNotification<PaymentSucceededEvent>>
+internal sealed  class PaymentSucceededEventHandler : INotificationHandler<DomainEventNotification<PaymentSucceededEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentSucceededEventHandler> _logger;

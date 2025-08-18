@@ -8,7 +8,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class DefaultPaymentMethodChangedEventHandler : INotificationHandler<DomainEventNotification<DefaultPaymentMethodChangedEvent>>
+internal sealed  class DefaultPaymentMethodChangedEventHandler : INotificationHandler<DomainEventNotification<DefaultPaymentMethodChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DefaultPaymentMethodChangedEventHandler> _logger;
@@ -39,7 +39,7 @@ public class DefaultPaymentMethodChangedEventHandler : INotificationHandler<Doma
         {
             // Clear default payment method cache
             await _cacheService.RemoveByPatternAsync($"default-payment-method-{domainEvent.UserId}", cancellationToken);
-            
+
             // Clear all user payment methods cache as the default flag has changed
             await _cacheService.RemoveByPatternAsync($"payment-methods-user-{domainEvent.UserId}", cancellationToken);
         }

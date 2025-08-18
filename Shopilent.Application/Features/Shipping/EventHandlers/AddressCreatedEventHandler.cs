@@ -8,7 +8,7 @@ using Shopilent.Domain.Shipping.Events;
 
 namespace Shopilent.Application.Features.Shipping.EventHandlers;
 
-public class AddressCreatedEventHandler : INotificationHandler<DomainEventNotification<AddressCreatedEvent>>
+internal sealed class AddressCreatedEventHandler : INotificationHandler<DomainEventNotification<AddressCreatedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AddressCreatedEventHandler> _logger;
@@ -42,14 +42,14 @@ public class AddressCreatedEventHandler : INotificationHandler<DomainEventNotifi
             await _cacheService.RemoveByPatternAsync("address-*", cancellationToken);
             await _cacheService.RemoveByPatternAsync($"user-addresses-{domainEvent.UserId}", cancellationToken);
             await _cacheService.RemoveByPatternAsync($"default-address-*-{domainEvent.UserId}", cancellationToken);
-            
+
             // Get address details to check if it's a default address
             var address = await _unitOfWork.AddressReader.GetByIdAsync(domainEvent.AddressId, cancellationToken);
-            
+
             if (address != null && address.IsDefault)
             {
                 // If it's a default address, clear specific default address caches
-                await _cacheService.RemoveByPatternAsync($"default-address-{address.AddressType}-{domainEvent.UserId}", 
+                await _cacheService.RemoveByPatternAsync($"default-address-{address.AddressType}-{domainEvent.UserId}",
                     cancellationToken);
             }
         }

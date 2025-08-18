@@ -8,7 +8,7 @@ using Shopilent.Domain.Sales.Events;
 
 namespace Shopilent.Application.Features.Sales.EventHandlers;
 
-public class OrderItemUpdatedEventHandler : INotificationHandler<DomainEventNotification<OrderItemUpdatedEvent>>
+internal sealed  class OrderItemUpdatedEventHandler : INotificationHandler<DomainEventNotification<OrderItemUpdatedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrderItemUpdatedEventHandler> _logger;
@@ -39,16 +39,16 @@ public class OrderItemUpdatedEventHandler : INotificationHandler<DomainEventNoti
         {
             // Clear order cache
             await _cacheService.RemoveAsync($"order-{domainEvent.OrderId}", cancellationToken);
-            
+
             // Clear order item cache
             await _cacheService.RemoveAsync($"order-item-{domainEvent.OrderItemId}", cancellationToken);
-            
+
             // Clear order items collection cache
             await _cacheService.RemoveByPatternAsync($"order-items-{domainEvent.OrderId}", cancellationToken);
-            
+
             // Get order details
             var order = await _unitOfWork.OrderReader.GetDetailByIdAsync(domainEvent.OrderId, cancellationToken);
-            
+
             if (order != null && order.UserId.HasValue)
             {
                 // Clear user orders cache

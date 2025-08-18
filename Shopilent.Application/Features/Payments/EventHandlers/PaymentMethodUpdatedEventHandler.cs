@@ -8,7 +8,7 @@ using Shopilent.Domain.Payments.Events;
 
 namespace Shopilent.Application.Features.Payments.EventHandlers;
 
-public class PaymentMethodUpdatedEventHandler : INotificationHandler<DomainEventNotification<PaymentMethodUpdatedEvent>>
+internal sealed  class PaymentMethodUpdatedEventHandler : INotificationHandler<DomainEventNotification<PaymentMethodUpdatedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PaymentMethodUpdatedEventHandler> _logger;
@@ -31,14 +31,14 @@ public class PaymentMethodUpdatedEventHandler : INotificationHandler<DomainEvent
     {
         var domainEvent = notification.DomainEvent;
 
-        _logger.LogInformation("Payment method updated. PaymentMethodId: {PaymentMethodId}", 
+        _logger.LogInformation("Payment method updated. PaymentMethodId: {PaymentMethodId}",
             domainEvent.PaymentMethodId);
 
         try
         {
             // Get payment method details to get user ID
             var paymentMethod = await _unitOfWork.PaymentMethodReader.GetByIdAsync(domainEvent.PaymentMethodId, cancellationToken);
-            
+
             if (paymentMethod != null)
             {
                 // Clear payment method caches

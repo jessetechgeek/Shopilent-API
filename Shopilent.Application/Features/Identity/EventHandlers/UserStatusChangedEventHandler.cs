@@ -9,7 +9,7 @@ using Shopilent.Domain.Identity.Events;
 
 namespace Shopilent.Application.Features.Identity.EventHandlers;
 
-public class UserStatusChangedEventHandler : INotificationHandler<DomainEventNotification<UserStatusChangedEvent>>
+internal sealed  class UserStatusChangedEventHandler : INotificationHandler<DomainEventNotification<UserStatusChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserStatusChangedEventHandler> _logger;
@@ -35,8 +35,8 @@ public class UserStatusChangedEventHandler : INotificationHandler<DomainEventNot
     {
         var domainEvent = notification.DomainEvent;
 
-        _logger.LogInformation("User status changed. UserId: {UserId}, IsActive: {IsActive}", 
-            domainEvent.UserId, 
+        _logger.LogInformation("User status changed. UserId: {UserId}, IsActive: {IsActive}",
+            domainEvent.UserId,
             domainEvent.IsActive);
 
         try
@@ -44,10 +44,10 @@ public class UserStatusChangedEventHandler : INotificationHandler<DomainEventNot
             // Clear user caches
             await _cacheService.RemoveAsync($"user-{domainEvent.UserId}", cancellationToken);
             await _cacheService.RemoveByPatternAsync("users-*", cancellationToken);
-            
+
             // Get user details
             var user = await _unitOfWork.UserReader.GetByIdAsync(domainEvent.UserId, cancellationToken);
-            
+
             if (user != null)
             {
                 if (domainEvent.IsActive)
@@ -58,7 +58,7 @@ public class UserStatusChangedEventHandler : INotificationHandler<DomainEventNot
                                      $"Your account on Shopilent has been activated. You can now log in and use all features of our platform.\n\n" +
                                      $"If you have any questions, please contact our support team.\n\n" +
                                      $"The Shopilent Team";
-                    
+
                     await _emailService.SendEmailAsync(user.Email, subject, message);
                 }
                 else
@@ -70,9 +70,9 @@ public class UserStatusChangedEventHandler : INotificationHandler<DomainEventNot
                                      $"If you believe this is an error or would like to reactivate your account, " +
                                      $"please contact our support team.\n\n" +
                                      $"The Shopilent Team";
-                    
+
                     await _emailService.SendEmailAsync(user.Email, subject, message);
-                    
+
                     // Revoke all active refresh tokens for this user
                     var refreshTokens = await _unitOfWork.RefreshTokenReader.GetActiveTokensAsync(domainEvent.UserId, cancellationToken);
                     if (refreshTokens != null && refreshTokens.Count > 0)
@@ -87,7 +87,7 @@ public class UserStatusChangedEventHandler : INotificationHandler<DomainEventNot
                                 await _unitOfWork.RefreshTokenWriter.UpdateAsync(refreshToken, cancellationToken);
                             }
                         }
-                        
+
                         // Save changes to persist token revocations
                         await _unitOfWork.SaveChangesAsync(cancellationToken);
                     }

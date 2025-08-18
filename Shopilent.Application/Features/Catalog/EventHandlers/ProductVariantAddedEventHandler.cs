@@ -8,7 +8,7 @@ using Shopilent.Domain.Catalog.Events;
 
 namespace Shopilent.Application.Features.Catalog.EventHandlers;
 
-public class ProductVariantAddedEventHandler : INotificationHandler<DomainEventNotification<ProductVariantAddedEvent>>
+internal sealed  class ProductVariantAddedEventHandler : INotificationHandler<DomainEventNotification<ProductVariantAddedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ProductVariantAddedEventHandler> _logger;
@@ -42,13 +42,13 @@ public class ProductVariantAddedEventHandler : INotificationHandler<DomainEventN
 
             // Invalidate any product variants collection cache
             await _cacheService.RemoveByPatternAsync($"product-variants-{domainEvent.ProductId}", cancellationToken);
-            
+
             // Invalidate product listings that might be affected by the new variant
             await _cacheService.RemoveByPatternAsync("products-*", cancellationToken);
-            
+
             // Get the product to check if it has other variants
             var product = await _unitOfWork.ProductReader.GetDetailByIdAsync(domainEvent.ProductId, cancellationToken);
-            
+
             if (product != null)
             {
                 // If this is the first variant, it might affect product filtering/display in category pages
