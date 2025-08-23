@@ -128,3 +128,5 @@ jobs:
       env:
         # Test environment variables for integration tests
         DOTNET_ENVIRONMENT: Testing
+        # Ensure GITHUB_ACTIONS is set for CI detection
+        GITHUB_ACTIONS: true

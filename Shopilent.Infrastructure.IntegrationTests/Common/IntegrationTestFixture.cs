@@ -59,14 +59,21 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         // Check if running in CI environment (GitHub Actions)
         var isRunningInCI = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+        Console.WriteLine($"[DEBUG] IsRunningInCI: {isRunningInCI}");
+        Console.WriteLine($"[DEBUG] GITHUB_ACTIONS env var: {Environment.GetEnvironmentVariable("GITHUB_ACTIONS")}");
         
         if (!isRunningInCI)
         {
+            Console.WriteLine("[DEBUG] Starting testcontainers for local development");
             // Start testcontainers for local development
             await PostgreSqlContainer.StartAsync();
             await RedisContainer.StartAsync();
             await MinioContainer.StartAsync();
             await MeilisearchContainer.StartAsync();
+        }
+        else
+        {
+            Console.WriteLine("[DEBUG] Using GitHub Actions service containers");
         }
 
         await ConfigureSettings();
@@ -183,6 +190,9 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     private async Task InitializeDatabase()
     {
+        var connectionString = Configuration.GetConnectionString("DefaultConnection");
+        Console.WriteLine($"[DEBUG] Database connection string: {connectionString}");
+        
         var services = new ServiceCollection();
         services.AddSingleton(Configuration);
         services.AddLogging(builder =>
@@ -191,7 +201,6 @@ public class IntegrationTestFixture : IAsyncLifetime
             builder.SetMinimumLevel(LogLevel.Warning);
         });
 
-        var connectionString = Configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
@@ -201,7 +210,28 @@ public class IntegrationTestFixture : IAsyncLifetime
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
+        Console.WriteLine("[DEBUG] Running database migrations...");
         await dbContext.Database.MigrateAsync();
+        Console.WriteLine("[DEBUG] Database migrations completed");
+        
+        // Check if tables exist
+        try
+        {
+            var tableCount = await dbContext.Database.ExecuteSqlRawAsync("SELECT 1"); // Simple connection test
+            Console.WriteLine("[DEBUG] Database connection successful");
+            
+            // Get table count using a proper query
+            using var connection = dbContext.Database.GetDbConnection();
+            await connection.OpenAsync();
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'";
+            var count = await command.ExecuteScalarAsync();
+            Console.WriteLine($"[DEBUG] Number of tables found: {count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DEBUG] Error checking tables: {ex.Message}");
+        }
     }
 
     private async Task InitializeRespawner()
