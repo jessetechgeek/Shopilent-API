@@ -55,21 +55,6 @@ jobs:
         ports:
           - 6379:6379
 
-      minio:
-        image: minio/minio:latest
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin123
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
-          --health-interval 30s
-          --health-timeout 20s
-          --health-retries 3
-          --entrypoint "sh"
-        ports:
-          - 9000:9000
-        volumes:
-          - /tmp/minio-data:/data
 
       meilisearch:
         image: getmeili/meilisearch:v1.10
@@ -103,10 +88,21 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
-    - name: Setup MinIO bucket
+    - name: Setup MinIO
       run: |
-        # Wait for MinIO to be ready and create bucket
-        sleep 10
+        # Start MinIO server in background
+        mkdir -p /tmp/minio-data
+        docker run -d --name minio \
+          -p 9000:9000 \
+          -e MINIO_ROOT_USER=minioadmin \
+          -e MINIO_ROOT_PASSWORD=minioadmin123 \
+          -v /tmp/minio-data:/data \
+          minio/minio server /data
+        
+        # Wait for MinIO to be ready
+        timeout 60 bash -c 'until curl -f http://localhost:9000/minio/health/live; do sleep 2; done'
+        
+        # Create test bucket
         docker run --rm --network host --entrypoint /bin/sh minio/mc:latest -c "
           mc alias set minio http://localhost:9000 minioadmin minioadmin123 &&
           mc mb minio/test-bucket --ignore-existing
