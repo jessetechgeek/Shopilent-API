@@ -11,4 +11,16 @@ public class EmailSettings
     public bool EnableSsl { get; set; } = true;
     public bool SendEmails { get; set; } = true;
     public string AppUrl { get; set; } = "https://shopilent.com";
+    
+    // Connection settings
+    public int ConnectionTimeoutSeconds { get; set; } = 30;
+    public int SendTimeoutSeconds { get; set; } = 30;
+    public bool UseSslOnConnect { get; set; } = false;
+    
+    // OAuth2 settings (future use)
+    public string? OAuth2ClientId { get; set; }
+    public string? OAuth2ClientSecret { get; set; }
+    public string? OAuth2RefreshToken { get; set; }
+    public string? OAuth2AccessToken { get; set; }
+    public bool UseOAuth2 { get; set; } = false;
 }
