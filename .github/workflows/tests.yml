@@ -7,126 +7,27 @@ on:
     branches: [ main, master ]
 
 jobs:
-  unit-tests:
+  test:
     runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
-        
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Build
-      run: dotnet build --no-restore
-      
-    - name: Run Unit Tests
-      run: dotnet test --no-build --verbosity normal --filter "FullyQualifiedName~UnitTests"
-
-  integration-tests:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: shopilent_integration_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-
-      meilisearch:
-        image: getmeili/meilisearch:v1.10
-        env:
-          MEILI_MASTER_KEY: test-master-key
-          MEILI_ENV: development
-        options: >-
-          --health-cmd "curl -f http://localhost:7700/health"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 7700:7700
 
     env:
       STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
       STRIPE_TEST_PUBLISHABLE_KEY: ${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
       STRIPE_TEST_WEBHOOK_SECRET: ${{ secrets.STRIPE_TEST_WEBHOOK_SECRET }}
-      # Override connection strings for GitHub Actions services
-      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
-      ConnectionStrings__PostgreSql: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
-      Redis__ConnectionString: "localhost:6379"
-      MinIO__Endpoint: "localhost:9000"
-      Meilisearch__Url: "http://localhost:7700"
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
 
-    - name: Install EF Core CLI
-      run: dotnet tool install --global dotnet-ef
-
-    - name: Setup MinIO
-      run: |
-        # Start MinIO server in background
-        mkdir -p /tmp/minio-data
-        docker run -d --name minio \
-          -p 9000:9000 \
-          -e MINIO_ROOT_USER=minioadmin \
-          -e MINIO_ROOT_PASSWORD=minioadmin123 \
-          -v /tmp/minio-data:/data \
-          minio/minio server /data
-        
-        # Wait for MinIO to be ready
-        timeout 60 bash -c 'until curl -f http://localhost:9000/minio/health/live; do sleep 2; done'
-        
-        # Create test bucket
-        docker run --rm --network host --entrypoint /bin/sh minio/mc:latest -c "
-          mc alias set minio http://localhost:9000 minioadmin minioadmin123 &&
-          mc mb minio/test-bucket --ignore-existing
-        "
-        
     - name: Restore dependencies
       run: dotnet restore
-      
+
     - name: Build
       run: dotnet build --no-restore
-      
-    - name: Apply EF Core Migrations
-      run: dotnet ef database update --project Shopilent.Infrastructure.Persistence.PostgreSQL --startup-project Shopilent.API
-      env:
-        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
-        ConnectionStrings__PostgreSql: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
-      
-    - name: Run Integration Tests
-      run: dotnet test --no-build --verbosity normal --filter "FullyQualifiedName~IntegrationTests"
-      env:
-        # Test environment variables for integration tests
-        DOTNET_ENVIRONMENT: Testing
-        # Ensure GITHUB_ACTIONS is set for CI detection
-        GITHUB_ACTIONS: true
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
