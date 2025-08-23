@@ -34,8 +34,8 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: shopilent_integration_test
         options: >-
           --health-cmd pg_isready
@@ -74,8 +74,8 @@ jobs:
       STRIPE_TEST_PUBLISHABLE_KEY: ${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
       STRIPE_TEST_WEBHOOK_SECRET: ${{ secrets.STRIPE_TEST_WEBHOOK_SECRET }}
       # Override connection strings for GitHub Actions services
-      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=testuser;Password=testpassword"
-      ConnectionStrings__PostgreSql: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=testuser;Password=testpassword"
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
+      ConnectionStrings__PostgreSql: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
       Redis__ConnectionString: "localhost:6379"
       MinIO__Endpoint: "localhost:9000"
       Meilisearch__Url: "http://localhost:7700"
@@ -120,8 +120,8 @@ jobs:
     - name: Apply EF Core Migrations
       run: dotnet ef database update --project Shopilent.Infrastructure.Persistence.PostgreSQL --startup-project Shopilent.API
       env:
-        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=testuser;Password=testpassword"
-        ConnectionStrings__PostgreSql: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=testuser;Password=testpassword"
+        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
+        ConnectionStrings__PostgreSql: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres"
       
     - name: Run Integration Tests
       run: dotnet test --no-build --verbosity normal --filter "FullyQualifiedName~IntegrationTests"
