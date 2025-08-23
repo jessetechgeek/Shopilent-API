@@ -9,4 +9,3 @@ riderModule.iml
 .env
 *.DotSettings*
 logs
-Migrations
