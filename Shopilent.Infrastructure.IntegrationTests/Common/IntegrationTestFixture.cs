@@ -57,10 +57,17 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await PostgreSqlContainer.StartAsync();
-        await RedisContainer.StartAsync();
-        await MinioContainer.StartAsync();
-        await MeilisearchContainer.StartAsync();
+        // Check if running in CI environment (GitHub Actions)
+        var isRunningInCI = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+        
+        if (!isRunningInCI)
+        {
+            // Start testcontainers for local development
+            await PostgreSqlContainer.StartAsync();
+            await RedisContainer.StartAsync();
+            await MinioContainer.StartAsync();
+            await MeilisearchContainer.StartAsync();
+        }
 
         await ConfigureSettings();
         await InitializeDatabase();
@@ -69,12 +76,47 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     private Task ConfigureSettings()
     {
-        var configurationBuilder = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+        var isRunningInCI = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+        
+        var configValues = new Dictionary<string, string?>();
+        
+        if (isRunningInCI)
+        {
+            // Use GitHub Actions service containers
+            configValues = new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] = "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres",
+                ["ConnectionStrings:PostgreSql"] = "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=postgres;Password=postgres",
+                ["ConnectionStrings:PostgreSqlReadReplicas"] = "",
+                ["Redis:ConnectionString"] = "localhost:6379",
+                ["Redis:InstanceName"] = "IntegrationTest",
+                ["MinIO:Endpoint"] = "localhost:9000",
+                ["MinIO:AccessKey"] = "minioadmin",
+                ["MinIO:SecretKey"] = "minioadmin123",
+                ["MinIO:BucketName"] = "test-bucket",
+                ["MinIO:UseSSL"] = "false",
+                ["S3:Provider"] = "MinIO",
+                ["S3:AccessKey"] = "minioadmin",
+                ["S3:SecretKey"] = "minioadmin123",
+                ["S3:Region"] = "us-east-1",
+                ["S3:DefaultBucket"] = "test-bucket",
+                ["S3:ServiceUrl"] = "http://localhost:9000",
+                ["S3:ForcePathStyle"] = "true",
+                ["S3:UseSsl"] = "false",
+                ["Meilisearch:Url"] = "http://localhost:7700",
+                ["Meilisearch:ApiKey"] = "test-master-key",
+                ["Meilisearch:Indexes:Products"] = "products_test",
+                ["Meilisearch:BatchSize"] = "100",
+                ["Seq:ServerUrl"] = null, // Disable Seq in CI
+            };
+        }
+        else
+        {
+            // Use testcontainers for local development
+            configValues = new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = PostgreSqlContainer.GetConnectionString(),
                 ["ConnectionStrings:PostgreSql"] = PostgreSqlContainer.GetConnectionString(),
-                // Explicitly set empty read replicas array to force using write connection for reads
                 ["ConnectionStrings:PostgreSqlReadReplicas"] = "",
                 ["Redis:ConnectionString"] = RedisContainer.GetConnectionString(),
                 ["Redis:InstanceName"] = "IntegrationTest",
@@ -91,37 +133,49 @@ public class IntegrationTestFixture : IAsyncLifetime
                 ["S3:ServiceUrl"] = MinioContainer.GetConnectionString(),
                 ["S3:ForcePathStyle"] = "true",
                 ["S3:UseSsl"] = "false",
-                ["Jwt:Secret"] = "test-jwt-key-for-integration-tests-with-minimum-256-bits-length",
-                ["Jwt:Issuer"] = "TestIssuer",
-                ["Jwt:Audience"] = "TestAudience",
-                ["Jwt:TokenLifetimeMinutes"] = "30",
-                ["Jwt:RefreshTokenLifetimeDays"] = "7",
-                ["Email:SenderEmail"] = "test@shopilent.com",
-                ["Email:SenderName"] = "Shopilent Test",
-                ["Email:SmtpServer"] = "localhost",
-                ["Email:SmtpPort"] = "587",
-                ["Email:SmtpUsername"] = "testuser",
-                ["Email:SmtpPassword"] = "testpass",
-                ["Email:EnableSsl"] = "false",
-                ["Email:SendEmails"] = "false",
-                ["Email:AppUrl"] = "https://test.shopilent.com",
-                ["Outbox:ProcessingIntervalSeconds"] = "30",
-                ["Outbox:MaxRetryAttempts"] = "3",
-                ["Outbox:BatchSize"] = "10",
-                // MeiliSearch configuration for integration tests
                 ["Meilisearch:Url"] = $"http://localhost:{MeilisearchContainer.GetMappedPublicPort(7700)}",
                 ["Meilisearch:ApiKey"] = "test-master-key",
                 ["Meilisearch:Indexes:Products"] = "products_test",
                 ["Meilisearch:BatchSize"] = "100",
-                // Disable Seq logging for integration tests
-                ["Seq:ServerUrl"] = null,
-                // Stripe test configuration
-                ["Stripe:SecretKey"] = "sk_test_integration_test_key",
-                ["Stripe:PublishableKey"] = "pk_test_integration_test_key",
-                ["Stripe:WebhookSecret"] = "whsec_test_integration_webhook_secret",
-                ["Stripe:ApiVersion"] = "2025-06-30",
-                ["Stripe:EnableTestMode"] = "true"
-            });
+                ["Seq:ServerUrl"] = null, // Disable Seq in integration tests
+            };
+        }
+        
+        // Common configuration for both environments
+        var commonConfig = new Dictionary<string, string?>
+        {
+            ["Jwt:Secret"] = "test-jwt-key-for-integration-tests-with-minimum-256-bits-length",
+            ["Jwt:Issuer"] = "TestIssuer",
+            ["Jwt:Audience"] = "TestAudience",
+            ["Jwt:TokenLifetimeMinutes"] = "30",
+            ["Jwt:RefreshTokenLifetimeDays"] = "7",
+            ["Email:SenderEmail"] = "test@shopilent.com",
+            ["Email:SenderName"] = "Shopilent Test",
+            ["Email:SmtpServer"] = "localhost",
+            ["Email:SmtpPort"] = "587",
+            ["Email:SmtpUsername"] = "testuser",
+            ["Email:SmtpPassword"] = "testpass",
+            ["Email:EnableSsl"] = "false",
+            ["Email:SendEmails"] = "false",
+            ["Email:AppUrl"] = "https://test.shopilent.com",
+            ["Outbox:ProcessingIntervalSeconds"] = "30",
+            ["Outbox:MaxRetryAttempts"] = "3",
+            ["Outbox:BatchSize"] = "10",
+            ["Stripe:SecretKey"] = "sk_test_integration_test_key",
+            ["Stripe:PublishableKey"] = "pk_test_integration_test_key",
+            ["Stripe:WebhookSecret"] = "whsec_test_integration_webhook_secret",
+            ["Stripe:ApiVersion"] = "2025-06-30",
+            ["Stripe:EnableTestMode"] = "true"
+        };
+        
+        // Merge environment-specific and common configuration
+        foreach (var kvp in commonConfig)
+        {
+            configValues[kvp.Key] = kvp.Value;
+        }
+
+        var configurationBuilder = new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues);
 
         Configuration = configurationBuilder.Build();
         return Task.CompletedTask;
@@ -137,9 +191,10 @@ public class IntegrationTestFixture : IAsyncLifetime
             builder.SetMinimumLevel(LogLevel.Warning);
         });
 
+        var connectionString = Configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(PostgreSqlContainer.GetConnectionString());
+            options.UseNpgsql(connectionString);
         });
 
         using var serviceProvider = services.BuildServiceProvider();
@@ -151,7 +206,8 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     private async Task InitializeRespawner()
     {
-        using var connection = new NpgsqlConnection(PostgreSqlContainer.GetConnectionString());
+        var connectionString = Configuration.GetConnectionString("DefaultConnection");
+        using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
         
         _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
@@ -163,7 +219,8 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     public async Task ResetDatabaseAsync()
     {
-        using var connection = new NpgsqlConnection(PostgreSqlContainer.GetConnectionString());
+        var connectionString = Configuration.GetConnectionString("DefaultConnection");
+        using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
         await _respawner.ResetAsync(connection);
     }
