@@ -65,9 +65,11 @@ jobs:
           --health-interval 30s
           --health-timeout 20s
           --health-retries 3
+          --entrypoint "sh"
         ports:
           - 9000:9000
-          - 9001:9001
+        volumes:
+          - /tmp/minio-data:/data
 
       meilisearch:
         image: getmeili/meilisearch:v1.10
