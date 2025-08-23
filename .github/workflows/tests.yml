@@ -88,6 +88,9 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
+    - name: Install EF Core CLI
+      run: dotnet tool install --global dotnet-ef
+
     - name: Setup MinIO
       run: |
         # Start MinIO server in background
@@ -118,6 +121,7 @@ jobs:
       run: dotnet ef database update --project Shopilent.Infrastructure.Persistence.PostgreSQL --startup-project Shopilent.API
       env:
         ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=testuser;Password=testpassword"
+        ConnectionStrings__PostgreSql: "Host=localhost;Port=5432;Database=shopilent_integration_test;Username=testuser;Password=testpassword"
       
     - name: Run Integration Tests
       run: dotnet test --no-build --verbosity normal --filter "FullyQualifiedName~IntegrationTests"
