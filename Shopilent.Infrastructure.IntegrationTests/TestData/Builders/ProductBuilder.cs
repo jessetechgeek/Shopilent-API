@@ -12,6 +12,7 @@ public class ProductBuilder
     private Money _price;
     private Slug _slug;
     private bool _isActive;
+    private bool _slugExplicitlySet;
     private readonly List<int> _categoryIds;
     private readonly List<ProductImage> _images;
 
@@ -23,6 +24,7 @@ public class ProductBuilder
         _price = Money.Create(Math.Round(faker.Random.Decimal(10, 1000), 2), "USD").Value;
         _slug = Slug.Create(_name.ToLower().Replace(" ", "-")).Value;
         _isActive = true;
+        _slugExplicitlySet = false;
         _categoryIds = new List<int>();
         _images = new List<ProductImage>();
     }
@@ -30,6 +32,10 @@ public class ProductBuilder
     public ProductBuilder WithName(string name)
     {
         _name = name;
+        if (!_slugExplicitlySet)
+        {
+            _slug = Slug.Create(_name.ToLower().Replace(" ", "-")).Value;
+        }
         return this;
     }
 
@@ -48,6 +54,7 @@ public class ProductBuilder
     public ProductBuilder WithSlug(string slug)
     {
         _slug = Slug.Create(slug).Value;
+        _slugExplicitlySet = true;
         return this;
     }
 
@@ -113,7 +120,9 @@ public class ProductBuilder
         
         for (int i = 0; i < count; i++)
         {
-            products.Add(Random().Build());
+            var faker = new Faker();
+            var uniqueName = $"{faker.Commerce.ProductName()} {i + 1}";
+            products.Add(Random().WithName(uniqueName).Build());
         }
         
         return products;
