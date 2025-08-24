@@ -7,9 +7,8 @@ using Shopilent.Application.Features.Administration.Commands.RebuildSearchIndex.
 using Shopilent.Application.UnitTests.Common;
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Common.Results;
-using Xunit;
 
-namespace Shopilent.Application.UnitTests.Features.Administration.Commands;
+namespace Shopilent.Application.UnitTests.Features.Administration.Commands.V1;
 
 public class RebuildSearchIndexCommandV1Tests : TestBase
 {
