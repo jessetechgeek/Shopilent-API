@@ -30,6 +30,7 @@ public class ProductBuilder
     public ProductBuilder WithName(string name)
     {
         _name = name;
+        _slug = Slug.Create(_name.ToLower().Replace(" ", "-")).Value;
         return this;
     }
 
@@ -113,7 +114,9 @@ public class ProductBuilder
         
         for (int i = 0; i < count; i++)
         {
-            products.Add(Random().Build());
+            var faker = new Faker();
+            var uniqueName = $"{faker.Commerce.ProductName()} {i + 1}";
+            products.Add(Random().WithName(uniqueName).Build());
         }
         
         return products;
