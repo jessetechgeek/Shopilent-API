@@ -4,9 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Shopilent.Application.Features.Administration.Commands.ClearAllCache.V1;
 using Shopilent.Application.UnitTests.Common;
-using Xunit;
 
-namespace Shopilent.Application.UnitTests.Features.Administration.Commands;
+namespace Shopilent.Application.UnitTests.Features.Administration.Commands.V1;
 
 public class ClearAllCacheCommandV1Tests : TestBase
 {
