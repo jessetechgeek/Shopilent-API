@@ -31,7 +31,7 @@ builder.Services.AddSingleton<IFilterEncodingService, FilterEncodingService>();
 
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(Shopilent.API.Program).Assembly);
 });
 
 builder.Services.AddFastEndpoints();
@@ -68,10 +68,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapHealthChecks("health", new HealthCheckOptions
-{
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+app.MapHealthChecks("health", new HealthCheckOptions { ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse });
 
 app.UseCors();
 
@@ -86,3 +83,8 @@ app.UseFastEndpoints(config =>
 );
 
 app.Run();
+
+namespace Shopilent.API
+{
+    public partial class Program;
+}
