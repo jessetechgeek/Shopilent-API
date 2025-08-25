@@ -23,6 +23,7 @@ public class RegisterEndpointV1 : Endpoint<RegisterRequestV1, ApiResponse<Regist
             .WithName("Register")
             .Produces<ApiResponse<RegisterResponseV1>>(StatusCodes.Status201Created)
             .Produces<ApiResponse<RegisterResponseV1>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse<RegisterResponseV1>>(StatusCodes.Status409Conflict)
             .WithTags("Identity"));
     }
 
@@ -37,6 +38,7 @@ public class RegisterEndpointV1 : Endpoint<RegisterRequestV1, ApiResponse<Regist
             await SendAsync(errorResponse, errorResponse.StatusCode, ct);
             return;
         }
+
         // Map the request to command
         var command = new RegisterCommandV1
         {
@@ -52,17 +54,33 @@ public class RegisterEndpointV1 : Endpoint<RegisterRequestV1, ApiResponse<Regist
 
         if (result.IsFailure)
         {
+            int statusCode;
+            switch (result.Error?.Code)
+            {
+                case "User.EmailAlreadyExists":
+                case "User.PhoneAlreadyExists":
+                    statusCode = StatusCodes.Status409Conflict;
+                    break;
+                case var code when result.Error.Type == ErrorType.Validation:
+                    statusCode = StatusCodes.Status400BadRequest;
+                    break;
+                case var code when result.Error.Type == ErrorType.Unauthorized:
+                    statusCode = StatusCodes.Status401Unauthorized;
+                    break;
+                default:
+                    statusCode = StatusCodes.Status500InternalServerError;
+                    break;
+            }
+
             var errorResponse = new ApiResponse<RegisterResponseV1>
             {
                 Succeeded = false,
                 Message = result.Error.Message,
-                StatusCode = result.Error.Type == ErrorType.Validation
-                    ? StatusCodes.Status400BadRequest
-                    : StatusCodes.Status500InternalServerError,
+                StatusCode = statusCode,
                 Errors = new[] { result.Error.Message }
             };
 
-            await SendAsync(errorResponse, errorResponse.StatusCode, ct);
+            await SendAsync(errorResponse, statusCode, ct);
             return;
         }
 
