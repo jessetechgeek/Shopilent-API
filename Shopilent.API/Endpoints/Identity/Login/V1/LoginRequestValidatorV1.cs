@@ -10,9 +10,9 @@ public class LoginRequestValidatorV1 : Validator<LoginRequestV1>
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Email is not valid.");
+            .MaximumLength(255).EmailAddress().WithMessage("Email is not valid.");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required.");
+            .MaximumLength(255).NotEmpty().WithMessage("Password is required.");
     }
 }
