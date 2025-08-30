@@ -4,6 +4,10 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Context;
 using Shopilent.API.Common.Models;
+using MediatR;
+using Shopilent.Application.Features.Identity.Commands.Register.V1;
+using Shopilent.Application.Features.Identity.Commands.ChangeUserRole.V1;
+using Shopilent.Domain.Identity.Enums;
 
 namespace Shopilent.API.IntegrationTests.Common;
 
@@ -203,16 +207,64 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
 
     protected async Task EnsureAdminUserExistsAsync()
     {
-        var registerRequest = new
+        using var scope = Factory.Services.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+        // First check if admin user already exists with proper role
+        var existingUser = await ExecuteDbContextAsync(async context =>
+        {
+            var user = context.Users.FirstOrDefault(u => u.Email.Value == "admin@shopilent.com");
+            return user;
+        });
+
+        if (existingUser != null)
+        {
+            // User exists, ensure they have admin role
+            if (existingUser.Role != UserRole.Admin)
+            {
+                var changeRoleCommand = new ChangeUserRoleCommandV1
+                {
+                    UserId = existingUser.Id,
+                    NewRole = UserRole.Admin
+                };
+
+                await mediator.Send(changeRoleCommand);
+            }
+            return;
+        }
+
+        // Create new admin user using register command
+        var registerCommand = new RegisterCommandV1
         {
             Email = "admin@shopilent.com",
             Password = "Admin123!",
             FirstName = "Admin",
-            LastName = "User"
+            LastName = "User",
+            Phone = "",
+            IpAddress = "127.0.0.1",
+            UserAgent = "Integration Test"
         };
 
-        var response = await PostAsync("v1/auth/register", registerRequest);
-        // Ignore if user already exists (409 Conflict) - that's expected after first test
+        try
+        {
+            var registerResult = await mediator.Send(registerCommand);
+
+            if (registerResult.IsSuccess && registerResult.Value != null)
+            {
+                // Set role to Admin after registration
+                var changeRoleCommand = new ChangeUserRoleCommandV1
+                {
+                    UserId = registerResult.Value.User.Id,
+                    NewRole = UserRole.Admin
+                };
+
+                await mediator.Send(changeRoleCommand);
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore if user already exists - that's expected after first test
+        }
     }
 
     protected async Task EnsureCustomerUserExistsAsync()
