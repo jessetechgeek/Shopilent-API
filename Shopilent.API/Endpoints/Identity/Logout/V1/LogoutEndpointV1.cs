@@ -50,9 +50,15 @@ public class LogoutEndpointV1 : Endpoint<LogoutRequestV1, ApiResponse<string>>
 
         if (result.IsFailure)
         {
-            var statusCode = result.Error.Type == ErrorType.Unauthorized
-                ? StatusCodes.Status401Unauthorized
-                : StatusCodes.Status400BadRequest;
+            var statusCode = result.Error.Type switch
+            {
+                ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+                ErrorType.NotFound when result.Error.Code == "RefreshToken.NotFound" => StatusCodes.Status401Unauthorized, // Only treat specific refresh token not found as auth failure
+                ErrorType.Validation => StatusCodes.Status400BadRequest,
+                ErrorType.Conflict => StatusCodes.Status409Conflict,
+                ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+                _ => StatusCodes.Status400BadRequest
+            };
 
             var errorResponse = new ApiResponse<String>
             {
