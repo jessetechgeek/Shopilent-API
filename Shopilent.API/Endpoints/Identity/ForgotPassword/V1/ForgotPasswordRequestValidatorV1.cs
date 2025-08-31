@@ -10,6 +10,7 @@ public class ForgotPasswordRequestValidatorV1 : Validator<ForgotPasswordRequestV
         RuleFor(x => x.Email)
             .Cascade(FluentValidation.CascadeMode.Stop)
             .NotEmpty().WithMessage("Email is required.")
+            .MaximumLength(255).WithMessage("Email must not exceed 255 characters.")
             .EmailAddress().WithMessage("Email is not valid.");
     }
 }
