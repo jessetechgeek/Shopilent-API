@@ -8,7 +8,7 @@ using Shopilent.Domain.Identity.DTOs;
 
 namespace Shopilent.API.Endpoints.Users.GetUser.V1;
 
-public class GetUserEndpointV1 : EndpointWithoutRequest<ApiResponse<UserDetailDto>>
+public class GetUserEndpointV1 : Endpoint<GetUserRequestV1, ApiResponse<UserDetailDto>>
 {
     private readonly IMediator _mediator;
 
@@ -30,13 +30,10 @@ public class GetUserEndpointV1 : EndpointWithoutRequest<ApiResponse<UserDetailDt
         Policies(nameof(AuthorizationPolicy.RequireAdminOrManager));
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(GetUserRequestV1 req, CancellationToken ct)
     {
-        // Get the ID from the route
-        var id = Route<Guid>("id");
-
-        // Create query
-        var query = new GetUserQueryV1 { Id = id };
+        // Create query from request
+        var query = new GetUserQueryV1 { Id = req.Id };
 
         // Send query to mediator
         var result = await _mediator.Send(query, ct);
