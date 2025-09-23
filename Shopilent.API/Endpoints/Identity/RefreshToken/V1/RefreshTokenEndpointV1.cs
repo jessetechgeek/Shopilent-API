@@ -50,9 +50,15 @@ public class RefreshTokenEndpointV1 : Endpoint<RefreshTokenRequestV1, ApiRespons
 
         if (result.IsFailure)
         {
-            var statusCode = result.Error.Type == ErrorType.Unauthorized
-                ? StatusCodes.Status401Unauthorized
-                : StatusCodes.Status400BadRequest;
+            var statusCode = result.Error.Type switch
+            {
+                ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+                ErrorType.NotFound when result.Error.Code == "RefreshToken.NotFound" => StatusCodes.Status401Unauthorized,
+                ErrorType.Validation => StatusCodes.Status400BadRequest,
+                ErrorType.Conflict => StatusCodes.Status409Conflict,
+                ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+                _ => StatusCodes.Status400BadRequest
+            };
 
             var errorResponse = new ApiResponse<RefreshTokenResponseV1>
             {
