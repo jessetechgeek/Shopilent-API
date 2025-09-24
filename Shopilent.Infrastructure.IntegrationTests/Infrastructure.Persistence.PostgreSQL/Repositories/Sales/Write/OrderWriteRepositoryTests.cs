@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Persistence;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Sales.Enums;
 using Shopilent.Domain.Sales.ValueObjects;
 using Shopilent.Infrastructure.IntegrationTests.Common;
@@ -468,7 +469,7 @@ public class OrderWriteRepositoryTests : IntegrationTestBase
         var action = () => unitOfWork2.SaveChangesAsync();
 
         // Assert
-        await action.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        await action.Should().ThrowAsync<ConcurrencyConflictException>();
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Audit.Repositories;
@@ -6,7 +7,9 @@ using Shopilent.Domain.Audit.Repositories.Write;
 using Shopilent.Domain.Catalog.Repositories;
 using Shopilent.Domain.Catalog.Repositories.Read;
 using Shopilent.Domain.Catalog.Repositories.Write;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Common.Repositories;
+using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity.Repositories;
 using Shopilent.Domain.Identity.Repositories.Read;
 using Shopilent.Domain.Identity.Repositories.Write;
@@ -130,7 +133,16 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            return await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            var entityName = ex.Entries.FirstOrDefault()?.Entity.GetType().Name ?? "Entity";
+            var entityId = ex.Entries.FirstOrDefault()?.Property("Id")?.CurrentValue ?? "Unknown";
+            throw new ConcurrencyConflictException(entityName, entityId, ex);
+        }
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
