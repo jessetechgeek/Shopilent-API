@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Shopilent.Application.Abstractions.Messaging;
 using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Common.Errors;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity.Errors;
 using Shopilent.Domain.Identity.Repositories.Write;
@@ -55,6 +56,12 @@ internal sealed class ChangeUserRoleCommandHandlerV1 : ICommandHandler<ChangeUse
                 request.UserId, request.NewRole);
 
             return Result.Success($"User role successfully changed to {request.NewRole}");
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            _logger.LogWarning("Concurrency conflict while changing role for user {UserId}: {Error}",
+                request.UserId, ex.Error);
+            return Result.Failure<string>(ex.Error);
         }
         catch (Exception ex)
         {
