@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Persistence;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Payments.Enums;
 using Shopilent.Domain.Payments.ValueObjects;
 using Shopilent.Infrastructure.IntegrationTests.Common;
@@ -593,7 +594,7 @@ public class PaymentMethodWriteRepositoryTests : IntegrationTestBase
 
         // Assert - Second update should throw concurrency exception
         var concurrencyFunc = async () => await unitOfWork2.SaveChangesAsync();
-        await concurrencyFunc.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        await concurrencyFunc.Should().ThrowAsync<ConcurrencyConflictException>();
 
         // Verify final state
         var finalPaymentMethod = await _unitOfWork.PaymentMethodWriter.GetByIdAsync(paymentMethod.Id);

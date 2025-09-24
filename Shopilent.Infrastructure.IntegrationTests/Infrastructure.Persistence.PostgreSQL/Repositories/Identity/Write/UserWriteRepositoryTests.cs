@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Persistence;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Identity.Enums;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Infrastructure.IntegrationTests.Common;
@@ -456,6 +457,6 @@ public class UserWriteRepositoryTests : IntegrationTestBase
         await unitOfWork2.UserWriter.UpdateAsync(user2);
 
         var act = () => unitOfWork2.SaveChangesAsync();
-        await act.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        await act.Should().ThrowAsync<ConcurrencyConflictException>();
     }
 }

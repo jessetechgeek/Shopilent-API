@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Persistence;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Infrastructure.IntegrationTests.Common;
 using Shopilent.Infrastructure.IntegrationTests.TestData.Builders;
 
@@ -379,7 +380,7 @@ public class CartWriteRepositoryTests : IntegrationTestBase
         var action = () => unitOfWork2.SaveChangesAsync();
 
         // Assert
-        await action.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        await action.Should().ThrowAsync<ConcurrencyConflictException>();
     }
 
     [Fact]

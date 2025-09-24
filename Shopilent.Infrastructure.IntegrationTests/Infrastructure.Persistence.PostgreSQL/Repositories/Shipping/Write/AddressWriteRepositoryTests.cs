@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Persistence;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Identity.ValueObjects;
 using Shopilent.Domain.Shipping.Enums;
 using Shopilent.Domain.Shipping.ValueObjects;
@@ -454,7 +455,7 @@ public class AddressWriteRepositoryTests : IntegrationTestBase
         var action = () => unitOfWork2.SaveChangesAsync();
 
         // Assert
-        await action.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        await action.Should().ThrowAsync<ConcurrencyConflictException>();
     }
 
     [Fact]

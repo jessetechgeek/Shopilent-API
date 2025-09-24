@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Application.Abstractions.Identity;
 using Shopilent.Application.Abstractions.Persistence;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Identity;
 using Shopilent.Infrastructure.IntegrationTests.Common;
 using Shopilent.Infrastructure.IntegrationTests.TestData.Builders;
@@ -373,7 +374,7 @@ public class RefreshTokenWriteRepositoryTests : IntegrationTestBase
         await unitOfWork2.RefreshTokenWriter.UpdateAsync(token2);
         var action = () => unitOfWork2.SaveChangesAsync();
 
-        await action.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        await action.Should().ThrowAsync<ConcurrencyConflictException>();
     }
 
     [Fact]
