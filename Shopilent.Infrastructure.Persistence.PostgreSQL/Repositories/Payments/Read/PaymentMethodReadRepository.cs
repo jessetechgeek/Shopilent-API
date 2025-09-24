@@ -6,8 +6,6 @@ using Shopilent.Domain.Payments.Enums;
 using Shopilent.Domain.Payments.Repositories.Read;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Abstractions;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Common.Read;
-using Shopilent.Infrastructure.Persistence.PostgreSQL.Dtos.Payments;
-using System.Text.Json;
 
 namespace Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Payments.Read;
 
@@ -35,18 +33,13 @@ public class PaymentMethodReadRepository : AggregateReadRepositoryBase<PaymentMe
                 expiry_date AS ExpiryDate,
                 is_default AS IsDefault,
                 is_active AS IsActive,
-                metadata::text AS MetadataJson,
+                metadata AS Metadata,
                 created_at AS CreatedAt,
                 updated_at AS UpdatedAt
             FROM payment_methods
             WHERE id = @Id";
 
-        var result = await Connection.QueryFirstOrDefaultAsync<PaymentMethodDtoWithJson>(sql, new { Id = id });
-        
-        if (result == null)
-            return null;
-
-        return MapToPaymentMethodDto(result);
+        return await Connection.QueryFirstOrDefaultAsync<PaymentMethodDto>(sql, new { Id = id });
     }
 
     public override async Task<IReadOnlyList<PaymentMethodDto>> ListAllAsync(
@@ -91,15 +84,15 @@ public class PaymentMethodReadRepository : AggregateReadRepositoryBase<PaymentMe
                 expiry_date AS ExpiryDate,
                 is_default AS IsDefault,
                 is_active AS IsActive,
-                metadata::text AS MetadataJson,
+                metadata AS Metadata,
                 created_at AS CreatedAt,
                 updated_at AS UpdatedAt
             FROM payment_methods
             WHERE user_id = @UserId
             ORDER BY is_default DESC, created_at DESC";
 
-        var results = await Connection.QueryAsync<PaymentMethodDtoWithJson>(sql, new { UserId = userId });
-        return results.Select(MapToPaymentMethodDto).ToList();
+        var results = await Connection.QueryAsync<PaymentMethodDto>(sql, new { UserId = userId });
+        return results.ToList();
     }
 
     public async Task<PaymentMethodDto> GetDefaultForUserAsync(Guid userId,
@@ -201,44 +194,4 @@ public class PaymentMethodReadRepository : AggregateReadRepositoryBase<PaymentMe
         return count > 0;
     }
 
-    private static PaymentMethodDto MapToPaymentMethodDto(PaymentMethodDtoWithJson result)
-    {
-        var dto = new PaymentMethodDto
-        {
-            Id = result.Id,
-            UserId = result.UserId,
-            Type = result.Type,
-            Provider = result.Provider,
-            Token = result.Token,
-            DisplayName = result.DisplayName,
-            CardBrand = result.CardBrand,
-            LastFourDigits = result.LastFourDigits,
-            ExpiryDate = result.ExpiryDate,
-            IsDefault = result.IsDefault,
-            IsActive = result.IsActive,
-            CreatedAt = result.CreatedAt,
-            UpdatedAt = result.UpdatedAt,
-            Metadata = new Dictionary<string, object>()
-        };
-
-        // Parse metadata JSON if present
-        if (!string.IsNullOrEmpty(result.MetadataJson))
-        {
-            try
-            {
-                dto.Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                    result.MetadataJson,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }) ?? new Dictionary<string, object>();
-            }
-            catch
-            {
-                dto.Metadata = new Dictionary<string, object>();
-            }
-        }
-
-        return dto;
-    }
 }
