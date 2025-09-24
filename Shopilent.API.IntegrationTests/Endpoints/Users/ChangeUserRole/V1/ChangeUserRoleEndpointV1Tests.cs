@@ -441,10 +441,15 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
 
         // At least one request should succeed
         successfulResponses.Should().NotBeEmpty("At least one role change should succeed");
-        
-        // Failed responses should be due to concurrency conflicts (409 Conflict)
-        failedResponses.Should().AllSatisfy(response =>
-            response.StatusCode.Should().Be(HttpStatusCode.Conflict));
+
+        // If there are failed responses, they should be due to concurrency conflicts (409 Conflict)
+        // Note: In fast execution scenarios, all requests may succeed without conflicts
+        if (failedResponses.Any())
+        {
+            failedResponses.Should().AllSatisfy(response =>
+                response.StatusCode.Should().Be(HttpStatusCode.Conflict),
+                "Failed responses should be 409 Conflict due to concurrency violations");
+        }
 
         // Verify final role is one of the requested roles
         await ExecuteDbContextAsync(async context =>
