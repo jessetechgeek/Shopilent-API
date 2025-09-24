@@ -6,6 +6,8 @@ using Shopilent.Domain.Identity.Repositories.Read;
 using Shopilent.Domain.Shipping.DTOs;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Abstractions;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Common.Read;
+using Shopilent.Domain.Common.Models;
+using System.Text;
 
 namespace Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Identity.Read;
 
@@ -306,5 +308,129 @@ public class UserReadRepository : AggregateReadRepositoryBase<User, UserDto>, IU
         var parameters = new { Ids = idArray };
         var userDtos = await Connection.QueryAsync<UserDto>(sql, parameters);
         return userDtos.ToList();
+    }
+
+    // Override the DataTable method to provide custom implementation for users
+    public override async Task<DataTableResult<UserDto>> GetDataTableAsync(
+        DataTableRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request == null)
+            return new DataTableResult<UserDto>(0, "Invalid request");
+
+        try
+        {
+            // Base query
+            var selectSql = new StringBuilder(@"
+                SELECT
+                    u.id AS Id,
+                    u.email AS Email,
+                    u.first_name AS FirstName,
+                    u.last_name AS LastName,
+                    u.middle_name AS MiddleName,
+                    u.phone AS Phone,
+                    u.role AS Role,
+                    u.is_active AS IsActive,
+                    u.last_login AS LastLogin,
+                    u.email_verified AS EmailVerified,
+                    u.created_at AS CreatedAt,
+                    u.updated_at AS UpdatedAt
+                FROM users u");
+
+            // Count query
+            const string countSql = "SELECT COUNT(*) FROM users u";
+
+            // Where clause for filtering
+            var whereClause = new StringBuilder();
+            var parameters = new DynamicParameters();
+
+            // Apply global search if provided
+            if (!string.IsNullOrEmpty(request.Search?.Value))
+            {
+                whereClause.Append(" WHERE (");
+                whereClause.Append("u.email ILIKE @SearchValue OR ");
+                whereClause.Append("u.first_name ILIKE @SearchValue OR ");
+                whereClause.Append("u.last_name ILIKE @SearchValue OR ");
+                whereClause.Append("u.phone ILIKE @SearchValue");
+                whereClause.Append(")");
+                parameters.Add("SearchValue", $"%{request.Search.Value}%");
+            }
+
+            // Build ORDER BY clause
+            var orderByClause = new StringBuilder(" ORDER BY ");
+
+            if (request.Order != null && request.Order.Any())
+            {
+                for (int i = 0; i < request.Order.Count; i++)
+                {
+                    if (i > 0) orderByClause.Append(", ");
+
+                    var order = request.Order[i];
+                    if (order.Column < request.Columns.Count)
+                    {
+                        var column = request.Columns[order.Column];
+                        if (column.Orderable)
+                        {
+                            // Map column names to database columns
+                            var dbColumn = column.Data.ToLower() switch
+                            {
+                                "email" => "u.email",
+                                "firstname" => "u.first_name",
+                                "lastname" => "u.last_name",
+                                "fullname" => "u.first_name", // Sort by first name for full name
+                                "phone" => "u.phone",
+                                "role" => "u.role",
+                                "isactive" or "active" => "u.is_active",
+                                "emailverified" => "u.email_verified",
+                                "lastloginat" => "u.last_login",
+                                "createdat" => "u.created_at",
+                                _ => "u.email" // Default
+                            };
+
+                            orderByClause.Append($"{dbColumn} {(order.IsDescending ? "DESC" : "ASC")}");
+                        }
+                        else
+                        {
+                            orderByClause.Append("u.email ASC");
+                        }
+                    }
+                    else
+                    {
+                        orderByClause.Append("u.email ASC");
+                    }
+                }
+            }
+            else
+            {
+                orderByClause.Append("u.email ASC");
+            }
+
+            // Pagination
+            var paginationClause = " LIMIT @Length OFFSET @Start";
+            parameters.Add("Length", request.Length);
+            parameters.Add("Start", request.Start);
+
+            // Build final queries
+            var finalCountSql = countSql + whereClause.ToString();
+            var finalSelectSql = selectSql.ToString() + whereClause.ToString() + orderByClause.ToString() + paginationClause;
+
+            // Execute queries
+            var totalCount = await Connection.ExecuteScalarAsync<int>(countSql);
+            var filteredCount = whereClause.Length > 0
+                ? await Connection.ExecuteScalarAsync<int>(finalCountSql, parameters)
+                : totalCount;
+
+            var data = await Connection.QueryAsync<UserDto>(finalSelectSql, parameters);
+
+            Logger.LogInformation("Retrieved {DataCount} users for datatable (Total: {TotalCount}, Filtered: {FilteredCount})",
+                data.Count(), totalCount, filteredCount);
+
+            return new DataTableResult<UserDto>(request.Draw, totalCount, filteredCount, data.AsList());
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error executing UserDataTable query");
+            return new DataTableResult<UserDto>(request.Draw, $"Error: {ex.Message}");
+        }
     }
 }

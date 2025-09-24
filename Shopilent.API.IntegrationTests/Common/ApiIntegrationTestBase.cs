@@ -176,6 +176,13 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         return await Client.DeleteAsync(endpoint);
     }
 
+    protected async Task<ApiResponse<TestDataTableResult<T>>?> PostDataTableResponseAsync<T>(string endpoint, object request)
+    {
+        var response = await Client.PostAsJsonAsync(endpoint, request, JsonOptions);
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ApiResponse<TestDataTableResult<T>>>(json, JsonOptions);
+    }
+
     // Assertion helpers
     protected static void AssertApiSuccess<T>(ApiResponse<T>? response) where T : class
     {
