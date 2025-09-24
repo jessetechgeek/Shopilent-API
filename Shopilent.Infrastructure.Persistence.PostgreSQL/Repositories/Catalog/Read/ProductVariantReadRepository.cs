@@ -1,11 +1,9 @@
-using System.Text.Json;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Shopilent.Domain.Catalog;
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Catalog.Repositories.Read;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Abstractions;
-using Shopilent.Infrastructure.Persistence.PostgreSQL.Dtos.Catalog;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Common.Read;
 
 namespace Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Catalog.Read;
@@ -36,47 +34,14 @@ public class ProductVariantReadRepository : EntityReadRepositoryBase<ProductVari
             FROM product_variants pv
             WHERE pv.id = @Id";
 
-        var variant = await Connection.QueryFirstOrDefaultAsync<ProductVariantDtoWithJson>(sql, new { Id = id });
+        var variant = await Connection.QueryFirstOrDefaultAsync<ProductVariantDto>(sql, new { Id = id });
 
-
-        if (variant == null)
-            return null;
-
-        var variantDto = new ProductVariantDto()
+        if (variant != null)
         {
-            Id = variant.Id,
-            ProductId = variant.ProductId,
-            Sku = variant.Sku,
-            Price = variant.Price,
-            Currency = variant.Currency,
-            StockQuantity = variant.StockQuantity,
-            IsActive = variant.IsActive,
-            CreatedAt = variant.CreatedAt,
-            UpdatedAt = variant.UpdatedAt
-        };
-
-        if (!string.IsNullOrEmpty(variant.MetadataJson))
-        {
-            try
-            {
-                variantDto.Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                    variant.MetadataJson,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }) ?? new Dictionary<string, object>();
-            }
-            catch
-            {
-                variantDto.Metadata = new Dictionary<string, object>();
-            }
-        }
-        else
-        {
-            variantDto.Metadata = new Dictionary<string, object>();
+            await LoadVariantAttributes(variant);
         }
 
-        return variantDto;
+        return variant;
     }
 
     public override async Task<IReadOnlyList<ProductVariantDto>> ListAllAsync(
@@ -120,59 +85,22 @@ public class ProductVariantReadRepository : EntityReadRepositoryBase<ProductVari
                 pv.currency AS Currency,
                 pv.stock_quantity AS StockQuantity,
                 pv.is_active AS IsActive,
-                pv.metadata::text AS MetadataJson,
+                pv.metadata AS Metadata,
                 pv.created_at AS CreatedAt,
                 pv.updated_at AS UpdatedAt
             FROM product_variants pv
             WHERE pv.product_id = @ProductId";
 
-        var variants = await Connection.QueryAsync<ProductVariantDtoWithJson>(sql, new { ProductId = productId });
+        var variants = await Connection.QueryAsync<ProductVariantDto>(sql, new { ProductId = productId });
         var variantList = variants.ToList();
 
-        var variantDtoList = new List<ProductVariantDto>();
-
+        // Load variant attributes for each variant
         foreach (var variant in variantList)
         {
-            var variantDto = new ProductVariantDto()
-            {
-                Id = variant.Id,
-                ProductId = variant.ProductId,
-                Sku = variant.Sku,
-                Price = variant.Price,
-                Currency = variant.Currency,
-                StockQuantity = variant.StockQuantity,
-                IsActive = variant.IsActive,
-                CreatedAt = variant.CreatedAt,
-                UpdatedAt = variant.UpdatedAt
-            };
-
-            if (!string.IsNullOrEmpty(variant.MetadataJson))
-            {
-                try
-                {
-                    variantDto.Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                        variant.MetadataJson,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        }) ?? new Dictionary<string, object>();
-                }
-                catch
-                {
-                    variantDto.Metadata = new Dictionary<string, object>();
-                }
-            }
-            else
-            {
-                variantDto.Metadata = new Dictionary<string, object>();
-            }
-
-            await LoadVariantAttributes(variantDto);
-
-            variantDtoList.Add(variantDto);
+            await LoadVariantAttributes(variant);
         }
 
-        return variantDtoList;
+        return variantList;
     }
 
     public async Task<ProductVariantDto> GetBySkuAsync(string sku, CancellationToken cancellationToken = default)
@@ -275,54 +203,17 @@ public class ProductVariantReadRepository : EntityReadRepositoryBase<ProductVari
                 va.attribute_id AS AttributeId,
                 a.name AS AttributeName,
                 a.display_name AS AttributeDisplayName,
-                a.type AS AttributeType,
-                va.value::text AS ValueJson
+                va.value AS Value
             FROM variant_attributes va
             JOIN attributes a ON va.attribute_id = a.id
             WHERE va.variant_id = @VariantId";
 
         try
         {
-            var attributeDtoList = (await Connection.QueryAsync<VariantAttributeDtoWithJson>(
+            var attributeDtoList = (await Connection.QueryAsync<VariantAttributeDto>(
                 attributesSql, new { VariantId = variant.Id })).ToList();
 
-            var returnDtoList = new List<VariantAttributeDto>();
-
-            foreach (var jsonAttribute in attributeDtoList)
-            {
-                var attributeDto = new VariantAttributeDto()
-                {
-                    VariantId = jsonAttribute.VariantId,
-                    AttributeId = jsonAttribute.AttributeId,
-                    AttributeName = jsonAttribute.AttributeName,
-                    AttributeDisplayName = jsonAttribute.AttributeDisplayName,
-                };
-
-                if (!string.IsNullOrEmpty(jsonAttribute.ValueJson))
-                {
-                    try
-                    {
-                        attributeDto.Value = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                            jsonAttribute.ValueJson,
-                            new JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true
-                            }) ?? new Dictionary<string, object>();
-
-                        returnDtoList.Add(attributeDto);
-                    }
-                    catch
-                    {
-                        attributeDto.Value = new Dictionary<string, object>();
-                    }
-                }
-                else
-                {
-                    attributeDto.Value = new Dictionary<string, object>();
-                }
-            }
-
-            variant.Attributes = returnDtoList;
+            variant.Attributes = attributeDtoList;
         }
         catch (Exception ex)
         {

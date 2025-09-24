@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Shopilent.Domain.Catalog.DTOs;
@@ -7,7 +6,6 @@ using Shopilent.Domain.Catalog.Enums;
 using Shopilent.Domain.Catalog.Repositories.Read;
 using Shopilent.Domain.Common.Models;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Abstractions;
-using Shopilent.Infrastructure.Persistence.PostgreSQL.Dtos.Catalog;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Common.Read;
 using Attribute = Shopilent.Domain.Catalog.Attribute;
 
@@ -28,7 +26,7 @@ public class AttributeReadRepository : AggregateReadRepositoryBase<Attribute, At
             name AS Name,
             display_name AS DisplayName,
             type AS Type,
-            configuration::text AS ConfigurationJson,
+            configuration AS Configuration,
             filterable AS Filterable,
             searchable AS Searchable,
             is_variant AS IsVariant,
@@ -37,49 +35,7 @@ public class AttributeReadRepository : AggregateReadRepositoryBase<Attribute, At
         FROM attributes
         WHERE id = @Id";
 
-        // Use a class that captures the JSON as string
-        var result = await Connection.QueryFirstOrDefaultAsync<AttributeDtoWithJsonString>(sql, new { Id = id });
-
-        if (result == null)
-            return null;
-
-        // Convert to AttributeDto with proper Configuration deserialization
-        var attributeDto = new AttributeDto
-        {
-            Id = result.Id,
-            Name = result.Name,
-            DisplayName = result.DisplayName,
-            Type = Enum.Parse<AttributeType>(result.Type),
-            Filterable = result.Filterable,
-            Searchable = result.Searchable,
-            IsVariant = result.IsVariant,
-            CreatedAt = result.CreatedAt,
-            UpdatedAt = result.UpdatedAt
-        };
-
-        // Parse the configuration JSON
-        if (!string.IsNullOrEmpty(result.ConfigurationJson))
-        {
-            try
-            {
-                attributeDto.Configuration = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                    result.ConfigurationJson,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }) ?? new Dictionary<string, object>();
-            }
-            catch
-            {
-                attributeDto.Configuration = new Dictionary<string, object>();
-            }
-        }
-        else
-        {
-            attributeDto.Configuration = new Dictionary<string, object>();
-        }
-
-        return attributeDto;
+        return await Connection.QueryFirstOrDefaultAsync<AttributeDto>(sql, new { Id = id });
     }
 
     public override async Task<IReadOnlyList<AttributeDto>> ListAllAsync(CancellationToken cancellationToken = default)
@@ -90,7 +46,7 @@ public class AttributeReadRepository : AggregateReadRepositoryBase<Attribute, At
             name AS Name,
             display_name AS DisplayName,
             type AS Type,
-            configuration::text AS ConfigurationJson,
+            configuration AS Configuration,
             filterable AS Filterable,
             searchable AS Searchable,
             is_variant AS IsVariant,
@@ -99,50 +55,8 @@ public class AttributeReadRepository : AggregateReadRepositoryBase<Attribute, At
         FROM attributes
         ORDER BY name";
 
-        var results = await Connection.QueryAsync<AttributeDtoWithJsonString>(sql);
-        var attributeDtos = new List<AttributeDto>();
-
-        foreach (var result in results)
-        {
-            var attributeDto = new AttributeDto
-            {
-                Id = result.Id,
-                Name = result.Name,
-                DisplayName = result.DisplayName,
-                Type = Enum.Parse<AttributeType>(result.Type),
-                Filterable = result.Filterable,
-                Searchable = result.Searchable,
-                IsVariant = result.IsVariant,
-                CreatedAt = result.CreatedAt,
-                UpdatedAt = result.UpdatedAt
-            };
-
-            // Parse the configuration JSON
-            if (!string.IsNullOrEmpty(result.ConfigurationJson))
-            {
-                try
-                {
-                    attributeDto.Configuration = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                        result.ConfigurationJson,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        }) ?? new Dictionary<string, object>();
-                }
-                catch
-                {
-                    attributeDto.Configuration = new Dictionary<string, object>();
-                }
-            }
-            else
-            {
-                attributeDto.Configuration = new Dictionary<string, object>();
-            }
-
-            attributeDtos.Add(attributeDto);
-        }
-
-        return attributeDtos;
+        var attributeDtos = await Connection.QueryAsync<AttributeDto>(sql);
+        return attributeDtos.ToList();
     }
 
     public async Task<AttributeDto> GetByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -222,14 +136,14 @@ public class AttributeReadRepository : AggregateReadRepositoryBase<Attribute, At
             if (request == null)
                 return new DataTableResult<AttributeDto>(0, "Invalid request");
 
-            // Base query with manual JSON handling
+            // Base query using JsonDictionaryTypeHandler
             var selectSql = new StringBuilder(@"
             SELECT 
                 id AS Id,
                 name AS Name,
                 display_name AS DisplayName,
                 type AS Type,
-                configuration::text AS ConfigurationJson,
+                configuration AS Configuration,
                 filterable AS Filterable,
                 searchable AS Searchable,
                 is_variant AS IsVariant,
@@ -317,51 +231,10 @@ public class AttributeReadRepository : AggregateReadRepositoryBase<Attribute, At
                 ? await Connection.ExecuteScalarAsync<int>(finalCountSql, parameters)
                 : totalCount;
 
-            // Using a custom intermediate class to capture JSON as string
-            var results = await Connection.QueryAsync<AttributeDtoWithJsonString>(finalSelectSql, parameters);
+            // Direct mapping using JsonDictionaryTypeHandler
+            var attributeDtos = await Connection.QueryAsync<AttributeDto>(finalSelectSql, parameters);
 
-            // Convert to proper AttributeDto objects with proper deserialization
-            var attributeDtos = results.Select(result =>
-            {
-                var attributeDto = new AttributeDto
-                {
-                    Id = result.Id,
-                    Name = result.Name,
-                    DisplayName = result.DisplayName,
-                    Type = Enum.Parse<AttributeType>(result.Type),
-                    Filterable = result.Filterable,
-                    Searchable = result.Searchable,
-                    IsVariant = result.IsVariant,
-                    CreatedAt = result.CreatedAt,
-                    UpdatedAt = result.UpdatedAt
-                };
-
-                // Parse the configuration JSON
-                if (!string.IsNullOrEmpty(result.ConfigurationJson))
-                {
-                    try
-                    {
-                        attributeDto.Configuration = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                            result.ConfigurationJson,
-                            new JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true
-                            }) ?? new Dictionary<string, object>();
-                    }
-                    catch
-                    {
-                        attributeDto.Configuration = new Dictionary<string, object>();
-                    }
-                }
-                else
-                {
-                    attributeDto.Configuration = new Dictionary<string, object>();
-                }
-
-                return attributeDto;
-            }).ToList();
-
-            return new DataTableResult<AttributeDto>(request.Draw, totalCount, filteredCount, attributeDtos);
+            return new DataTableResult<AttributeDto>(request.Draw, totalCount, filteredCount, attributeDtos.AsList());
         }
         catch (Exception ex)
         {
