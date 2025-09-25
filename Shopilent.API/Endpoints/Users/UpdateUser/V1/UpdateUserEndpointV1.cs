@@ -32,6 +32,20 @@ public class UpdateUserEndpointV1 : Endpoint<UpdateUserRequestV1, ApiResponse<Us
 
     public override async Task HandleAsync(UpdateUserRequestV1 req, CancellationToken ct)
     {
+        if (ValidationFailed)
+        {
+            var errorResponse = new ApiResponse<UserDto>
+            {
+                Succeeded = false,
+                StatusCode = StatusCodes.Status400BadRequest,
+                Errors = ValidationFailures.Select(f => f.ErrorMessage).ToArray(),
+                Message = "Validation failed"
+            };
+
+            await SendAsync(errorResponse, errorResponse.StatusCode, ct);
+            return;
+        }
+
         // Get user ID from route
         var userId = Route<Guid>("id");
 
