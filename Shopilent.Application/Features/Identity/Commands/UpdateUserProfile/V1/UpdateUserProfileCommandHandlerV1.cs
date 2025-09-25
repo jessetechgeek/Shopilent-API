@@ -3,6 +3,7 @@ using Shopilent.Application.Abstractions.Identity;
 using Shopilent.Application.Abstractions.Messaging;
 using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Common.Errors;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity.Errors;
 using Shopilent.Domain.Identity.ValueObjects;
@@ -87,6 +88,12 @@ internal sealed class
             };
 
             return Result.Success(response);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            _logger.LogWarning(ex, "Concurrency conflict while updating user profile. UserId: {UserId}", request.UserId);
+
+            return Result.Failure<UpdateUserProfileResponseV1>(ex.Error);
         }
         catch (Exception ex)
         {
