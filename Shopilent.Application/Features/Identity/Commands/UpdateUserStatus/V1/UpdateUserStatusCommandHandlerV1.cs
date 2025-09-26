@@ -3,6 +3,7 @@ using Shopilent.Application.Abstractions.Identity;
 using Shopilent.Application.Abstractions.Messaging;
 using Shopilent.Application.Abstractions.Persistence;
 using Shopilent.Domain.Common.Errors;
+using Shopilent.Domain.Common.Exceptions;
 using Shopilent.Domain.Common.Results;
 using Shopilent.Domain.Identity.Errors;
 
@@ -73,9 +74,15 @@ internal sealed class UpdateUserStatusCommandHandlerV1 : ICommandHandler<UpdateU
 
             return Result.Success();
         }
+        catch (ConcurrencyConflictException ex)
+        {
+            _logger.LogWarning("Concurrency conflict while updating status for user {UserId}: {Error}",
+                request.Id, ex.Error);
+            return Result.Failure(ex.Error);
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating user status. ID: {UserId}, IsActive: {IsActive}", 
+            _logger.LogError(ex, "Error updating user status. ID: {UserId}, IsActive: {IsActive}",
                 request.Id, request.IsActive);
 
             return Result.Failure(
