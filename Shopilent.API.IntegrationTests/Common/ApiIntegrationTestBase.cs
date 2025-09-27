@@ -288,6 +288,14 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         // Ignore if user already exists (409 Conflict) - that's expected after first test
     }
 
+    // Outbox processing helper for deterministic test behavior
+    protected async Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var outboxService = scope.ServiceProvider.GetRequiredService<Shopilent.Application.Abstractions.Outbox.IOutboxService>();
+        await outboxService.ProcessMessagesAsync(cancellationToken);
+    }
+
     // Helper classes for common responses
     public class LoginResponse
     {
