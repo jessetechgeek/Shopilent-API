@@ -45,7 +45,14 @@ internal sealed class DeleteAttributeCommandHandlerV1 : ICommandHandler<DeleteAt
                         message: $"Cannot delete attribute '{attribute.Name}' because it is used by {productsWithAttribute.Count} products"));
             }
 
-            // Delete attribute
+            // Call domain delete method to raise AttributeDeletedEvent
+            var deleteResult = attribute.Delete();
+            if (deleteResult.IsFailure)
+            {
+                return deleteResult;
+            }
+
+            // Delete attribute from repository
             await _unitOfWork.AttributeWriter.DeleteAsync(attribute, cancellationToken);
 
             // Save changes
