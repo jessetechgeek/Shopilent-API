@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MediatR;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 using Shopilent.Application.Features.Identity.Commands.Register.V1;
 using Shopilent.Application.Features.Identity.Commands.ChangeUserRole.V1;
@@ -32,7 +33,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         // First deactivate the user
         await DeactivateUserAsync(customerUserId);
 
-        var request = UpdateUserStatusTestDataV1.CreateActivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateActivateRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/status", request);
@@ -62,7 +63,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = UpdateUserStatusTestDataV1.CreateDeactivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateDeactivateRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/status", request);
@@ -93,7 +94,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(managerToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = UpdateUserStatusTestDataV1.CreateDeactivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateDeactivateRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/status", request);
@@ -125,7 +126,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var adminUserId = await GetUserIdByEmailAsync("admin@shopilent.com");
-        var request = UpdateUserStatusTestDataV1.CreateDeactivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateDeactivateRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{adminUserId}/status", request);
@@ -149,7 +150,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(managerToken);
 
         var managerUserId = await GetUserIdByEmailAsync("manager@shopilent.com");
-        var request = UpdateUserStatusTestDataV1.CreateDeactivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateDeactivateRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{managerUserId}/status", request);
@@ -171,7 +172,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var adminUserId = await GetUserIdByEmailAsync("admin@shopilent.com");
-        var request = UpdateUserStatusTestDataV1.CreateActivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateActivateRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{adminUserId}/status", request);
@@ -192,7 +193,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         ClearAuthenticationHeader();
         var userId = Guid.NewGuid();
-        var request = UpdateUserStatusTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateValidRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{userId}/status", request);
@@ -210,7 +211,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(customerToken);
 
         var userId = Guid.NewGuid();
-        var request = UpdateUserStatusTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateValidRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{userId}/status", request);
@@ -225,7 +226,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         SetAuthenticationHeader("invalid-token");
         var userId = Guid.NewGuid();
-        var request = UpdateUserStatusTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateValidRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{userId}/status", request);
@@ -241,7 +242,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         var expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
         SetAuthenticationHeader(expiredToken);
         var userId = Guid.NewGuid();
-        var request = UpdateUserStatusTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateValidRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{userId}/status", request);
@@ -263,7 +264,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var nonExistentUserId = Guid.NewGuid();
-        var request = UpdateUserStatusTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateValidRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{nonExistentUserId}/status", request);
@@ -289,7 +290,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
-        var request = UpdateUserStatusTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateValidRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{invalidGuid}/status", request);
@@ -316,7 +317,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         // Ensure user is active
         await ActivateUserAsync(customerUserId);
 
-        var request = UpdateUserStatusTestDataV1.CreateActivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateActivateRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/status", request);
@@ -348,7 +349,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         // First deactivate the user
         await DeactivateUserAsync(customerUserId);
 
-        var request = UpdateUserStatusTestDataV1.CreateDeactivateRequest();
+        var request = UserTestDataV1.StatusScenarios.CreateDeactivateRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/status", request);
@@ -427,7 +428,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
 
         // Act
         var response = await PutJsonAsync($"v1/users/{customerUserId}/status",
-            UpdateUserStatusTestDataV1.EdgeCases.CreateMalformedJsonRequest());
+            UserTestDataV1.StatusScenarios.EdgeCases.CreateMalformedJsonRequest());
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -510,7 +511,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
 
         // Use fewer requests (3 instead of 10) to reduce database contention
-        var requests = UpdateUserStatusTestDataV1.ConcurrencyTests.CreateConcurrencyTestRequests();
+        var requests = UserTestDataV1.StatusScenarios.ConcurrencyTests.CreateConcurrencyTestRequests();
 
         var tasks = requests.Select(request =>
             PutAsync($"v1/users/{customerUserId}/status", request)
@@ -564,7 +565,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         // Act - Perform 20 status changes
         for (int i = 0; i < 20; i++)
         {
-            var request = UpdateUserStatusTestDataV1.CreateValidRequest(i % 2 == 0);
+            var request = UserTestDataV1.StatusScenarios.CreateValidRequest(i % 2 == 0);
             var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/status", request);
             AssertApiSuccess(response);
         }
@@ -581,13 +582,13 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
 
     public static IEnumerable<object[]> GetValidBooleanValues()
     {
-        return UpdateUserStatusTestDataV1.BoundaryTests.ValidBooleanValues
+        return UserTestDataV1.StatusScenarios.BoundaryTests.ValidBooleanValues
             .Select(value => new object[] { value });
     }
 
     public static IEnumerable<object[]> GetInvalidBooleanValues()
     {
-        return UpdateUserStatusTestDataV1.BoundaryTests.InvalidBooleanValues
+        return UserTestDataV1.StatusScenarios.BoundaryTests.InvalidBooleanValues
             .Select(value => new object[] { value });
     }
 
@@ -595,13 +596,13 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     {
         return new[]
         {
-            new object[] { UpdateUserStatusTestDataV1.SecurityTests.CreateSqlInjectionAttempt() },
-            new object[] { UpdateUserStatusTestDataV1.SecurityTests.CreateXssAttempt() },
-            new object[] { UpdateUserStatusTestDataV1.SecurityTests.CreateCommandInjectionAttempt() },
-            new object[] { UpdateUserStatusTestDataV1.SecurityTests.CreateLdapInjectionAttempt() },
-            new object[] { UpdateUserStatusTestDataV1.SecurityTests.CreateNoSqlInjectionAttempt() },
-            new object[] { UpdateUserStatusTestDataV1.SecurityTests.CreatePathTraversalAttempt() },
-            new object[] { UpdateUserStatusTestDataV1.SecurityTests.CreateUnicodeAttempt() }
+            new object[] { UserTestDataV1.StatusScenarios.SecurityTests.CreateSqlInjectionAttempt() },
+            new object[] { UserTestDataV1.StatusScenarios.SecurityTests.CreateXssAttempt() },
+            new object[] { UserTestDataV1.StatusScenarios.SecurityTests.CreateCommandInjectionAttempt() },
+            new object[] { UserTestDataV1.StatusScenarios.SecurityTests.CreateLdapInjectionAttempt() },
+            new object[] { UserTestDataV1.StatusScenarios.SecurityTests.CreateNoSqlInjectionAttempt() },
+            new object[] { UserTestDataV1.StatusScenarios.SecurityTests.CreatePathTraversalAttempt() },
+            new object[] { UserTestDataV1.StatusScenarios.SecurityTests.CreateUnicodeAttempt() }
         };
     }
 
@@ -611,14 +612,14 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
 
     private async Task ActivateUserAsync(Guid userId)
     {
-        var activateRequest = UpdateUserStatusTestDataV1.CreateActivateRequest();
+        var activateRequest = UserTestDataV1.StatusScenarios.CreateActivateRequest();
         var response = await PutApiResponseAsync<object, string>($"v1/users/{userId}/status", activateRequest);
         AssertApiSuccess(response);
     }
 
     private async Task DeactivateUserAsync(Guid userId)
     {
-        var deactivateRequest = UpdateUserStatusTestDataV1.CreateDeactivateRequest();
+        var deactivateRequest = UserTestDataV1.StatusScenarios.CreateDeactivateRequest();
         var response = await PutApiResponseAsync<object, string>($"v1/users/{userId}/status", deactivateRequest);
         AssertApiSuccess(response);
     }
@@ -682,12 +683,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
                 }
             }
         });
-    }
-
-    private async Task<string> AuthenticateAsManagerAsync()
-    {
-        await EnsureManagerUserExistsAsync();
-        return await AuthenticateAsync("manager@shopilent.com", "Manager123!");
     }
 
     #endregion

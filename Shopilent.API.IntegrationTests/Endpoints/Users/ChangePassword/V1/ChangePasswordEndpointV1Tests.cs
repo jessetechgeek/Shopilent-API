@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Users.ChangePassword.V1;
@@ -18,7 +19,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
             currentPassword: "Customer123!",
             newPassword: "NewCustomer123!",
             confirmPassword: "NewCustomer123!");
@@ -39,7 +40,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
             currentPassword: "Customer123!",
             newPassword: "NewCustomer456!",
             confirmPassword: "NewCustomer456!");
@@ -59,7 +60,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithEmptyCurrentPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithEmptyCurrentPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -79,7 +80,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithNullCurrentPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithNullCurrentPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -99,7 +100,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithEmptyNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithEmptyNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -119,7 +120,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithNullNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithNullNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -139,7 +140,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithEmptyConfirmPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithEmptyConfirmPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -159,7 +160,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithNullConfirmPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithNullConfirmPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -179,7 +180,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithMismatchedPasswords();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithMismatchedPasswords();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -199,7 +200,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithSameCurrentAndNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithSameCurrentAndNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -219,7 +220,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithShortNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithShortNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -239,7 +240,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateRequestWithWeakNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.CreateRequestWithWeakNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -260,7 +261,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        var request = ChangePasswordTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -276,7 +277,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
             currentPassword: "WrongPassword123!",
             newPassword: "NewCustomer123!",
             confirmPassword: "NewCustomer123!");
@@ -300,7 +301,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.PasswordStrengthTests.CreateRequestWithNoUppercaseNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoUppercaseNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -320,7 +321,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.PasswordStrengthTests.CreateRequestWithNoLowercaseNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoLowercaseNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -340,7 +341,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.PasswordStrengthTests.CreateRequestWithNoNumberNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoNumberNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -360,7 +361,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.PasswordStrengthTests.CreateRequestWithNoSpecialCharNewPassword();
+        var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoSpecialCharNewPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -381,7 +382,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.BoundaryTests.CreateRequestWithMinimumValidPassword();
+        var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithMinimumValidPassword();
 
         // Act
         var response = await PutApiResponseAsync<object, string>("v1/users/change-password", request);
@@ -398,7 +399,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.BoundaryTests.CreateRequestWithSevenCharacterPassword();
+        var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithSevenCharacterPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -418,7 +419,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.BoundaryTests.CreateRequestWithVeryLongPassword();
+        var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithVeryLongPassword();
 
         // Act
         var response = await PutApiResponseAsync<object, string>("v1/users/change-password", request);
@@ -435,7 +436,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.BoundaryTests.CreateRequestWithExtremelyLongPassword();
+        var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithExtremelyLongPassword();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -452,7 +453,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
+        var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithUnicodeCharacters();
 
         // Act
         var response = await PutApiResponseAsync<object, string>("v1/users/change-password", request);
@@ -469,7 +470,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.EdgeCases.CreateRequestWithWhitespaceInPasswords();
+        var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithWhitespaceInPasswords();
 
         // Act - Should fail because current password is incorrect (has extra whitespace)
         var response = await PutAsync("v1/users/change-password", request);
@@ -489,7 +490,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.EdgeCases.CreateRequestWithOnlyWhitespace();
+        var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithOnlyWhitespace();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -509,7 +510,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.EdgeCases.CreateRequestWithTabsAndNewlines();
+        var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithTabsAndNewlines();
 
         // Act
         var response = await PutApiResponseAsync<object, string>("v1/users/change-password", request);
@@ -527,7 +528,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.SecurityTests.CreateSqlInjectionAttempt();
+        var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateSqlInjectionAttempt();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -549,7 +550,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.SecurityTests.CreateXssAttempt();
+        var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateXssAttempt();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -570,7 +571,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.SecurityTests.CreateCommandInjectionAttempt();
+        var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateCommandInjectionAttempt();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -594,7 +595,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.SecurityTests.CreateLongPasswordAttack();
+        var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateLongPasswordAttack();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -613,7 +614,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.SecurityTests.CreateNullByteAttempt();
+        var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateNullByteAttempt();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -673,7 +674,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var tasks = Enumerable.Range(0, 3)
-            .Select(i => ChangePasswordTestDataV1.CreateValidRequest(
+            .Select(i => UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
                 currentPassword: "Customer123!",
                 newPassword: $"NewCustomer{i}123!",
                 confirmPassword: $"NewCustomer{i}123!"))
@@ -698,7 +699,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = ChangePasswordTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
             currentPassword: "Customer123!",
             newPassword: "NewCustomer123!",
             confirmPassword: "NewCustomer123!");
@@ -721,7 +722,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        var request = ChangePasswordTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);
@@ -735,7 +736,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         SetAuthenticationHeader("malformed-token");
-        var request = ChangePasswordTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest();
 
         // Act
         var response = await PutAsync("v1/users/change-password", request);

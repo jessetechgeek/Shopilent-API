@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 using Shopilent.Domain.Identity.Enums;
 
@@ -22,7 +23,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/role", request);
@@ -51,7 +52,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateCustomerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateCustomerRoleRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/role", request);
@@ -80,7 +81,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateAdminRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateAdminRoleRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/role", request);
@@ -108,7 +109,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var nonExistentUserId = Guid.NewGuid();
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{nonExistentUserId}/role", request);
@@ -130,7 +131,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var invalidUserId = "invalid-guid";
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{invalidUserId}/role", request);
@@ -149,7 +150,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateInvalidRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateInvalidRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -170,7 +171,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -188,7 +189,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(customerToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateAdminRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateAdminRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -206,7 +207,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var adminUserId = await GetUserIdByEmailAsync("admin@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{adminUserId}/role", request);
@@ -264,7 +265,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var emptyGuid = Guid.Empty;
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{emptyGuid}/role", request);
@@ -284,7 +285,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.EdgeCases.CreateRequestWithStringRole();
+        var request = UserTestDataV1.RoleScenarios.EdgeCases.CreateRequestWithStringRole();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -303,7 +304,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.EdgeCases.CreateRequestWithNegativeRole();
+        var request = UserTestDataV1.RoleScenarios.EdgeCases.CreateRequestWithNegativeRole();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -326,7 +327,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.EdgeCases.CreateRequestWithLargeRole();
+        var request = UserTestDataV1.RoleScenarios.EdgeCases.CreateRequestWithLargeRole();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -350,7 +351,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.SecurityTests.CreateSqlInjectionAttempt();
+        var request = UserTestDataV1.RoleScenarios.SecurityTests.CreateSqlInjectionAttempt();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -375,7 +376,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.SecurityTests.CreateXssAttempt();
+        var request = UserTestDataV1.RoleScenarios.SecurityTests.CreateXssAttempt();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -399,7 +400,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.SecurityTests.CreateCommandInjectionAttempt();
+        var request = UserTestDataV1.RoleScenarios.SecurityTests.CreateCommandInjectionAttempt();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -468,7 +469,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -485,7 +486,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{customerUserId}/role", request);
@@ -504,7 +505,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
-        var request = ChangeUserRoleTestDataV1.CreateManagerRoleRequest();
+        var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
 
         // Act
         var response = await PutApiResponseAsync<object, string>($"v1/users/{customerUserId}/role", request);
