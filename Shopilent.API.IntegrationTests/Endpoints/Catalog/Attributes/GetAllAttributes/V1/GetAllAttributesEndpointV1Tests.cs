@@ -2,6 +2,8 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
 using Shopilent.API.Common.Models;
+using Shopilent.API.IntegrationTests.Common.TestData;
+using Shopilent.API.Endpoints.Catalog.Attributes.CreateAttribute.V1;
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Catalog.Enums;
 
@@ -51,7 +53,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
 
         // Create a unique attribute to test with
         var uniqueName = $"single_test_attr_{Guid.NewGuid():N}";
-        var attributeRequest = GetAllAttributesTestDataV1.CreateAttributeForSeeding(
+        var attributeRequest = AttributeTestDataV1.Creation.CreateAttributeForSeeding(
             name: uniqueName,
             displayName: "Single Test Attribute",
             type: AttributeType.Text.ToString()
@@ -96,8 +98,8 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
 
         // Create multiple attributes with unique names
         var testId = Guid.NewGuid().ToString("N")[..8];
-        var attributeRequests = GetAllAttributesTestDataV1.CreateMultipleAttributesForSeeding(5)
-            .Select((req, index) => GetAllAttributesTestDataV1.CreateAttributeForSeeding(
+        var attributeRequests = AttributeTestDataV1.Creation.CreateMultipleAttributesForSeeding(5)
+            .Select((req, index) => AttributeTestDataV1.Creation.CreateAttributeForSeeding(
                 name: $"multi_test_{testId}_{index}",
                 displayName: $"Multi Test Attribute {index + 1}",
                 type: ((AttributeType)(index % Enum.GetValues<AttributeType>().Length)).ToString()
@@ -153,7 +155,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
 
         foreach (var (type, index) in expectedTypes.Select((t, i) => (t, i)))
         {
-            var request = GetAllAttributesTestDataV1.CreateAttributeForSeeding(
+            var request = AttributeTestDataV1.Creation.CreateAttributeForSeeding(
                 name: $"type_test_{testId}_{type.ToString().ToLower()}",
                 displayName: $"{type} Type Test",
                 type: type.ToString()
@@ -198,7 +200,18 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a comprehensive attribute
-        var attributeRequest = GetAllAttributesTestDataV1.EdgeCases.CreateAttributeWithAllFlags();
+        var attributeRequest = AttributeTestDataV1.Creation.CreateValidRequest(
+            name: "comprehensive_test_attr",
+            displayName: "Comprehensive Test Attribute",
+            type: "Select",
+            filterable: true,
+            searchable: true,
+            isVariant: true,
+            configuration: new Dictionary<string, object>
+            {
+                { "options", new[] { "Option 1", "Option 2", "Option 3" } },
+                { "multiple_selection", false }
+            });
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", attributeRequest);
         AssertApiSuccess(createResponse);
 
@@ -294,7 +307,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         // Create test attributes with unique identifiers
         var testId = Guid.NewGuid().ToString("N")[..8];
         var attributeRequests = Enumerable.Range(0, 3)
-            .Select(i => GetAllAttributesTestDataV1.CreateAttributeForSeeding(
+            .Select(i => AttributeTestDataV1.Creation.CreateAttributeForSeeding(
                 name: $"db_test_{testId}_{i}",
                 displayName: $"DB Test Attribute {i + 1}"
             )).ToList();
@@ -370,9 +383,9 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         // Create attributes with specific creation order
         var attributeRequests = new[]
         {
-            GetAllAttributesTestDataV1.CreateAttributeForSeeding(name: "z_last", displayName: "Z Last"),
-            GetAllAttributesTestDataV1.CreateAttributeForSeeding(name: "a_first", displayName: "A First"),
-            GetAllAttributesTestDataV1.CreateAttributeForSeeding(name: "m_middle", displayName: "M Middle")
+            AttributeTestDataV1.Creation.CreateAttributeForSeeding(name: "z_last", displayName: "Z Last"),
+            AttributeTestDataV1.Creation.CreateAttributeForSeeding(name: "a_first", displayName: "A First"),
+            AttributeTestDataV1.Creation.CreateAttributeForSeeding(name: "m_middle", displayName: "M Middle")
         };
 
         foreach (var request in attributeRequests)
@@ -413,7 +426,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create attribute with unicode characters
-        var attributeRequest = GetAllAttributesTestDataV1.EdgeCases.CreateAttributeWithUnicodeCharacters();
+        var attributeRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharactersForCreate();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", attributeRequest);
         AssertApiSuccess(createResponse);
 
@@ -444,7 +457,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create attribute with complex configuration
-        var attributeRequest = GetAllAttributesTestDataV1.EdgeCases.CreateAttributeWithAllFlags();
+        var attributeRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", attributeRequest);
         AssertApiSuccess(createResponse);
 
@@ -479,7 +492,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create many attributes
-        var attributeRequests = GetAllAttributesTestDataV1.CreateMultipleAttributesForSeeding(20);
+        var attributeRequests = AttributeTestDataV1.Creation.CreateMultipleAttributesForSeeding(20);
         foreach (var request in attributeRequests)
         {
             var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -511,7 +524,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create some test data
-        var attributeRequest = GetAllAttributesTestDataV1.CreateAttributeForSeeding();
+        var attributeRequest = AttributeTestDataV1.Creation.CreateAttributeForSeeding();
         await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", attributeRequest);
 
         // Process outbox messages to ensure domain events are handled and cache is invalidated
@@ -548,7 +561,7 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create attribute
-        var attributeRequest = GetAllAttributesTestDataV1.CreateAttributeForSeeding();
+        var attributeRequest = AttributeTestDataV1.Creation.CreateAttributeForSeeding();
         await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", attributeRequest);
 
         // Process outbox messages to ensure domain events are handled and cache is invalidated
@@ -610,17 +623,4 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
 
     #endregion
 
-    // Response DTO for create attribute endpoint (used for seeding)
-    public class CreateAttributeResponseV1
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
-        public AttributeType Type { get; set; }
-        public bool Filterable { get; set; }
-        public bool Searchable { get; set; }
-        public bool IsVariant { get; set; }
-        public Dictionary<string, object> Configuration { get; set; } = new();
-        public DateTime CreatedAt { get; set; }
-    }
 }

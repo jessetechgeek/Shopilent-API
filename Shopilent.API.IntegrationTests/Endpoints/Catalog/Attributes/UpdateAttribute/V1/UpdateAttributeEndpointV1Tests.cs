@@ -1,8 +1,9 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
-using Shopilent.API.IntegrationTests.Endpoints.Catalog.Attributes.CreateAttribute.V1;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
+using Shopilent.API.Endpoints.Catalog.Attributes.CreateAttribute.V1;
 using Shopilent.Domain.Catalog.Enums;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Catalog.Attributes.UpdateAttribute.V1;
@@ -24,7 +25,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest(
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
             name: "test_update_attribute",
             displayName: "Original Display Name",
             type: "Text");
@@ -32,7 +33,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest(
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest(
             displayName: "Updated Display Name",
             filterable: true,
             searchable: false,
@@ -61,7 +62,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest(
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
             name: "test_db_update",
             displayName: "Original DB Name",
             type: "Number");
@@ -69,7 +70,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest(
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest(
             displayName: "Updated DB Name",
             filterable: false,
             searchable: true,
@@ -105,7 +106,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest(
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
             name: "test_complex_config",
             displayName: "Complex Config Test",
             type: "Select");
@@ -113,7 +114,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
+        var updateRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -143,12 +144,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest(displayName: invalidDisplayName);
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest(displayName: invalidDisplayName);
 
         // Act
         var response = await PutAsync($"v1/attributes/{attributeId}", updateRequest);
@@ -170,12 +171,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.CreateRequestWithNullDisplayName();
+        var updateRequest = AttributeTestDataV1.Validation.CreateRequestWithNullDisplayName();
 
         // Act
         var response = await PutAsync($"v1/attributes/{attributeId}", updateRequest);
@@ -197,12 +198,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.CreateRequestWithLongDisplayName();
+        var updateRequest = AttributeTestDataV1.Validation.CreateRequestWithLongDisplayName();
 
         // Act
         var response = await PutAsync($"v1/attributes/{attributeId}", updateRequest);
@@ -224,7 +225,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var invalidId = Guid.NewGuid();
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest();
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/attributes/{invalidId}", updateRequest);
@@ -242,7 +243,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var malformedId = "not-a-valid-guid";
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest();
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/attributes/{malformedId}", updateRequest);
@@ -261,7 +262,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         ClearAuthenticationHeader();
         var attributeId = Guid.NewGuid();
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest();
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/attributes/{attributeId}", updateRequest);
@@ -279,7 +280,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var attributeId = Guid.NewGuid();
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest();
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/attributes/{attributeId}", updateRequest);
@@ -297,12 +298,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest(displayName: "Admin Updated");
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest(displayName: "Admin Updated");
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -325,12 +326,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumValidDisplayNameLength();
+        var updateRequest = AttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumDisplayNameLength();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -349,12 +350,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.BoundaryTests.CreateRequestWithMinimumValidDisplayNameLength();
+        var updateRequest = AttributeTestDataV1.BoundaryTests.CreateRequestWithMinimumValidDisplayName();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -377,12 +378,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
+        var updateRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -403,12 +404,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.EdgeCases.CreateRequestWithSpecialCharacters();
+        var updateRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithSpecialCharacters();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -427,12 +428,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.EdgeCases.CreateRequestWithEmptyConfiguration();
+        var updateRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithEmptyConfiguration();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -452,12 +453,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.EdgeCases.CreateRequestWithNullConfiguration();
+        var updateRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithNullConfiguration();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -480,12 +481,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.PropertyCombinations.CreateRequestAllFilterableSearchableVariant();
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.PropertyCombinations.CreateRequestAllFilterableSearchableVariant();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -507,12 +508,12 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
         var attributeId = createResponse!.Data.Id;
-        var updateRequest = UpdateAttributeTestDataV1.PropertyCombinations.CreateRequestAllFalseFlags();
+        var updateRequest = AttributeTestDataV1.UpdateScenarios.PropertyCombinations.CreateRequestAllFalseFlags();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{attributeId}", updateRequest);
@@ -536,7 +537,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = CreateAttributeTestDataV1.CreateValidRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
 
@@ -557,17 +558,17 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     {
         yield return new object[]
         {
-            UpdateAttributeTestDataV1.PropertyCombinations.CreateRequestFilterableOnly(),
+            AttributeTestDataV1.UpdateScenarios.PropertyCombinations.CreateRequestFilterableOnly(),
             "Filterable Only", true, false, false
         };
         yield return new object[]
         {
-            UpdateAttributeTestDataV1.PropertyCombinations.CreateRequestSearchableOnly(),
+            AttributeTestDataV1.UpdateScenarios.PropertyCombinations.CreateRequestSearchableOnly(),
             "Searchable Only", false, true, false
         };
         yield return new object[]
         {
-            UpdateAttributeTestDataV1.PropertyCombinations.CreateRequestVariantOnly(),
+            AttributeTestDataV1.UpdateScenarios.PropertyCombinations.CreateRequestVariantOnly(),
             "Variant Only", false, false, true
         };
     }
@@ -588,7 +589,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         var attributeIds = new List<Guid>();
         for (int i = 0; i < 5; i++)
         {
-            var createRequest = CreateAttributeTestDataV1.CreateValidRequest(
+            var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
                 name: $"concurrent_test_{i}",
                 displayName: $"Concurrent Test {i}");
             var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
@@ -599,7 +600,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         // Create concurrent update tasks
         var tasks = attributeIds.Select(id =>
         {
-            var updateRequest = UpdateAttributeTestDataV1.CreateValidRequest(
+            var updateRequest = AttributeTestDataV1.UpdateScenarios.CreateValidUpdateRequest(
                 displayName: $"Updated Concurrent {id}");
             return PutApiResponseAsync<object, UpdateAttributeResponseV1>($"v1/attributes/{id}", updateRequest);
         }).ToList();
@@ -630,17 +631,4 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         public DateTime UpdatedAt { get; set; }
     }
 
-    // Response DTO for CreateAttribute (needed for setup)
-    public class CreateAttributeResponseV1
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
-        public AttributeType Type { get; set; }
-        public bool Filterable { get; set; }
-        public bool Searchable { get; set; }
-        public bool IsVariant { get; set; }
-        public Dictionary<string, object> Configuration { get; set; } = new();
-        public DateTime CreatedAt { get; set; }
-    }
 }

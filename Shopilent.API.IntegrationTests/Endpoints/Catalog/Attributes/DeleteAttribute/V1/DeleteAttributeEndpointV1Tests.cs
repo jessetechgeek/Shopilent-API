@@ -3,6 +3,8 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
 using Shopilent.API.Common.Models;
+using Shopilent.API.IntegrationTests.Common.TestData;
+using Shopilent.API.Endpoints.Catalog.Attributes.CreateAttribute.V1;
 using Shopilent.Domain.Catalog.Enums;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Catalog.Attributes.DeleteAttribute.V1;
@@ -24,7 +26,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -50,7 +52,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute first
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion(
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion(
             name: "delete_test_db",
             displayName: "Delete Test DB");
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
@@ -101,7 +103,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute of specified type
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion(
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion(
             name: $"delete_{attributeType.ToLower()}_{Guid.NewGuid():N}",
             type: attributeType);
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
@@ -131,7 +133,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.TypeSpecificCases.CreateTextAttribute();
+        var createRequest = AttributeTestDataV1.TypeSpecific.CreateTextAttributeRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -155,7 +157,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.TypeSpecificCases.CreateSelectAttribute();
+        var createRequest = AttributeTestDataV1.TypeSpecific.CreateSelectAttributeRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -179,7 +181,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.TypeSpecificCases.CreateColorAttribute();
+        var createRequest = AttributeTestDataV1.TypeSpecific.CreateColorAttributeRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -203,7 +205,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.TypeSpecificCases.CreateNumberAttribute();
+        var createRequest = AttributeTestDataV1.TypeSpecific.CreateNumberAttributeRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -340,7 +342,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute
-        var createRequest = DeleteAttributeTestDataV1.CreateAttributeUsedByProducts();
+        var createRequest = AttributeTestDataV1.Creation.CreateAttributeUsedByProducts();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -374,7 +376,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -406,7 +408,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.EdgeCases.CreateAttributeWithUnicodeCharacters();
+        var createRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -430,7 +432,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.EdgeCases.CreateAttributeWithComplexConfiguration();
+        var createRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -454,7 +456,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.EdgeCases.CreateAttributeWithLongName();
+        var createRequest = AttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumNameLength();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -488,7 +490,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion(
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion(
             filterable: filterable,
             searchable: searchable,
             isVariant: isVariant);
@@ -521,7 +523,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
 
         // Create multiple attributes first
         var createTasks = Enumerable.Range(0, 5)
-            .Select(i => DeleteAttributeTestDataV1.CreateValidAttributeForDeletion(name: $"concurrent_delete_{i}_{Guid.NewGuid():N}"))
+            .Select(i => AttributeTestDataV1.Creation.CreateValidAttributeForDeletion(name: $"concurrent_delete_{i}_{Guid.NewGuid():N}"))
             .Select(request => PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request))
             .ToList();
 
@@ -551,7 +553,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var attributeIds = new List<Guid>();
         for (int i = 0; i < 3; i++)
         {
-            var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion(
+            var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion(
                 name: $"sequential_delete_{i}_{Guid.NewGuid():N}");
             var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
             AssertApiSuccess(createResponse);
@@ -583,7 +585,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -634,7 +636,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create an attribute
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -671,7 +673,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteAttributeTestDataV1.CreateValidAttributeForDeletion();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidAttributeForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -725,17 +727,4 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
 
     #endregion
 
-    // Response DTO for CreateAttribute (needed for setup in tests)
-    public class CreateAttributeResponseV1
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
-        public AttributeType Type { get; set; }
-        public bool Filterable { get; set; }
-        public bool Searchable { get; set; }
-        public bool IsVariant { get; set; }
-        public Dictionary<string, object> Configuration { get; set; } = new();
-        public DateTime CreatedAt { get; set; }
-    }
 }

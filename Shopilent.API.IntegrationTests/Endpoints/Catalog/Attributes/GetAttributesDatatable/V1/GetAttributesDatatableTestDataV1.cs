@@ -1,287 +1,180 @@
-using Bogus;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.Domain.Common.Models;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Catalog.Attributes.GetAttributesDatatable.V1;
 
+/// <summary>
+/// Attribute-specific DataTable test data wrapper.
+/// Uses the generic DataTableTestDataFactory for all common functionality.
+/// </summary>
 public static class GetAttributesDatatableTestDataV1
 {
-    private static readonly Faker _faker = new();
+    /// <summary>
+    /// Standard column configuration for attributes datatable
+    /// </summary>
+    private static readonly List<DataTableColumn> _attributeColumns = new()
+    {
+        new() { Data = "name", Name = "name", Searchable = true, Orderable = true },
+        new() { Data = "displayName", Name = "displayName", Searchable = true, Orderable = true },
+        new() { Data = "type", Name = "type", Searchable = true, Orderable = true },
+        new() { Data = "filterable", Name = "filterable", Searchable = false, Orderable = true },
+        new() { Data = "searchable", Name = "searchable", Searchable = false, Orderable = true },
+        new() { Data = "isVariant", Name = "isVariant", Searchable = false, Orderable = true },
+        new() { Data = "createdAt", Name = "createdAt", Searchable = false, Orderable = true }
+    };
 
-    // Core valid request generator
+    /// <summary>
+    /// Core valid request generator for attributes
+    /// </summary>
     public static DataTableRequest CreateValidRequest(
         int draw = 1,
         int start = 0,
         int length = 10,
         string? searchValue = null,
-        bool includeColumns = true)
-    {
-        var request = new DataTableRequest
-        {
-            Draw = draw,
-            Start = start,
-            Length = length,
-            Search = new DataTableSearch
-            {
-                Value = searchValue ?? string.Empty,
-                Regex = false
-            }
-        };
+        bool includeColumns = true) =>
+        DataTableTestDataFactory.CreateValidRequest(_attributeColumns, draw, start, length, searchValue, includeColumns);
 
-        if (includeColumns)
-        {
-            request.Columns = CreateStandardColumns();
-            request.Order = CreateStandardOrder();
-        }
-
-        return request;
-    }
-
-    // Standard column configuration for attributes datatable
-    private static List<DataTableColumn> CreateStandardColumns()
-    {
-        return new List<DataTableColumn>
-        {
-            new() { Data = "name", Name = "name", Searchable = true, Orderable = true },
-            new() { Data = "displayName", Name = "displayName", Searchable = true, Orderable = true },
-            new() { Data = "type", Name = "type", Searchable = true, Orderable = true },
-            new() { Data = "filterable", Name = "filterable", Searchable = false, Orderable = true },
-            new() { Data = "searchable", Name = "searchable", Searchable = false, Orderable = true },
-            new() { Data = "isVariant", Name = "isVariant", Searchable = false, Orderable = true },
-            new() { Data = "createdAt", Name = "createdAt", Searchable = false, Orderable = true }
-        };
-    }
-
-    private static List<DataTableOrder> CreateStandardOrder()
-    {
-        return new List<DataTableOrder>
-        {
-            new() { Column = 0, Dir = "asc" } // Order by name ascending by default
-        };
-    }
-
-    // Pagination scenarios
+    /// <summary>
+    /// Pagination scenarios for attributes
+    /// </summary>
     public static class Pagination
     {
         public static DataTableRequest CreateFirstPageRequest(int pageSize = 10) =>
-            CreateValidRequest(start: 0, length: pageSize);
+            DataTableTestDataFactory.Pagination.CreateFirstPageRequest(_attributeColumns, pageSize);
 
         public static DataTableRequest CreateSecondPageRequest(int pageSize = 10) =>
-            CreateValidRequest(start: pageSize, length: pageSize);
+            DataTableTestDataFactory.Pagination.CreateSecondPageRequest(_attributeColumns, pageSize);
 
         public static DataTableRequest CreateLargePageRequest() =>
-            CreateValidRequest(start: 0, length: 100);
+            DataTableTestDataFactory.Pagination.CreateLargePageRequest(_attributeColumns);
 
         public static DataTableRequest CreateSmallPageRequest() =>
-            CreateValidRequest(start: 0, length: 1);
+            DataTableTestDataFactory.Pagination.CreateSmallPageRequest(_attributeColumns);
 
         public static DataTableRequest CreateZeroLengthRequest() =>
-            CreateValidRequest(start: 0, length: 0);
+            DataTableTestDataFactory.Pagination.CreateZeroLengthRequest(_attributeColumns);
 
         public static DataTableRequest CreateHighStartRequest() =>
-            CreateValidRequest(start: 9999, length: 10);
+            DataTableTestDataFactory.Pagination.CreateHighStartRequest(_attributeColumns);
     }
 
-    // Search scenarios
+    /// <summary>
+    /// Search scenarios for attributes
+    /// </summary>
     public static class SearchScenarios
     {
         public static DataTableRequest CreateNameSearchRequest(string searchTerm = "color") =>
-            CreateValidRequest(searchValue: searchTerm);
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_attributeColumns, searchTerm);
 
         public static DataTableRequest CreateDisplayNameSearchRequest(string searchTerm = "Color") =>
-            CreateValidRequest(searchValue: searchTerm);
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_attributeColumns, searchTerm);
 
         public static DataTableRequest CreateTypeSearchRequest(string searchTerm = "text") =>
-            CreateValidRequest(searchValue: searchTerm);
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_attributeColumns, searchTerm);
 
         public static DataTableRequest CreateEmptySearchRequest() =>
-            CreateValidRequest(searchValue: "");
+            DataTableTestDataFactory.SearchScenarios.CreateEmptySearchRequest(_attributeColumns);
 
         public static DataTableRequest CreateSpaceSearchRequest() =>
-            CreateValidRequest(searchValue: " ");
+            DataTableTestDataFactory.SearchScenarios.CreateSpaceSearchRequest(_attributeColumns);
 
         public static DataTableRequest CreateSpecialCharacterSearchRequest() =>
-            CreateValidRequest(searchValue: "-_");
+            DataTableTestDataFactory.SearchScenarios.CreateSpecialCharacterSearchRequest(_attributeColumns);
 
         public static DataTableRequest CreateUnicodeSearchRequest() =>
-            CreateValidRequest(searchValue: "Größe");
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_attributeColumns, "Größe");
 
         public static DataTableRequest CreateNoResultsSearchRequest() =>
-            CreateValidRequest(searchValue: "nonexistentattribute12345");
+            DataTableTestDataFactory.SearchScenarios.CreateNoResultsSearchRequest(_attributeColumns);
     }
 
-    // Sorting scenarios
+    /// <summary>
+    /// Sorting scenarios for attributes
+    /// </summary>
     public static class SortingScenarios
     {
-        public static DataTableRequest CreateSortByNameAscRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 0, Dir = "asc" } // Name column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByNameAscRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByFirstColumnAscRequest(_attributeColumns);
 
-        public static DataTableRequest CreateSortByNameDescRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 0, Dir = "desc" } // Name column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByNameDescRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByFirstColumnDescRequest(_attributeColumns);
 
-        public static DataTableRequest CreateSortByDisplayNameRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 1, Dir = "asc" } // DisplayName column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByDisplayNameRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortBySecondColumnRequest(_attributeColumns);
 
-        public static DataTableRequest CreateSortByTypeRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 2, Dir = "asc" } // Type column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByTypeRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByThirdColumnRequest(_attributeColumns);
 
-        public static DataTableRequest CreateSortByCreatedAtRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 6, Dir = "desc" } // CreatedAt column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByCreatedAtRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByLastColumnRequest(_attributeColumns);
 
-        public static DataTableRequest CreateMultiColumnSortRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 2, Dir = "asc" },  // Type first
-                new() { Column = 0, Dir = "asc" }   // Then Name
-            };
-            return request;
-        }
+        public static DataTableRequest CreateMultiColumnSortRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateMultiColumnSortRequest(_attributeColumns);
 
-        public static DataTableRequest CreateInvalidColumnSortRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 99, Dir = "asc" } // Invalid column index
-            };
-            return request;
-        }
+        public static DataTableRequest CreateInvalidColumnSortRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateInvalidColumnSortRequest(_attributeColumns);
     }
 
-    // Validation test cases
+    /// <summary>
+    /// Validation test cases for attributes
+    /// </summary>
     public static class ValidationTests
     {
         public static DataTableRequest CreateNegativeStartRequest() =>
-            CreateValidRequest(start: -1, length: 10);
+            DataTableTestDataFactory.ValidationTests.CreateNegativeStartRequest(_attributeColumns);
 
         public static DataTableRequest CreateNegativeLengthRequest() =>
-            CreateValidRequest(start: 0, length: -1);
+            DataTableTestDataFactory.ValidationTests.CreateNegativeLengthRequest(_attributeColumns);
 
         public static DataTableRequest CreateNegativeDrawRequest() =>
-            CreateValidRequest(draw: -1, start: 0, length: 10);
+            DataTableTestDataFactory.ValidationTests.CreateNegativeDrawRequest(_attributeColumns);
 
         public static DataTableRequest CreateExcessiveLengthRequest() =>
-            CreateValidRequest(start: 0, length: 10000);
+            DataTableTestDataFactory.ValidationTests.CreateExcessiveLengthRequest(_attributeColumns);
 
-        public static DataTableRequest CreateNoColumnsRequest()
-        {
-            var request = CreateValidRequest();
-            request.Columns.Clear();
-            return request;
-        }
+        public static DataTableRequest CreateNoColumnsRequest() =>
+            DataTableTestDataFactory.ValidationTests.CreateNoColumnsRequest(_attributeColumns);
 
-        public static DataTableRequest CreateNoOrderRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order.Clear();
-            return request;
-        }
+        public static DataTableRequest CreateNoOrderRequest() =>
+            DataTableTestDataFactory.ValidationTests.CreateNoOrderRequest(_attributeColumns);
 
-        public static DataTableRequest CreateInvalidDirectionRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 0, Dir = "invalid" }
-            };
-            return request;
-        }
+        public static DataTableRequest CreateInvalidDirectionRequest() =>
+            DataTableTestDataFactory.ValidationTests.CreateInvalidDirectionRequest(_attributeColumns);
     }
 
-    // Edge cases
+    /// <summary>
+    /// Edge case scenarios for attributes
+    /// </summary>
     public static class EdgeCases
     {
         public static DataTableRequest CreateMaxPageSizeRequest() =>
-            CreateValidRequest(start: 0, length: 1000);
+            DataTableTestDataFactory.EdgeCases.CreateMaxPageSizeRequest(_attributeColumns);
 
-        public static DataTableRequest CreateRegexSearchRequest()
-        {
-            var request = CreateValidRequest(searchValue: "color.*");
-            request.Search.Regex = true;
-            return request;
-        }
+        public static DataTableRequest CreateRegexSearchRequest() =>
+            DataTableTestDataFactory.EdgeCases.CreateRegexSearchRequest(_attributeColumns);
 
         public static DataTableRequest CreateLongSearchTermRequest() =>
-            CreateValidRequest(searchValue: new string('a', 1000));
+            DataTableTestDataFactory.EdgeCases.CreateLongSearchTermRequest(_attributeColumns);
 
-        public static DataTableRequest CreateComplexRequest()
-        {
-            var request = new DataTableRequest
-            {
-                Draw = 5,
-                Start = 20,
-                Length = 25,
-                Search = new DataTableSearch
-                {
-                    Value = "color",
-                    Regex = false
-                },
-                Columns = new List<DataTableColumn>
-                {
-                    new() { Data = "name", Name = "name", Searchable = true, Orderable = true, Search = new DataTableSearch { Value = "size" } },
-                    new() { Data = "displayName", Name = "displayName", Searchable = true, Orderable = true, Search = new DataTableSearch { Value = "" } },
-                    new() { Data = "type", Name = "type", Searchable = true, Orderable = true, Search = new DataTableSearch { Value = "text" } },
-                    new() { Data = "filterable", Name = "filterable", Searchable = false, Orderable = true, Search = new DataTableSearch { Value = "" } }
-                },
-                Order = new List<DataTableOrder>
-                {
-                    new() { Column = 1, Dir = "desc" },
-                    new() { Column = 2, Dir = "asc" }
-                }
-            };
-            return request;
-        }
+        public static DataTableRequest CreateComplexRequest() =>
+            DataTableTestDataFactory.EdgeCases.CreateComplexRequest(_attributeColumns);
     }
 
-    // Boundary tests
+    /// <summary>
+    /// Boundary test scenarios for attributes
+    /// </summary>
     public static class BoundaryTests
     {
         public static DataTableRequest CreateMinimumValidRequest() =>
-            CreateValidRequest(draw: 1, start: 0, length: 1);
+            DataTableTestDataFactory.BoundaryTests.CreateMinimumValidRequest(_attributeColumns);
 
         public static DataTableRequest CreateZeroDrawRequest() =>
-            CreateValidRequest(draw: 0, start: 0, length: 10);
+            DataTableTestDataFactory.BoundaryTests.CreateZeroDrawRequest(_attributeColumns);
 
         public static DataTableRequest CreateHighDrawRequest() =>
-            CreateValidRequest(draw: int.MaxValue, start: 0, length: 10);
+            DataTableTestDataFactory.BoundaryTests.CreateHighDrawRequest(_attributeColumns);
 
         public static DataTableRequest CreateBoundaryPageRequest() =>
-            CreateValidRequest(start: int.MaxValue - 1000, length: 10);
+            DataTableTestDataFactory.BoundaryTests.CreateBoundaryPageRequest(_attributeColumns);
     }
 }
