@@ -38,6 +38,7 @@ internal sealed  class
 
         // Also invalidate collection caches
         await _cacheService.RemoveByPatternAsync("categories-*", cancellationToken);
+        await _cacheService.RemoveByPatternAsync("all-categories", cancellationToken);
         await _cacheService.RemoveByPatternAsync("root-categories", cancellationToken);
     }
 }
