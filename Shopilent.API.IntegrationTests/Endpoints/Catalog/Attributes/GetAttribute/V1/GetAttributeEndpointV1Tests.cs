@@ -2,6 +2,8 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
 using Shopilent.API.Common.Models;
+using Shopilent.API.IntegrationTests.Common.TestData;
+using Shopilent.API.Endpoints.Catalog.Attributes.CreateAttribute.V1;
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Catalog.Enums;
 
@@ -22,9 +24,9 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
+
         // Create a test attribute first
-        var createRequest = GetAttributeTestDataV1.CreateValidAttributeRequest(
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
             name: "test_get_attribute",
             displayName: "Test Get Attribute",
             type: "Text");
@@ -56,9 +58,9 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
+
         // Create a test attribute with specific configuration
-        var createRequest = GetAttributeTestDataV1.AttributeTypes.CreateSelectAttributeRequest();
+        var createRequest = AttributeTestDataV1.TypeSpecific.CreateSelectAttributeRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -72,8 +74,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(response);
         response!.Data.Should().NotBeNull();
         response.Data.Id.Should().Be(attributeId);
-        response.Data.Name.Should().Be("select_get_test");
-        response.Data.DisplayName.Should().Be("Select Get Test Attribute");
+        response.Data.Name.Should().Be("select_attribute");
+        response.Data.DisplayName.Should().Be("Select Attribute");
         response.Data.Type.Should().Be(AttributeType.Select);
         response.Data.Filterable.Should().BeTrue();
         response.Data.Searchable.Should().BeFalse();
@@ -94,8 +96,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
-        var createRequest = GetAttributeTestDataV1.CreateValidAttributeRequest(
+
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
             name: $"test_{attributeType.ToLower()}_get",
             type: attributeType);
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
@@ -165,9 +167,9 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
+
         // Create a test attribute
-        var createRequest = GetAttributeTestDataV1.CreateValidAttributeRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -191,9 +193,9 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
-        
+
         // Create a test attribute as admin
-        var createRequest = GetAttributeTestDataV1.CreateValidAttributeRequest();
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -223,8 +225,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
-        var createRequest = GetAttributeTestDataV1.EdgeCases.CreateAttributeWithComplexConfig();
+
+        var createRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -251,8 +253,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
-        var createRequest = GetAttributeTestDataV1.EdgeCases.CreateAttributeWithEmptyConfig();
+
+        var createRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithEmptyConfiguration();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -280,8 +282,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
-        var createRequest = GetAttributeTestDataV1.EdgeCases.CreateAttributeWithUnicodeChars();
+
+        var createRequest = AttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -294,7 +296,7 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         // Assert
         AssertApiSuccess(response);
         response!.Data.Should().NotBeNull();
-        response.Data.Name.Should().Be("unicode_test_café");
+        response.Data.Name.Should().Be("café_münchën_");
         response.Data.DisplayName.Should().Be("Café Münchën Attribute™");
         response.Data.Configuration.Should().ContainKey("description");
     }
@@ -310,8 +312,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
-        var createRequest = GetAttributeTestDataV1.CreateValidAttributeRequest(
+
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
             name: "db_persistence_test",
             displayName: "Database Persistence Test",
             type: "Number",
@@ -367,8 +369,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
-        var createRequest = GetAttributeTestDataV1.CreateValidAttributeRequest(
+
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest(
             name: "cache_consistency_test");
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
@@ -383,10 +385,10 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         // Assert
         AssertApiSuccess(firstResponse);
         AssertApiSuccess(secondResponse);
-        
+
         firstResponse!.Data.Should().NotBeNull();
         secondResponse!.Data.Should().NotBeNull();
-        
+
         // Data should be identical
         firstResponse.Data.Id.Should().Be(secondResponse.Data.Id);
         firstResponse.Data.Name.Should().Be(secondResponse.Data.Name);
@@ -407,8 +409,8 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
-        var createRequest = GetAttributeTestDataV1.CreateValidAttributeRequest();
+
+        var createRequest = AttributeTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", createRequest);
         AssertApiSuccess(createResponse);
         var attributeId = createResponse!.Data.Id;
@@ -441,11 +443,11 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
 
         var testCases = new[]
         {
-            ("Text", GetAttributeTestDataV1.AttributeTypes.CreateTextAttributeRequest()),
-            ("Select", GetAttributeTestDataV1.AttributeTypes.CreateSelectAttributeRequest()),
-            ("Color", GetAttributeTestDataV1.AttributeTypes.CreateColorAttributeRequest()),
-            ("Number", GetAttributeTestDataV1.AttributeTypes.CreateNumberAttributeRequest()),
-            ("Boolean", GetAttributeTestDataV1.AttributeTypes.CreateBooleanAttributeRequest())
+            ("Text", AttributeTestDataV1.TypeSpecific.CreateTextAttributeRequest()),
+            ("Select", AttributeTestDataV1.TypeSpecific.CreateSelectAttributeRequest()),
+            ("Color", AttributeTestDataV1.TypeSpecific.CreateColorAttributeRequest()),
+            ("Number", AttributeTestDataV1.TypeSpecific.CreateNumberAttributeRequest()),
+            ("Boolean", AttributeTestDataV1.TypeSpecific.CreateBooleanAttributeRequest())
         };
 
         var attributeIds = new List<Guid>();
@@ -468,7 +470,7 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
 
             var response = await GetApiResponseAsync<AttributeDto>($"v1/attributes/{attributeId}");
             AssertApiSuccess(response);
-            
+
             response!.Data.Should().NotBeNull();
             response.Data.Id.Should().Be(attributeId);
             response.Data.Type.ToString().Should().Be(typeName);
@@ -478,17 +480,4 @@ public class GetAttributeEndpointV1Tests : ApiIntegrationTestBase
 
     #endregion
 
-    // Response DTO for CreateAttribute endpoint (used for test setup)
-    public class CreateAttributeResponseV1
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
-        public AttributeType Type { get; set; }
-        public bool Filterable { get; set; }
-        public bool Searchable { get; set; }
-        public bool IsVariant { get; set; }
-        public Dictionary<string, object> Configuration { get; set; } = new();
-        public DateTime CreatedAt { get; set; }
-    }
 }

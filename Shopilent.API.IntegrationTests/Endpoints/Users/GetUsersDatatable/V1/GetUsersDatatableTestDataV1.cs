@@ -1,286 +1,179 @@
-using Bogus;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.Domain.Common.Models;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Users.GetUsersDatatable.V1;
 
+/// <summary>
+/// User-specific DataTable test data wrapper.
+/// Uses the generic DataTableTestDataFactory for all common functionality.
+/// </summary>
 public static class GetUsersDatatableTestDataV1
 {
-    private static readonly Faker _faker = new();
+    /// <summary>
+    /// Standard column configuration for users datatable
+    /// </summary>
+    private static readonly List<DataTableColumn> _userColumns = new()
+    {
+        new() { Data = "email", Name = "email", Searchable = true, Orderable = true },
+        new() { Data = "fullName", Name = "fullName", Searchable = true, Orderable = true },
+        new() { Data = "phone", Name = "phone", Searchable = true, Orderable = false },
+        new() { Data = "roleName", Name = "roleName", Searchable = true, Orderable = true },
+        new() { Data = "isActive", Name = "isActive", Searchable = false, Orderable = true },
+        new() { Data = "createdAt", Name = "createdAt", Searchable = false, Orderable = true }
+    };
 
-    // Core valid request generator
+    /// <summary>
+    /// Core valid request generator for users
+    /// </summary>
     public static DataTableRequest CreateValidRequest(
         int draw = 1,
         int start = 0,
         int length = 10,
         string? searchValue = null,
-        bool includeColumns = true)
-    {
-        var request = new DataTableRequest
-        {
-            Draw = draw,
-            Start = start,
-            Length = length,
-            Search = new DataTableSearch
-            {
-                Value = searchValue ?? string.Empty,
-                Regex = false
-            }
-        };
+        bool includeColumns = true) =>
+        DataTableTestDataFactory.CreateValidRequest(_userColumns, draw, start, length, searchValue, includeColumns);
 
-        if (includeColumns)
-        {
-            request.Columns = CreateStandardColumns();
-            request.Order = CreateStandardOrder();
-        }
-
-        return request;
-    }
-
-    // Standard column configuration for users datatable
-    private static List<DataTableColumn> CreateStandardColumns()
-    {
-        return new List<DataTableColumn>
-        {
-            new() { Data = "email", Name = "email", Searchable = true, Orderable = true },
-            new() { Data = "fullName", Name = "fullName", Searchable = true, Orderable = true },
-            new() { Data = "phone", Name = "phone", Searchable = true, Orderable = false },
-            new() { Data = "roleName", Name = "roleName", Searchable = true, Orderable = true },
-            new() { Data = "isActive", Name = "isActive", Searchable = false, Orderable = true },
-            new() { Data = "createdAt", Name = "createdAt", Searchable = false, Orderable = true }
-        };
-    }
-
-    private static List<DataTableOrder> CreateStandardOrder()
-    {
-        return new List<DataTableOrder>
-        {
-            new() { Column = 0, Dir = "asc" } // Order by email ascending by default
-        };
-    }
-
-    // Pagination scenarios
+    /// <summary>
+    /// Pagination scenarios for users
+    /// </summary>
     public static class Pagination
     {
-        public static DataTableRequest CreateFirstPageRequest(int pageSize = 10) => 
-            CreateValidRequest(start: 0, length: pageSize);
+        public static DataTableRequest CreateFirstPageRequest(int pageSize = 10) =>
+            DataTableTestDataFactory.Pagination.CreateFirstPageRequest(_userColumns, pageSize);
 
-        public static DataTableRequest CreateSecondPageRequest(int pageSize = 10) => 
-            CreateValidRequest(start: pageSize, length: pageSize);
+        public static DataTableRequest CreateSecondPageRequest(int pageSize = 10) =>
+            DataTableTestDataFactory.Pagination.CreateSecondPageRequest(_userColumns, pageSize);
 
-        public static DataTableRequest CreateLargePageRequest() => 
-            CreateValidRequest(start: 0, length: 100);
+        public static DataTableRequest CreateLargePageRequest() =>
+            DataTableTestDataFactory.Pagination.CreateLargePageRequest(_userColumns);
 
-        public static DataTableRequest CreateSmallPageRequest() => 
-            CreateValidRequest(start: 0, length: 1);
+        public static DataTableRequest CreateSmallPageRequest() =>
+            DataTableTestDataFactory.Pagination.CreateSmallPageRequest(_userColumns);
 
-        public static DataTableRequest CreateZeroLengthRequest() => 
-            CreateValidRequest(start: 0, length: 0);
+        public static DataTableRequest CreateZeroLengthRequest() =>
+            DataTableTestDataFactory.Pagination.CreateZeroLengthRequest(_userColumns);
 
-        public static DataTableRequest CreateHighStartRequest() => 
-            CreateValidRequest(start: 9999, length: 10);
+        public static DataTableRequest CreateHighStartRequest() =>
+            DataTableTestDataFactory.Pagination.CreateHighStartRequest(_userColumns);
     }
 
-    // Search scenarios
+    /// <summary>
+    /// Search scenarios for users
+    /// </summary>
     public static class SearchScenarios
     {
-        public static DataTableRequest CreateEmailSearchRequest(string searchTerm = "admin") =>
-            CreateValidRequest(searchValue: searchTerm);
+        public static DataTableRequest CreateEmailSearchRequest(string searchTerm = "john") =>
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_userColumns, searchTerm);
 
-        public static DataTableRequest CreateNameSearchRequest(string searchTerm = "John") =>
-            CreateValidRequest(searchValue: searchTerm);
+        public static DataTableRequest CreateFullNameSearchRequest(string searchTerm = "John") =>
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_userColumns, searchTerm);
 
-        public static DataTableRequest CreateRoleSearchRequest(string searchTerm = "Admin") =>
-            CreateValidRequest(searchValue: searchTerm);
+        public static DataTableRequest CreateRoleSearchRequest(string searchTerm = "admin") =>
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_userColumns, searchTerm);
 
         public static DataTableRequest CreateEmptySearchRequest() =>
-            CreateValidRequest(searchValue: "");
+            DataTableTestDataFactory.SearchScenarios.CreateEmptySearchRequest(_userColumns);
 
         public static DataTableRequest CreateSpaceSearchRequest() =>
-            CreateValidRequest(searchValue: " ");
+            DataTableTestDataFactory.SearchScenarios.CreateSpaceSearchRequest(_userColumns);
 
         public static DataTableRequest CreateSpecialCharacterSearchRequest() =>
-            CreateValidRequest(searchValue: "@#$%");
+            DataTableTestDataFactory.SearchScenarios.CreateSpecialCharacterSearchRequest(_userColumns);
 
         public static DataTableRequest CreateUnicodeSearchRequest() =>
-            CreateValidRequest(searchValue: "Müller");
+            DataTableTestDataFactory.SearchScenarios.CreateGenericSearchRequest(_userColumns, "Müller");
 
         public static DataTableRequest CreateNoResultsSearchRequest() =>
-            CreateValidRequest(searchValue: "nonexistentuser12345");
+            DataTableTestDataFactory.SearchScenarios.CreateNoResultsSearchRequest(_userColumns);
     }
 
-    // Sorting scenarios
+    /// <summary>
+    /// Sorting scenarios for users
+    /// </summary>
     public static class SortingScenarios
     {
-        public static DataTableRequest CreateSortByEmailAscRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 0, Dir = "asc" } // Email column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByEmailAscRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByFirstColumnAscRequest(_userColumns);
 
-        public static DataTableRequest CreateSortByEmailDescRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 0, Dir = "desc" } // Email column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByEmailDescRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByFirstColumnDescRequest(_userColumns);
 
-        public static DataTableRequest CreateSortByFullNameRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 1, Dir = "asc" } // FullName column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByFullNameRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortBySecondColumnRequest(_userColumns);
 
-        public static DataTableRequest CreateSortByRoleRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 3, Dir = "asc" } // Role column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByRoleRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByThirdColumnRequest(_userColumns);
 
-        public static DataTableRequest CreateSortByCreatedAtRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 5, Dir = "desc" } // CreatedAt column
-            };
-            return request;
-        }
+        public static DataTableRequest CreateSortByCreatedAtRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateSortByLastColumnRequest(_userColumns);
 
-        public static DataTableRequest CreateMultiColumnSortRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 3, Dir = "asc" },  // Role first
-                new() { Column = 1, Dir = "asc" }   // Then FullName
-            };
-            return request;
-        }
+        public static DataTableRequest CreateMultiColumnSortRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateMultiColumnSortRequest(_userColumns);
 
-        public static DataTableRequest CreateInvalidColumnSortRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 99, Dir = "asc" } // Invalid column index
-            };
-            return request;
-        }
+        public static DataTableRequest CreateInvalidColumnSortRequest() =>
+            DataTableTestDataFactory.SortingScenarios.CreateInvalidColumnSortRequest(_userColumns);
     }
 
-    // Validation test cases
+    /// <summary>
+    /// Validation test cases for users
+    /// </summary>
     public static class ValidationTests
     {
         public static DataTableRequest CreateNegativeStartRequest() =>
-            CreateValidRequest(start: -1, length: 10);
+            DataTableTestDataFactory.ValidationTests.CreateNegativeStartRequest(_userColumns);
 
         public static DataTableRequest CreateNegativeLengthRequest() =>
-            CreateValidRequest(start: 0, length: -1);
+            DataTableTestDataFactory.ValidationTests.CreateNegativeLengthRequest(_userColumns);
 
         public static DataTableRequest CreateNegativeDrawRequest() =>
-            CreateValidRequest(draw: -1, start: 0, length: 10);
+            DataTableTestDataFactory.ValidationTests.CreateNegativeDrawRequest(_userColumns);
 
         public static DataTableRequest CreateExcessiveLengthRequest() =>
-            CreateValidRequest(start: 0, length: 10000);
+            DataTableTestDataFactory.ValidationTests.CreateExcessiveLengthRequest(_userColumns);
 
-        public static DataTableRequest CreateNoColumnsRequest()
-        {
-            var request = CreateValidRequest();
-            request.Columns.Clear();
-            return request;
-        }
+        public static DataTableRequest CreateNoColumnsRequest() =>
+            DataTableTestDataFactory.ValidationTests.CreateNoColumnsRequest(_userColumns);
 
-        public static DataTableRequest CreateNoOrderRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order.Clear();
-            return request;
-        }
+        public static DataTableRequest CreateNoOrderRequest() =>
+            DataTableTestDataFactory.ValidationTests.CreateNoOrderRequest(_userColumns);
 
-        public static DataTableRequest CreateInvalidDirectionRequest()
-        {
-            var request = CreateValidRequest();
-            request.Order = new List<DataTableOrder>
-            {
-                new() { Column = 0, Dir = "invalid" }
-            };
-            return request;
-        }
+        public static DataTableRequest CreateInvalidDirectionRequest() =>
+            DataTableTestDataFactory.ValidationTests.CreateInvalidDirectionRequest(_userColumns);
     }
 
-    // Edge cases
+    /// <summary>
+    /// Edge case scenarios for users
+    /// </summary>
     public static class EdgeCases
     {
         public static DataTableRequest CreateMaxPageSizeRequest() =>
-            CreateValidRequest(start: 0, length: 1000);
+            DataTableTestDataFactory.EdgeCases.CreateMaxPageSizeRequest(_userColumns);
 
-        public static DataTableRequest CreateRegexSearchRequest()
-        {
-            var request = CreateValidRequest(searchValue: "admin.*");
-            request.Search.Regex = true;
-            return request;
-        }
+        public static DataTableRequest CreateRegexSearchRequest() =>
+            DataTableTestDataFactory.EdgeCases.CreateRegexSearchRequest(_userColumns);
 
         public static DataTableRequest CreateLongSearchTermRequest() =>
-            CreateValidRequest(searchValue: new string('a', 1000));
+            DataTableTestDataFactory.EdgeCases.CreateLongSearchTermRequest(_userColumns);
 
-        public static DataTableRequest CreateComplexRequest()
-        {
-            var request = new DataTableRequest
-            {
-                Draw = 5,
-                Start = 20,
-                Length = 25,
-                Search = new DataTableSearch
-                {
-                    Value = "test",
-                    Regex = false
-                },
-                Columns = new List<DataTableColumn>
-                {
-                    new() { Data = "email", Name = "email", Searchable = true, Orderable = true, Search = new DataTableSearch { Value = "admin" } },
-                    new() { Data = "fullName", Name = "fullName", Searchable = true, Orderable = true, Search = new DataTableSearch { Value = "" } },
-                    new() { Data = "phone", Name = "phone", Searchable = true, Orderable = false, Search = new DataTableSearch { Value = "" } },
-                    new() { Data = "roleName", Name = "roleName", Searchable = true, Orderable = true, Search = new DataTableSearch { Value = "Manager" } }
-                },
-                Order = new List<DataTableOrder>
-                {
-                    new() { Column = 1, Dir = "desc" },
-                    new() { Column = 3, Dir = "asc" }
-                }
-            };
-            return request;
-        }
+        public static DataTableRequest CreateComplexRequest() =>
+            DataTableTestDataFactory.EdgeCases.CreateComplexRequest(_userColumns);
     }
 
-    // Boundary tests
+    /// <summary>
+    /// Boundary test scenarios for users
+    /// </summary>
     public static class BoundaryTests
     {
         public static DataTableRequest CreateMinimumValidRequest() =>
-            CreateValidRequest(draw: 1, start: 0, length: 1);
+            DataTableTestDataFactory.BoundaryTests.CreateMinimumValidRequest(_userColumns);
 
         public static DataTableRequest CreateZeroDrawRequest() =>
-            CreateValidRequest(draw: 0, start: 0, length: 10);
+            DataTableTestDataFactory.BoundaryTests.CreateZeroDrawRequest(_userColumns);
 
         public static DataTableRequest CreateHighDrawRequest() =>
-            CreateValidRequest(draw: int.MaxValue, start: 0, length: 10);
+            DataTableTestDataFactory.BoundaryTests.CreateHighDrawRequest(_userColumns);
 
         public static DataTableRequest CreateBoundaryPageRequest() =>
-            CreateValidRequest(start: int.MaxValue - 1000, length: 10);
+            DataTableTestDataFactory.BoundaryTests.CreateBoundaryPageRequest(_userColumns);
     }
 }

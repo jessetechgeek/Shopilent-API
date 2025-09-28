@@ -1,7 +1,9 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
+using Shopilent.API.Endpoints.Catalog.Attributes.CreateAttribute.V1;
 using Shopilent.Domain.Catalog.Enums;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Catalog.Attributes.CreateAttribute.V1;
@@ -21,7 +23,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateValidRequest();
+        var request = AttributeTestDataV1.Creation.CreateValidRequest();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -43,7 +45,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateValidRequest(
+        var request = AttributeTestDataV1.Creation.CreateValidRequest(
             name: "test_attribute_db",
             displayName: "Test Attribute DB",
             type: "Text");
@@ -83,7 +85,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateValidRequest(type: attributeType);
+        var request = AttributeTestDataV1.Creation.CreateValidRequest(type: attributeType);
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -104,7 +106,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.TypeSpecificCases.CreateTextAttributeRequest();
+        var request = AttributeTestDataV1.TypeSpecific.CreateTextAttributeRequest();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -123,7 +125,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.TypeSpecificCases.CreateSelectAttributeRequest();
+        var request = AttributeTestDataV1.TypeSpecific.CreateSelectAttributeRequest();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -142,7 +144,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.TypeSpecificCases.CreateColorAttributeRequest();
+        var request = AttributeTestDataV1.TypeSpecific.CreateColorAttributeRequest();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -165,7 +167,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithEmptyName();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithEmptyName();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -185,7 +187,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithNullName();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithNullName();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -205,7 +207,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithWhitespaceName();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithWhitespaceName();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -225,7 +227,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithLongName();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithLongName();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -249,7 +251,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithEmptyDisplayName();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithEmptyDisplayName();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -269,7 +271,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithLongDisplayName();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithLongDisplayName();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -293,7 +295,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithEmptyType();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithEmptyType();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -313,7 +315,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateRequestWithInvalidType();
+        var request = AttributeTestDataV1.Validation.CreateRequestWithInvalidType();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -344,7 +346,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateValidRequest(type: type);
+        var request = AttributeTestDataV1.Creation.CreateValidRequest(type: type);
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -363,7 +365,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        var request = CreateAttributeTestDataV1.CreateValidRequest();
+        var request = AttributeTestDataV1.Creation.CreateValidRequest();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -379,7 +381,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateValidRequest();
+        var request = AttributeTestDataV1.Creation.CreateValidRequest();
 
         // Act
         var response = await PostAsync("v1/attributes", request);
@@ -395,7 +397,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateValidRequest();
+        var request = AttributeTestDataV1.Creation.CreateValidRequest();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -415,7 +417,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumNameLength();
+        var request = AttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumNameLength();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -432,7 +434,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumDisplayNameLength();
+        var request = AttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumDisplayNameLength();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -449,7 +451,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.BoundaryTests.CreateRequestWithMinimumValidName();
+        var request = AttributeTestDataV1.BoundaryTests.CreateRequestWithMinimumValidName();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -470,7 +472,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
+        var request = AttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharactersForCreate();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -488,7 +490,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.EdgeCases.CreateRequestWithSpecialCharacters();
+        var request = AttributeTestDataV1.EdgeCases.CreateRequestWithSpecialCharactersForCreate();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -505,7 +507,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.EdgeCases.CreateRequestWithEmptyConfiguration();
+        var request = AttributeTestDataV1.EdgeCases.CreateRequestWithEmptyConfiguration();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -522,7 +524,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
+        var request = AttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request);
@@ -545,8 +547,8 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var uniqueName = $"duplicate_test_{Guid.NewGuid():N}";
-        var firstRequest = CreateAttributeTestDataV1.CreateValidRequest(name: uniqueName);
-        var secondRequest = CreateAttributeTestDataV1.CreateValidRequest(name: uniqueName);
+        var firstRequest = AttributeTestDataV1.Creation.CreateValidRequest(name: uniqueName);
+        var secondRequest = AttributeTestDataV1.Creation.CreateValidRequest(name: uniqueName);
 
         // Act - Create first attribute
         var firstResponse = await PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", firstRequest);
@@ -575,7 +577,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var tasks = Enumerable.Range(0, 5)
-            .Select(i => CreateAttributeTestDataV1.CreateValidRequest(name: $"concurrent_test_{i}_{Guid.NewGuid():N}"))
+            .Select(i => AttributeTestDataV1.Creation.CreateValidRequest(name: $"concurrent_test_{i}_{Guid.NewGuid():N}"))
             .Select(request => PostApiResponseAsync<object, CreateAttributeResponseV1>("v1/attributes", request))
             .ToList();
 
@@ -605,7 +607,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateAttributeTestDataV1.CreateValidRequest(
+        var request = AttributeTestDataV1.Creation.CreateValidRequest(
             filterable: filterable,
             searchable: searchable,
             isVariant: isVariant);
@@ -622,17 +624,4 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
 
     #endregion
 
-    // Response DTO for this specific endpoint version
-    public class CreateAttributeResponseV1
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
-        public AttributeType Type { get; set; }
-        public bool Filterable { get; set; }
-        public bool Searchable { get; set; }
-        public bool IsVariant { get; set; }
-        public Dictionary<string, object> Configuration { get; set; } = new();
-        public DateTime CreatedAt { get; set; }
-    }
 }

@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Context;
@@ -27,7 +28,9 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         JsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            AllowTrailingCommas = true
         };
     }
 
@@ -137,6 +140,11 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         return await AuthenticateAsync("customer@shopilent.com", "Customer123!");
     }
 
+    protected async Task<string> AuthenticateAsManagerAsync()
+    {
+        return await AuthenticateAsync("manager@shopilent.com", "Manager123!");
+    }
+
     protected void SetAuthenticationHeader(string accessToken)
     {
         Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -210,6 +218,7 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
     {
         await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
+        await EnsureManagerUserExistsAsync();
     }
 
     protected async Task EnsureAdminUserExistsAsync()
@@ -286,6 +295,68 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
 
         var response = await PostAsync("v1/auth/register", registerRequest);
         // Ignore if user already exists (409 Conflict) - that's expected after first test
+    }
+
+    protected async Task EnsureManagerUserExistsAsync()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+        // First check if manager user already exists with proper role
+        var existingUser = await ExecuteDbContextAsync(async context =>
+        {
+            var user = context.Users.FirstOrDefault(u => u.Email.Value == "manager@shopilent.com");
+            return user;
+        });
+
+        if (existingUser != null)
+        {
+            // User exists, ensure they have manager role
+            if (existingUser.Role != UserRole.Manager)
+            {
+                var changeRoleCommand = new ChangeUserRoleCommandV1
+                {
+                    UserId = existingUser.Id,
+                    NewRole = UserRole.Manager
+                };
+
+                await mediator.Send(changeRoleCommand);
+            }
+            return;
+        }
+
+        // Create new manager user using register command
+        var registerCommand = new RegisterCommandV1
+        {
+            Email = "manager@shopilent.com",
+            Password = "Manager123!",
+            FirstName = "Manager",
+            LastName = "User",
+            Phone = "",
+            IpAddress = "127.0.0.1",
+            UserAgent = "Integration Test"
+        };
+
+        try
+        {
+            var registerResult = await mediator.Send(registerCommand);
+
+            if (registerResult.IsSuccess && registerResult.Value != null)
+            {
+                // Set role to Manager after registration
+                var changeRoleCommand = new ChangeUserRoleCommandV1
+                {
+                    UserId = registerResult.Value.User.Id,
+                    NewRole = UserRole.Manager
+                };
+
+                await mediator.Send(changeRoleCommand);
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore if user already exists - that's expected after first test
+        }
     }
 
     // Outbox processing helper for deterministic test behavior
