@@ -20,7 +20,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithValidData_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Creation.CreateValidRequest();
@@ -42,7 +41,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithValidData_ShouldCreateAttributeInDatabase()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Creation.CreateValidRequest(
@@ -82,7 +80,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithAllValidTypes_ShouldReturnSuccess(string attributeType)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Creation.CreateValidRequest(type: attributeType);
@@ -103,7 +100,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithTextType_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.TypeSpecific.CreateTextAttributeRequest();
@@ -122,7 +118,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithSelectType_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.TypeSpecific.CreateSelectAttributeRequest();
@@ -141,7 +136,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithColorType_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.TypeSpecific.CreateColorAttributeRequest();
@@ -164,7 +158,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithEmptyName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithEmptyName();
@@ -184,7 +177,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithNullName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithNullName();
@@ -204,7 +196,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithWhitespaceName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithWhitespaceName();
@@ -224,7 +215,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithLongName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithLongName();
@@ -248,7 +238,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithEmptyDisplayName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithEmptyDisplayName();
@@ -268,7 +257,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithLongDisplayName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithLongDisplayName();
@@ -292,7 +280,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithEmptyType_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithEmptyType();
@@ -312,7 +299,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithInvalidType_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Validation.CreateRequestWithInvalidType();
@@ -343,7 +329,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithDifferentCaseTypes_ShouldReturnSuccess(string type)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Creation.CreateValidRequest(type: type);
@@ -378,7 +363,7 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Creation.CreateValidRequest();
@@ -394,7 +379,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithAdminRole_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Creation.CreateValidRequest();
@@ -414,7 +398,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithMaximumNameLength_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumNameLength();
@@ -431,7 +414,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithMaximumDisplayNameLength_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.BoundaryTests.CreateRequestWithMaximumDisplayNameLength();
@@ -448,7 +430,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithMinimumValidName_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.BoundaryTests.CreateRequestWithMinimumValidName();
@@ -469,7 +450,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithUnicodeCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.EdgeCases.CreateRequestWithUnicodeCharactersForCreate();
@@ -487,7 +467,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithSpecialCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.EdgeCases.CreateRequestWithSpecialCharactersForCreate();
@@ -504,7 +483,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithEmptyConfiguration_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.EdgeCases.CreateRequestWithEmptyConfiguration();
@@ -521,7 +499,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithComplexConfiguration_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.EdgeCases.CreateRequestWithComplexConfiguration();
@@ -543,7 +520,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_WithDuplicateName_ShouldReturnConflict()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var uniqueName = $"duplicate_test_{Guid.NewGuid():N}";
@@ -573,7 +549,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task CreateAttribute_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var tasks = Enumerable.Range(0, 5)
@@ -604,7 +579,6 @@ public class CreateAttributeEndpointV1Tests : ApiIntegrationTestBase
         bool filterable, bool searchable, bool isVariant)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = AttributeTestDataV1.Creation.CreateValidRequest(

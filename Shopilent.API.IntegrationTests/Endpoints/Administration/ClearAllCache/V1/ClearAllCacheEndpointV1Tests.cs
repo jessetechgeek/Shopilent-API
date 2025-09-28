@@ -17,7 +17,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_WithValidAdminAuthentication_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -42,7 +41,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_WithCacheEntries_ShouldClearAllEntries()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -100,7 +98,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_WithEmptyCache_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -140,7 +137,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -155,7 +151,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_WithDifferentCachePatterns_ShouldClearAllPatterns()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -212,7 +207,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -272,7 +266,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_AfterCachingQueries_ShouldClearQueryCache()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -327,7 +320,6 @@ public class ClearAllCacheEndpointV1Tests : ApiIntegrationTestBase
     public async Task ClearAllCache_ShouldReturnCorrectResponseFormat()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 

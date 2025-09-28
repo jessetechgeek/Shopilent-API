@@ -19,7 +19,6 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithValidRequest_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.CreateValidRequest();
@@ -41,13 +40,13 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithTestUsers_ShouldReturnCorrectData()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await EnsureCustomerUserExistsAsync();
-        
+
         // Create additional test users
         await CreateTestUserAsync("manager@test.com", "Test", "Manager", UserRole.Manager);
         await CreateTestUserAsync("customer2@test.com", "John", "Doe", UserRole.Customer);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.CreateValidRequest(length: 10);
@@ -76,30 +75,32 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithPagination_ShouldReturnCorrectPage()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateMultipleTestUsersAsync(5);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
+
         // First page
         var firstPageRequest = GetUsersDatatableTestDataV1.Pagination.CreateFirstPageRequest(pageSize: 3);
-        
+
         // Act
-        var firstPageResponse = await PostDataTableResponseAsync<UserDatatableDto>("v1/users/datatable", firstPageRequest);
+        var firstPageResponse =
+            await PostDataTableResponseAsync<UserDatatableDto>("v1/users/datatable", firstPageRequest);
 
         // Assert
         AssertApiSuccess(firstPageResponse);
         firstPageResponse!.Data.Data.Should().HaveCount(3);
         firstPageResponse.Data.RecordsTotal.Should().BeGreaterThanOrEqualTo(6); // Admin + 5 test users
-        
+
         // Second page
         var secondPageRequest = GetUsersDatatableTestDataV1.Pagination.CreateSecondPageRequest(pageSize: 3);
-        var secondPageResponse = await PostDataTableResponseAsync<UserDatatableDto>("v1/users/datatable", secondPageRequest);
-        
+        var secondPageResponse =
+            await PostDataTableResponseAsync<UserDatatableDto>("v1/users/datatable", secondPageRequest);
+
         AssertApiSuccess(secondPageResponse);
         secondPageResponse!.Data.Data.Should().HaveCount(3);
-        
+
         // Verify different users on different pages
         var firstPageIds = firstPageResponse.Data.Data.Select(u => u.Id).ToList();
         var secondPageIds = secondPageResponse.Data.Data.Select(u => u.Id).ToList();
@@ -110,10 +111,10 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithSearch_ShouldReturnFilteredResults()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestUserAsync("searchable@test.com", "Searchable", "User", UserRole.Customer);
         await CreateTestUserAsync("another@test.com", "Another", "Person", UserRole.Customer);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.SearchScenarios.CreateEmailSearchRequest("searchable");
@@ -133,11 +134,11 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithSorting_ShouldReturnSortedResults()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestUserAsync("alpha@test.com", "Alpha", "User", UserRole.Customer);
         await CreateTestUserAsync("beta@test.com", "Beta", "User", UserRole.Customer);
         await CreateTestUserAsync("gamma@test.com", "Gamma", "User", UserRole.Customer);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.SortingScenarios.CreateSortByEmailAscRequest();
@@ -149,7 +150,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(response);
         response!.Data.Should().NotBeNull();
         response.Data.Data.Should().HaveCountGreaterThanOrEqualTo(4);
-        
+
         var sortedEmails = response.Data.Data.Select(u => u.Email).ToList();
         sortedEmails.Should().BeInAscendingOrder();
     }
@@ -158,11 +159,11 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithDescendingSortByCreatedAt_ShouldReturnNewestFirst()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         var oldUserId = await CreateTestUserAsync("old@test.com", "Old", "User", UserRole.Customer);
         await Task.Delay(1000); // Ensure different timestamps
         var newUserId = await CreateTestUserAsync("new@test.com", "New", "User", UserRole.Customer);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.SortingScenarios.CreateSortByCreatedAtRequest();
@@ -173,7 +174,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
         // Assert
         AssertApiSuccess(response);
         response!.Data.Should().NotBeNull();
-        
+
         var sortedDates = response.Data.Data.Select(u => u.CreatedAt).ToList();
         sortedDates.Should().BeInDescendingOrder();
     }
@@ -196,7 +197,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.CreateValidRequest();
@@ -212,7 +213,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithManagerRole_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestUserAsync("manager@test.com", "Manager", "User", UserRole.Manager);
         var accessToken = await AuthenticateAsync("manager@test.com", "Password123!");
         SetAuthenticationHeader(accessToken);
@@ -230,7 +231,6 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithZeroLength_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.Pagination.CreateZeroLengthRequest();
@@ -240,7 +240,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        
+
         var content = await response.Content.ReadAsStringAsync();
         content.Should().NotBeNullOrEmpty();
     }
@@ -249,7 +249,6 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithNegativeValues_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.ValidationTests.CreateNegativeStartRequest();
@@ -265,7 +264,6 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithExcessiveLength_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.ValidationTests.CreateExcessiveLengthRequest();
@@ -281,7 +279,6 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithNoResultsSearch_ShouldReturnEmptyData()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.SearchScenarios.CreateNoResultsSearchRequest();
@@ -301,9 +298,9 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithUnicodeSearch_ShouldReturnCorrectResults()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestUserAsync("unicode@test.com", "Müller", "Üser", UserRole.Customer);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.SearchScenarios.CreateUnicodeSearchRequest();
@@ -322,10 +319,10 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithComplexRequest_ShouldHandleAllParameters()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestUserAsync("complex1@test.com", "Test", "User", UserRole.Manager);
         await CreateTestUserAsync("complex2@test.com", "Another", "Manager", UserRole.Manager);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.EdgeCases.CreateComplexRequest();
@@ -344,7 +341,6 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithInvalidColumnSort_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.SortingScenarios.CreateInvalidColumnSortRequest();
@@ -360,25 +356,24 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_ConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
+
         var requests = Enumerable.Range(0, 5)
             .Select(i => GetUsersDatatableTestDataV1.CreateValidRequest(draw: i + 1))
             .ToList();
 
         // Act
-        var tasks = requests.Select(request => 
+        var tasks = requests.Select(request =>
             PostDataTableResponseAsync<UserDatatableDto>("v1/users/datatable", request)
         ).ToList();
-        
+
         var responses = await Task.WhenAll(tasks);
 
         // Assert
         responses.Should().AllSatisfy(response => AssertApiSuccess(response));
         responses.Should().HaveCount(5);
-        
+
         // Verify each response has correct draw number
         for (int i = 0; i < responses.Length; i++)
         {
@@ -390,9 +385,9 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithEmptySearch_ShouldReturnAllUsers()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestUserAsync("empty@test.com", "Empty", "Search", UserRole.Customer);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.SearchScenarios.CreateEmptySearchRequest();
@@ -411,7 +406,6 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithHighPageNumber_ShouldReturnEmptyOrLastPage()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.Pagination.CreateHighStartRequest();
@@ -431,10 +425,10 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_DatabaseConsistency_ShouldMatchDatabaseCounts()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         var testUser1Id = await CreateTestUserAsync("db1@test.com", "Database", "User1", UserRole.Customer);
         var testUser2Id = await CreateTestUserAsync("db2@test.com", "Database", "User2", UserRole.Manager);
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.CreateValidRequest(length: 100); // Get all users
@@ -444,14 +438,14 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
 
         // Assert
         AssertApiSuccess(response);
-        
+
         // Verify against database
         await ExecuteDbContextAsync(async context =>
         {
             var totalUsersInDb = await context.Users.CountAsync();
             response!.Data.RecordsTotal.Should().Be(totalUsersInDb);
             response.Data.RecordsFiltered.Should().Be(totalUsersInDb);
-            
+
             // Verify specific test users are included
             var testUserIds = new[] { testUser1Id, testUser2Id };
             var responseIds = response.Data.Data.Select(u => u.Id).ToList();
@@ -467,9 +461,9 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_WithDifferentPageSizes_ShouldReturnCorrectCount(int pageSize)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateMultipleTestUsersAsync(15); // Create enough users to test pagination
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.CreateValidRequest(length: pageSize);
@@ -480,7 +474,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
         // Assert
         AssertApiSuccess(response);
         response!.Data.Should().NotBeNull();
-        
+
         // Should return at most pageSize items, but could be less if not enough data
         response.Data.Data.Should().HaveCountLessOrEqualTo(pageSize);
         response.Data.RecordsTotal.Should().BeGreaterThanOrEqualTo(response.Data.Data.Count);
@@ -490,9 +484,9 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUsersDatatable_ResponseTime_ShouldBeReasonable()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateMultipleTestUsersAsync(50); // Create a decent amount of data
-        
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetUsersDatatableTestDataV1.CreateValidRequest();
@@ -508,7 +502,8 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
     }
 
     // Helper methods
-    private async Task<Guid> CreateTestUserAsync(string email, string firstName, string lastName, UserRole role = UserRole.Customer)
+    private async Task<Guid> CreateTestUserAsync(string email, string firstName, string lastName,
+        UserRole role = UserRole.Customer)
     {
         using var scope = Factory.Services.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -533,11 +528,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
             // Change role if not customer
             if (role != UserRole.Customer)
             {
-                var changeRoleCommand = new ChangeUserRoleCommandV1
-                {
-                    UserId = userId,
-                    NewRole = role
-                };
+                var changeRoleCommand = new ChangeUserRoleCommandV1 { UserId = userId, NewRole = role };
                 await mediator.Send(changeRoleCommand);
             }
 
@@ -558,7 +549,7 @@ public class GetUsersDatatableEndpointV1Tests : ApiIntegrationTestBase
             var firstName = $"Test{i}";
             var lastName = $"User{i}";
             var role = roles[i % roles.Length];
-            
+
             tasks.Add(CreateTestUserAsync(email, firstName, lastName, role));
         }
 

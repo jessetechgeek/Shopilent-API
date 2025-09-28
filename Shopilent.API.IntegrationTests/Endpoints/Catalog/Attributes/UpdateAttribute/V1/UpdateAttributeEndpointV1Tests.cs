@@ -20,7 +20,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithValidData_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -57,7 +56,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithValidData_ShouldUpdateAttributeInDatabase()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -101,7 +99,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithComplexConfiguration_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -139,7 +136,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithInvalidDisplayName_ShouldReturnValidationError(string invalidDisplayName)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -166,7 +162,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithNullDisplayName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -193,7 +188,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithLongDisplayName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -220,7 +214,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithInvalidAttributeId_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -238,7 +231,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithMalformedGuid_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -275,7 +267,7 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -293,7 +285,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithAdminRole_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -321,7 +312,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithMaximumValidDisplayNameLength_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -345,7 +335,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithMinimumValidDisplayNameLength_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -373,7 +362,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithUnicodeCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -399,7 +387,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithSpecialCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -423,7 +410,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithEmptyConfiguration_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -448,7 +434,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithNullConfiguration_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -476,7 +461,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithAllFilterableSearchableVariant_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -503,7 +487,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_WithAllFalseFlags_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -532,7 +515,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
         object requestData, string expectedDisplayName, bool expectedFilterable, bool expectedSearchable, bool expectedIsVariant)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -581,7 +563,6 @@ public class UpdateAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateAttribute_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 

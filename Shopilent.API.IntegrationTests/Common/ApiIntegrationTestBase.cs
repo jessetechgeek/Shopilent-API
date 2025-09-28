@@ -111,11 +111,7 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
     // Authentication helpers
     protected async Task<string> AuthenticateAsync(string email = "admin@shopilent.com", string password = "Admin123!")
     {
-        var loginRequest = new
-        {
-            Email = email,
-            Password = password
-        };
+        var loginRequest = new { Email = email, Password = password };
 
         var response = await Client.PostAsJsonAsync("v1/auth/login", loginRequest, JsonOptions);
 
@@ -127,16 +123,19 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         var content = await response.Content.ReadAsStringAsync();
         var loginResponse = JsonSerializer.Deserialize<ApiResponse<LoginResponse>>(content, JsonOptions);
 
-        return loginResponse?.Data?.AccessToken ?? throw new InvalidOperationException("Access token not found in response");
+        return loginResponse?.Data?.AccessToken ??
+               throw new InvalidOperationException("Access token not found in response");
     }
 
     protected async Task<string> AuthenticateAsAdminAsync()
     {
+        await EnsureAdminUserExistsAsync();
         return await AuthenticateAsync("admin@shopilent.com", "Admin123!");
     }
 
     protected async Task<string> AuthenticateAsCustomerAsync()
     {
+        await EnsureCustomerUserExistsAsync();
         return await AuthenticateAsync("customer@shopilent.com", "Customer123!");
     }
 
@@ -185,7 +184,8 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         return await Client.DeleteAsync(endpoint);
     }
 
-    protected async Task<ApiResponse<TestDataTableResult<T>>?> PostDataTableResponseAsync<T>(string endpoint, object request)
+    protected async Task<ApiResponse<TestDataTableResult<T>>?> PostDataTableResponseAsync<T>(string endpoint,
+        object request)
     {
         var response = await Client.PostAsJsonAsync(endpoint, request, JsonOptions);
         var json = await response.Content.ReadAsStringAsync();
@@ -241,12 +241,12 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
             {
                 var changeRoleCommand = new ChangeUserRoleCommandV1
                 {
-                    UserId = existingUser.Id,
-                    NewRole = UserRole.Admin
+                    UserId = existingUser.Id, NewRole = UserRole.Admin
                 };
 
                 await mediator.Send(changeRoleCommand);
             }
+
             return;
         }
 
@@ -271,8 +271,7 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
                 // Set role to Admin after registration
                 var changeRoleCommand = new ChangeUserRoleCommandV1
                 {
-                    UserId = registerResult.Value.User.Id,
-                    NewRole = UserRole.Admin
+                    UserId = registerResult.Value.User.Id, NewRole = UserRole.Admin
                 };
 
                 await mediator.Send(changeRoleCommand);
@@ -288,10 +287,7 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
     {
         var registerRequest = new
         {
-            Email = "customer@shopilent.com",
-            Password = "Customer123!",
-            FirstName = "Customer",
-            LastName = "User"
+            Email = "customer@shopilent.com", Password = "Customer123!", FirstName = "Customer", LastName = "User"
         };
 
         var response = await PostAsync("v1/auth/register", registerRequest);
@@ -317,12 +313,12 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
             {
                 var changeRoleCommand = new ChangeUserRoleCommandV1
                 {
-                    UserId = existingUser.Id,
-                    NewRole = UserRole.Manager
+                    UserId = existingUser.Id, NewRole = UserRole.Manager
                 };
 
                 await mediator.Send(changeRoleCommand);
             }
+
             return;
         }
 
@@ -347,8 +343,7 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
                 // Set role to Manager after registration
                 var changeRoleCommand = new ChangeUserRoleCommandV1
                 {
-                    UserId = registerResult.Value.User.Id,
-                    NewRole = UserRole.Manager
+                    UserId = registerResult.Value.User.Id, NewRole = UserRole.Manager
                 };
 
                 await mediator.Send(changeRoleCommand);
@@ -364,7 +359,8 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
     protected async Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken = default)
     {
         using var scope = Factory.Services.CreateScope();
-        var outboxService = scope.ServiceProvider.GetRequiredService<Shopilent.Application.Abstractions.Outbox.IOutboxService>();
+        var outboxService = scope.ServiceProvider
+            .GetRequiredService<Shopilent.Application.Abstractions.Outbox.IOutboxService>();
         await outboxService.ProcessMessagesAsync(cancellationToken);
     }
 

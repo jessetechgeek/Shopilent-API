@@ -23,7 +23,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_AdminActivatingInactiveUser_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -57,7 +56,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_AdminDeactivatingActiveUser_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -87,9 +85,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_ManagerUpdatingUserStatus_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
-        await EnsureManagerUserExistsAsync();
+        await EnsureTestUsersExistAsync();
         var managerToken = await AuthenticateAsManagerAsync();
         SetAuthenticationHeader(managerToken);
 
@@ -121,7 +117,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_AdminTryingToDeactivateSelf_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -144,7 +139,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_ManagerTryingToDeactivateSelf_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await EnsureManagerUserExistsAsync();
         var managerToken = await AuthenticateAsManagerAsync();
         SetAuthenticationHeader(managerToken);
@@ -167,7 +162,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_AdminActivatingSelf_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -206,7 +200,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var customerToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(customerToken);
 
@@ -239,7 +233,8 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithExpiredToken_ShouldReturnUnauthorized()
     {
         // Arrange
-        var expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        var expiredToken =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
         SetAuthenticationHeader(expiredToken);
         var userId = Guid.NewGuid();
         var request = UserTestDataV1.StatusScenarios.CreateValidRequest();
@@ -259,7 +254,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithNonExistentUserId_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -286,7 +280,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithInvalidGuidFormats_ShouldReturnBadRequest(string invalidGuid)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -307,7 +300,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_ActivatingAlreadyActiveUser_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -339,7 +331,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_DeactivatingAlreadyInactiveUser_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -376,7 +367,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithValidBooleanValues_ShouldReturnSuccess(object request)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -397,8 +387,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithInvalidBooleanValues_ShouldReturnBadRequest(object request)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -419,8 +408,8 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithMalformedJson_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -438,7 +427,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithEmptyJson_ShouldDeactivateUser()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -472,7 +460,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_WithSecurityPayloads_ShouldHandleSafely(object maliciousPayload)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -503,7 +490,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange - Test concurrent status changes (should be serialized due to database contention)
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -532,7 +518,7 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
         if (failedResponses.Any())
         {
             failedResponses.Should().AllSatisfy(response =>
-                response.StatusCode.Should().Be(HttpStatusCode.Conflict),
+                    response.StatusCode.Should().Be(HttpStatusCode.Conflict),
                 "Failed responses should be 409 Conflict due to concurrency violations");
         }
 
@@ -554,7 +540,6 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUserStatus_MultipleSequentialRequests_ShouldCompleteWithinReasonableTime()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -672,14 +657,14 @@ public class UpdateUserStatusEndpointV1Tests : ApiIntegrationTestBase
                 // Change role to Manager using the ChangeUserRoleCommand
                 var changeRoleCommand = new ChangeUserRoleCommandV1
                 {
-                    UserId = registerResult.Value.User.Id,
-                    NewRole = UserRole.Manager
+                    UserId = registerResult.Value.User.Id, NewRole = UserRole.Manager
                 };
 
                 var changeRoleResult = await sender.Send(changeRoleCommand);
                 if (changeRoleResult.IsFailure)
                 {
-                    throw new InvalidOperationException($"Failed to change user role to Manager: {changeRoleResult.Error}");
+                    throw new InvalidOperationException(
+                        $"Failed to change user role to Manager: {changeRoleResult.Error}");
                 }
             }
         });

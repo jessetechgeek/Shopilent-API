@@ -16,7 +16,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithValidData_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
@@ -37,7 +37,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithValidCredentials_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
@@ -57,7 +57,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithEmptyCurrentPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithEmptyCurrentPassword();
@@ -77,7 +77,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNullCurrentPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithNullCurrentPassword();
@@ -97,7 +97,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithEmptyNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithEmptyNewPassword();
@@ -117,7 +117,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNullNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithNullNewPassword();
@@ -137,7 +137,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithEmptyConfirmPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithEmptyConfirmPassword();
@@ -157,7 +157,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNullConfirmPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithNullConfirmPassword();
@@ -177,7 +177,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithMismatchedPasswords_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithMismatchedPasswords();
@@ -197,7 +197,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithSameCurrentAndNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithSameCurrentAndNewPassword();
@@ -217,7 +217,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithShortNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithShortNewPassword();
@@ -237,7 +237,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithWeakNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateRequestWithWeakNewPassword();
@@ -274,7 +274,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithWrongCurrentPassword_ShouldReturnUnauthorized()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(
@@ -298,7 +298,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNoUppercaseNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoUppercaseNewPassword();
@@ -318,7 +318,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNoLowercaseNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoLowercaseNewPassword();
@@ -338,7 +338,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNoNumberNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoNumberNewPassword();
@@ -358,7 +358,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNoSpecialCharNewPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.PasswordStrengthTests.CreateRequestWithNoSpecialCharNewPassword();
@@ -379,7 +379,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithMinimumValidPassword_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithMinimumValidPassword();
@@ -396,7 +396,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithSevenCharacterPassword_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithSevenCharacterPassword();
@@ -416,7 +416,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithVeryLongPassword_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithVeryLongPassword();
@@ -433,7 +433,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithExtremelyLongPassword_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.BoundaryTests.CreateRequestWithExtremelyLongPassword();
@@ -450,7 +450,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithUnicodeCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithUnicodeCharacters();
@@ -467,7 +467,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithWhitespaceInPasswords_ShouldPreserveExactValue()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithWhitespaceInPasswords();
@@ -487,7 +487,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithOnlyWhitespace_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithOnlyWhitespace();
@@ -507,7 +507,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithTabsAndNewlines_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.EdgeCases.CreateRequestWithTabsAndNewlines();
@@ -525,7 +525,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithSqlInjectionAttempt_ShouldReturnUnauthorizedSafely()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateSqlInjectionAttempt();
@@ -547,7 +547,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithXssAttempt_ShouldReturnUnauthorizedSafely()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateXssAttempt();
@@ -568,7 +568,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithCommandInjectionAttempt_ShouldHandleSafely()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateCommandInjectionAttempt();
@@ -581,7 +581,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
 
         var content = await response.Content.ReadAsStringAsync();
         content.Should().NotBeNullOrEmpty();
-        
+
         // Ensure no system commands are executed
         content.Should().NotContain("rm");
         content.Should().NotContain("system");
@@ -592,7 +592,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithLongPasswordAttack_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateLongPasswordAttack();
@@ -611,7 +611,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_WithNullByteAttempt_ShouldHandleSafely()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.SecurityTests.CreateNullByteAttempt();
@@ -640,7 +640,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
         string? currentPassword, string? newPassword, string? confirmPassword)
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = new
@@ -669,7 +669,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange - Test concurrent password change attempts (should be serialized)
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -696,7 +696,7 @@ public class ChangePasswordEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangePassword_ShouldNotExposePasswordsInResponse()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = UserTestDataV1.PasswordScenarios.CreateValidChangePasswordRequest(

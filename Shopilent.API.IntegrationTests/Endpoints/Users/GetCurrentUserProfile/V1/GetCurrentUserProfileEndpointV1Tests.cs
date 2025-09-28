@@ -23,7 +23,6 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_WithAuthenticatedAdmin_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -44,7 +43,7 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_WithAuthenticatedCustomer_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -63,7 +62,7 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_WithManagerRole_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         var managerUserId = await CreateTestUserWithRoleAsync("manager@example.com", "Manager", "Test", UserRole.Manager);
         var accessToken = await AuthenticateAsync("manager@example.com", "Password123!");
         SetAuthenticationHeader(accessToken);
@@ -115,7 +114,6 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_ShouldIncludeUserDetails()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -220,7 +218,7 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_MultipleConsecutiveRequests_ShouldReturnConsistentData()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -244,7 +242,6 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_ValidRequest_ShouldHaveReasonableResponseTime()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -297,7 +294,7 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_WithDifferentRoles_ShouldReturnCorrectRole(UserRole role)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         var email = $"{role.ToString().ToLower()}role@example.com";
         var userId = await CreateTestUserWithRoleAsync(email, "Test", role.ToString(), role);
         var accessToken = await AuthenticateAsync(email, "Password123!");
@@ -317,7 +314,6 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_WithBearerTokenPrefix_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
 
         // The AuthenticateAsAdminAsync already returns token without Bearer prefix
@@ -326,13 +322,13 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
 
         // Act
         var httpResponse = await Client.GetAsync("v1/users/me");
-        
+
         // Assert
         httpResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        
+
         var content = await httpResponse.Content.ReadAsStringAsync();
         content.Should().NotBeNullOrEmpty();
-        
+
         var response = JsonSerializer.Deserialize<ApiResponse<UserDetailDto>>(content, JsonOptions);
         AssertApiSuccess(response);
         response!.Data.Should().NotBeNull();

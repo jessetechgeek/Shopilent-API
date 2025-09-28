@@ -81,7 +81,7 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
 
         var refreshToken = loginResponse!.Data.RefreshToken;
         var logoutRequest = LogoutTestDataV1.LogoutReasons.CreateRequestWithUserInitiatedLogout();
-        
+
         // Update the request with the actual refresh token
         logoutRequest = new { RefreshToken = refreshToken, Reason = "User initiated logout" };
 
@@ -100,7 +100,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithEmptyRefreshToken_ShouldReturnValidationError()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = LogoutTestDataV1.CreateRequestWithEmptyRefreshToken();
@@ -120,7 +119,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithNullRefreshToken_ShouldReturnValidationError()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = LogoutTestDataV1.CreateRequestWithNullRefreshToken();
@@ -140,7 +138,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithInvalidRefreshToken_ShouldReturnUnauthorized()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = LogoutTestDataV1.CreateRequestWithInvalidRefreshToken();
@@ -160,10 +157,9 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithNonExistentRefreshToken_ShouldReturnUnauthorized()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        
+
         // Use a valid format but non-existent refresh token (UUID format)
         var request = new
         {
@@ -217,7 +213,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithInvalidRefreshToken_ShouldReturnValidationError(string? invalidToken)
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = new { RefreshToken = invalidToken, Reason = "User logged out" };
@@ -261,7 +256,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithSqlInjectionAttempt_ShouldReturnBadRequestSafely()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = LogoutTestDataV1.SecurityTests.CreateSqlInjectionAttempt();
@@ -282,7 +276,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithXssAttempt_ShouldReturnBadRequestSafely()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = LogoutTestDataV1.SecurityTests.CreateXssAttempt();
@@ -302,7 +295,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithExcessivelyLongRefreshToken_ShouldReturnValidationError()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = LogoutTestDataV1.SecurityTests.CreateLongRefreshTokenAttack();
@@ -322,7 +314,6 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
     public async Task Logout_WithExcessivelyLongReason_ShouldReturnValidationError()
     {
         // Arrange - First ensure admin user exists
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = LogoutTestDataV1.SecurityTests.CreateLongReasonAttack();
@@ -349,10 +340,10 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(loginResponse);
 
         var refreshToken = loginResponse!.Data.RefreshToken;
-        var request = new 
-        { 
-            RefreshToken = refreshToken, 
-            Reason = "Üser lögöut with spëcial çharacters" 
+        var request = new
+        {
+            RefreshToken = refreshToken,
+            Reason = "Üser lögöut with spëcial çharacters"
         };
 
         // Set authentication header for the logout request
@@ -375,10 +366,10 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(loginResponse);
 
         var refreshToken = loginResponse!.Data.RefreshToken;
-        var request = new 
-        { 
-            RefreshToken = refreshToken, 
-            Reason = "  User logged out  " 
+        var request = new
+        {
+            RefreshToken = refreshToken,
+            Reason = "  User logged out  "
         };
 
         // Set authentication header for the logout request
@@ -401,9 +392,9 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(loginResponse);
 
         var refreshToken = loginResponse!.Data.RefreshToken;
-        var request = new 
-        { 
-            RefreshToken = refreshToken, 
+        var request = new
+        {
+            RefreshToken = refreshToken,
             Reason = "   " // Only whitespace reason should be accepted since no validation
         };
 
@@ -428,9 +419,9 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
         AssertApiSuccess(loginResponse);
 
         var refreshToken = loginResponse!.Data.RefreshToken;
-        var request = new 
-        { 
-            RefreshToken = refreshToken, 
+        var request = new
+        {
+            RefreshToken = refreshToken,
             Reason = "a" // Minimum length reason
         };
 
@@ -451,7 +442,7 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
         // Arrange - Login multiple times to get different refresh tokens
         await EnsureAdminUserExistsAsync();
         var loginRequest = new { Email = "admin@shopilent.com", Password = "Admin123!", RememberMe = false };
-        
+
         var loginTasks = Enumerable.Range(0, 3)
             .Select(_ => PostApiResponseAsync<object, LoginResponseDto>("v1/auth/login", loginRequest))
             .ToList();
@@ -492,7 +483,7 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
 
         var refreshToken = loginResponse!.Data.RefreshToken;
         var logoutRequest = LogoutTestDataV1.LogoutReasons.CreateRequestWithPasswordChange();
-        
+
         // Update the request with the actual refresh token
         logoutRequest = new { RefreshToken = refreshToken, Reason = "Password changed - logout required" };
 
@@ -519,10 +510,11 @@ public class LogoutEndpointV1Tests : ApiIntegrationTestBase
             "User initiated logout"
         };
 
+        await EnsureAdminUserExistsAsync();
+
         foreach (var reason in reasons)
         {
             // Arrange - Login for each test
-            await EnsureAdminUserExistsAsync();
             var loginRequest = new { Email = "admin@shopilent.com", Password = "Admin123!", RememberMe = false };
             var loginResponse = await PostApiResponseAsync<object, LoginResponseDto>("v1/auth/login", loginRequest);
             AssertApiSuccess(loginResponse);
