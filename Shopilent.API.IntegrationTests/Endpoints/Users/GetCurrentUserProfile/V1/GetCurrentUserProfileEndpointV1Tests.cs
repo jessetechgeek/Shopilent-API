@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
+using Shopilent.Domain.Identity.DTOs;
 using Shopilent.API.Common.Models;
 using Shopilent.Application.Features.Identity.Commands.Register.V1;
 using Shopilent.Application.Features.Identity.Commands.ChangeUserRole.V1;
@@ -83,7 +85,7 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetCurrentUserProfile_WithCustomUser_ShouldReturnCorrectUserData()
     {
         // Arrange
-        var testUserData = GetCurrentUserProfileTestDataV1.CreateCustomerUserData();
+        var testUserData = UserTestDataV1.Creation.CreateValidUserData();
         var testUserId = await CreateTestUserAsync(
             "custom@example.com",
             "Custom",
@@ -400,27 +402,4 @@ public class GetCurrentUserProfileEndpointV1Tests : ApiIntegrationTestBase
         return userId;
     }
 
-    // Response DTO for this specific endpoint version
-    public class UserDetailDto
-    {
-        public Guid Id { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string MiddleName { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public UserRole Role { get; set; }
-        public bool IsActive { get; set; }
-        public DateTime? LastLogin { get; set; }
-        public bool EmailVerified { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public IReadOnlyList<object> Addresses { get; set; } = new List<object>();
-        public IReadOnlyList<object> RefreshTokens { get; set; } = new List<object>();
-        public int FailedLoginAttempts { get; set; }
-        public DateTime? LastFailedAttempt { get; set; }
-        public Guid? CreatedBy { get; set; }
-        public Guid? ModifiedBy { get; set; }
-        public DateTime? LastModified { get; set; }
-    }
 }

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
+using Shopilent.Domain.Identity.DTOs;
 using Shopilent.API.Common.Models;
 using Shopilent.Application.Features.Identity.Commands.Register.V1;
 using Shopilent.Application.Features.Identity.Commands.ChangeUserRole.V1;
@@ -73,7 +75,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var nonExistentId = GetUserTestDataV1.EdgeCases.CreateNonExistentUserId();
+        var nonExistentId = UserTestDataV1.EdgeCases.CreateNonExistentUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{nonExistentId}");
@@ -93,7 +95,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var invalidId = GetUserTestDataV1.EdgeCases.CreateMalformedUserId();
+        var invalidId = UserTestDataV1.EdgeCases.CreateMalformedUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{invalidId}");
@@ -123,7 +125,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        var validUserId = GetUserTestDataV1.CreateValidUserId();
+        var validUserId = UserTestDataV1.Creation.CreateValidUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{validUserId}");
@@ -139,7 +141,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var validUserId = GetUserTestDataV1.CreateValidUserId();
+        var validUserId = UserTestDataV1.Creation.CreateValidUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{validUserId}");
@@ -246,7 +248,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         SetAuthenticationHeader("expired.jwt.token");
-        var validUserId = GetUserTestDataV1.CreateValidUserId();
+        var validUserId = UserTestDataV1.Creation.CreateValidUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{validUserId}");
@@ -260,7 +262,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         SetAuthenticationHeader("malformed-token");
-        var validUserId = GetUserTestDataV1.CreateValidUserId();
+        var validUserId = UserTestDataV1.Creation.CreateValidUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{validUserId}");
@@ -303,7 +305,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var validUserId = GetUserTestDataV1.CreateValidUserId();
+        var validUserId = UserTestDataV1.Creation.CreateValidUserId();
 
         // Act - This would normally cause a connection issue, but we test with a non-existent ID
         var response = await Client.GetAsync($"v1/users/{validUserId}");
@@ -320,7 +322,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var sqlInjectionId = GetUserTestDataV1.SecurityTests.CreateSqlInjectionUserId();
+        var sqlInjectionId = UserTestDataV1.EdgeCases.CreateMalformedUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{sqlInjectionId}");
@@ -341,7 +343,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var xssId = GetUserTestDataV1.SecurityTests.CreateXssUserId();
+        var xssId = UserTestDataV1.EdgeCases.CreateMalformedUserId();
 
         // Act
         var response = await Client.GetAsync($"v1/users/{xssId}");
@@ -456,27 +458,4 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         return userId;
     }
 
-    // Response DTO for this specific endpoint version
-    public class UserDetailDto
-    {
-        public Guid Id { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string MiddleName { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public UserRole Role { get; set; }
-        public bool IsActive { get; set; }
-        public DateTime? LastLogin { get; set; }
-        public bool EmailVerified { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public IReadOnlyList<object> Addresses { get; set; } = new List<object>();
-        public IReadOnlyList<object> RefreshTokens { get; set; } = new List<object>();
-        public int FailedLoginAttempts { get; set; }
-        public DateTime? LastFailedAttempt { get; set; }
-        public Guid? CreatedBy { get; set; }
-        public Guid? ModifiedBy { get; set; }
-        public DateTime? LastModified { get; set; }
-    }
 }

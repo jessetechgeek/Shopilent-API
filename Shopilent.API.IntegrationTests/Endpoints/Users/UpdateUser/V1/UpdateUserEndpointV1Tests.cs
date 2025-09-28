@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 using Shopilent.Application.Features.Identity.Commands.Register.V1;
 using Shopilent.Application.Features.Identity.Commands.ChangeUserRole.V1;
@@ -28,7 +29,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.CreateValidRequest("Updated", "UserName", "Middle", "+1234567890");
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest("Updated", "UserName", "Middle", "+1234567890");
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -53,7 +54,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.CreateValidRequest("UpdatedDB", "UserDB", "MiddleDB", "+1987654321");
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest("UpdatedDB", "UserDB", "MiddleDB", "+1987654321");
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -83,7 +84,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.CreateValidRequest("Manager", "Updated", "Test");
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest("Manager", "Updated", "Test");
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -104,7 +105,8 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.ValidRequestVariants.CreateMinimalValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest(
+            "John", "Doe", null, null);
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -126,7 +128,8 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.ValidRequestVariants.CreateFullValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest(
+            "John", "Doe", "Michael", "+1234567890");
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -154,7 +157,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.CreateValidRequest(firstName: invalidFirstName);
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest(firstName: invalidFirstName);
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -176,7 +179,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.CreateValidRequest(lastName: invalidLastName);
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest(lastName: invalidLastName);
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -196,7 +199,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.BoundaryTests.CreateRequestWithTooLongFirstName();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithTooLongNames();
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -216,7 +219,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.BoundaryTests.CreateRequestWithTooLongLastName();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithTooLongNames();
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -236,7 +239,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.BoundaryTests.CreateRequestWithTooLongMiddleName();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithTooLongNames();
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -261,7 +264,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.CreateValidRequest(phone: invalidPhone);
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest(phone: invalidPhone);
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -286,7 +289,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.BoundaryTests.CreateRequestWithMaximumLengthFirstName();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithMaximumLengthNames();
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -305,7 +308,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.BoundaryTests.CreateRequestWithMinimumValidPhone();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithMinimumValidPhone();
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -324,7 +327,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.BoundaryTests.CreateRequestWithMaximumValidPhone();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithMaximumValidPhone();
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -344,7 +347,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         ClearAuthenticationHeader();
         var testUserId = Guid.NewGuid();
-        var request = UpdateUserTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -362,7 +365,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = Guid.NewGuid();
-        var request = UpdateUserTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{testUserId}", request);
@@ -384,7 +387,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var nonExistentUserId = Guid.NewGuid();
-        var request = UpdateUserTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{nonExistentUserId}", request);
@@ -404,7 +407,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var invalidGuid = "invalid-guid-format";
-        var request = UpdateUserTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest();
 
         // Act
         var response = await PutAsync($"v1/users/{invalidGuid}", request);
@@ -426,7 +429,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
+        var request = UserTestDataV1.EdgeCases.CreateUpdateUserRequestWithUnicodeCharacters();
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -448,7 +451,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.EdgeCases.CreateRequestWithSpecialCharacters();
+        var request = UserTestDataV1.EdgeCases.CreateUpdateUserRequestWithSpecialCharacters();
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -469,7 +472,8 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.EdgeCases.CreateRequestWithInternationalPhoneNumbers();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest(
+            "John", "Doe", "Test", "+44123456789");
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -488,7 +492,8 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("test@example.com", "Original", "User");
-        var request = UpdateUserTestDataV1.EdgeCases.CreateRequestWithPlusInPhone();
+        var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest(
+            "John", "Doe", "Test", "1234567890");
 
         // Act
         var response = await PutApiResponseAsync<object, UserDto>($"v1/users/{testUserId}", request);
@@ -517,7 +522,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         // Create concurrent update tasks
         var tasks = userIds.Select(async (userId, index) =>
         {
-            var request = UpdateUserTestDataV1.CreateValidRequest($"Updated{index}", $"User{index}", $"Test{index}");
+            var request = UserTestDataV1.Creation.CreateValidUserUpdateRequest($"Updated{index}", $"User{index}", $"Test{index}");
             return await PutApiResponseAsync<object, UserDto>($"v1/users/{userId}", request);
         }).ToList();
 
@@ -553,54 +558,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
         }
 
         return result.Value.User.Id;
-    }
-
-    private async Task EnsureManagerUserExistsAsync()
-    {
-        await ExecuteDbContextAsync(async context =>
-        {
-            var existingManager = await context.Users
-                .FirstOrDefaultAsync(u => u.Role == UserRole.Manager);
-
-            if (existingManager == null)
-            {
-                using var scope = Factory.Services.CreateScope();
-                var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-                var registerCommand = new RegisterCommandV1
-                {
-                    Email = "manager@test.com",
-                    Password = "ManagerPassword123!",
-                    FirstName = "Manager",
-                    LastName = "User"
-                };
-
-                var registerResult = await sender.Send(registerCommand);
-                if (registerResult.IsFailure)
-                {
-                    throw new InvalidOperationException($"Failed to create manager user: {registerResult.Error}");
-                }
-
-                // Change role to Manager using the ChangeUserRoleCommand
-                var changeRoleCommand = new ChangeUserRoleCommandV1
-                {
-                    UserId = registerResult.Value.User.Id,
-                    NewRole = UserRole.Manager
-                };
-
-                var changeRoleResult = await sender.Send(changeRoleCommand);
-                if (changeRoleResult.IsFailure)
-                {
-                    throw new InvalidOperationException($"Failed to change user role to Manager: {changeRoleResult.Error}");
-                }
-            }
-        });
-    }
-
-    private async Task<string> AuthenticateAsManagerAsync()
-    {
-        await EnsureManagerUserExistsAsync();
-        return await AuthenticateAsync("manager@test.com", "ManagerPassword123!");
     }
 
     #endregion

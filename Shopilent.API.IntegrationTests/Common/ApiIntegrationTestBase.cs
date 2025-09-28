@@ -142,6 +142,7 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
 
     protected async Task<string> AuthenticateAsManagerAsync()
     {
+        await EnsureManagerUserExistsAsync();
         return await AuthenticateAsync("manager@shopilent.com", "Manager123!");
     }
 

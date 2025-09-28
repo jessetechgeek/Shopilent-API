@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 using Shopilent.Application.Features.Identity.Commands.UpdateUserProfile.V1;
 
@@ -19,7 +20,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest(
             firstName: "John",
             lastName: "Doe",
             middleName: "William",
@@ -46,7 +47,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest(
             firstName: "Jane",
             lastName: "Smith",
             middleName: "Marie",
@@ -80,7 +81,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithEmptyFirstName();
+        var request = UserTestDataV1.Validation.CreateRequestWithEmptyFirstName();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -100,7 +101,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithNullFirstName();
+        var request = UserTestDataV1.Validation.CreateRequestWithNullFirstName();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -120,7 +121,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithEmptyLastName();
+        var request = UserTestDataV1.Validation.CreateRequestWithEmptyLastName();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -140,7 +141,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithNullLastName();
+        var request = UserTestDataV1.Validation.CreateRequestWithNullLastName();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -160,7 +161,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithNullMiddleName();
+        var request = UserTestDataV1.Validation.CreateRequestWithNullMiddleName();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -177,7 +178,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithEmptyMiddleName();
+        var request = UserTestDataV1.Validation.CreateRequestWithEmptyMiddleName();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -195,7 +196,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithNullPhone();
+        var request = UserTestDataV1.Validation.CreateRequestWithNullPhone();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -222,7 +223,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithEmptyPhone();
+        var request = UserTestDataV1.Validation.CreateRequestWithEmptyPhone();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -251,7 +252,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithInvalidPhone();
+        var request = UserTestDataV1.Validation.CreateRequestWithInvalidPhone();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -271,7 +272,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithValidInternationalPhone();
+        var request = UserTestDataV1.Validation.CreateRequestWithValidInternationalPhone();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -288,7 +289,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateRequestWithInvalidCharactersInName();
+        var request = UserTestDataV1.Validation.CreateRequestWithInvalidCharactersInName();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -306,7 +307,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        var request = UpdateProfileTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -322,7 +323,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest(
             firstName: "Admin",
             lastName: "User");
 
@@ -378,7 +379,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.BoundaryTests.CreateRequestWithSingleCharacterName();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithSingleCharacterName();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -397,7 +398,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.BoundaryTests.CreateRequestWithMaximumLengthNames();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithMaximumLengthNames();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -416,7 +417,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.BoundaryTests.CreateRequestWithLongNames();
+        var request = UserTestDataV1.BoundaryTests.CreateRequestWithLongNames();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -437,7 +438,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -457,7 +458,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithSpecialCharacters();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithSpecialCharacters();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -476,7 +477,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithWhitespaceInNames();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithWhitespaceInNames();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -496,7 +497,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithOnlyWhitespace();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithOnlyWhitespace();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -518,7 +519,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithTabsAndNewlines();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithTabsAndNewlines();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -536,7 +537,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithNumericNames();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithNumericNames();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -556,7 +557,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithEmojis();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithEmojis();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -576,7 +577,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithValidSpecialCharacters();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithValidSpecialCharacters();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -595,7 +596,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.EdgeCases.CreateRequestWithValidDotsAndSpaces();
+        var request = UserTestDataV1.EdgeCases.CreateRequestWithValidDotsAndSpaces();
 
         // Act
         var response = await PutApiResponseAsync<object, UpdateUserProfileResponseV1>("v1/users/me", request);
@@ -615,7 +616,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.SecurityTests.CreateSqlInjectionAttempt();
+        var request = UserTestDataV1.SecurityTests.CreateSqlInjectionAttempt();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -643,7 +644,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.SecurityTests.CreateXssAttempt();
+        var request = UserTestDataV1.SecurityTests.CreateXssAttempt();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -669,7 +670,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.SecurityTests.CreateCommandInjectionAttempt();
+        var request = UserTestDataV1.SecurityTests.CreateCommandInjectionAttempt();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -697,7 +698,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.SecurityTests.CreateLongStringAttack();
+        var request = UserTestDataV1.SecurityTests.CreateLongStringAttack();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -717,7 +718,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.SecurityTests.CreateNullByteAttempt();
+        var request = UserTestDataV1.SecurityTests.CreateNullByteAttempt();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -747,7 +748,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         };
 
         var requests = Enumerable.Range(0, 3)
-            .Select(i => UpdateProfileTestDataV1.CreateValidRequest(
+            .Select(i => UserTestDataV1.Creation.CreateValidProfileUpdateRequest(
                 firstName: validNameVariations[i].Item1,
                 lastName: validNameVariations[i].Item2,
                 middleName: validNameVariations[i].Item3,
@@ -797,7 +798,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = UpdateProfileTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest(
             firstName: "John",
             lastName: "Doe");
 
@@ -820,7 +821,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        var request = UpdateProfileTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -834,7 +835,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         SetAuthenticationHeader("malformed-token");
-        var request = UpdateProfileTestDataV1.CreateValidRequest();
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest();
 
         // Act
         var response = await PutAsync("v1/users/me", request);
@@ -852,7 +853,7 @@ public class UpdateProfileEndpointV1Tests : ApiIntegrationTestBase
         var customerToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(customerToken);
 
-        var request = UpdateProfileTestDataV1.CreateValidRequest(
+        var request = UserTestDataV1.Creation.CreateValidProfileUpdateRequest(
             firstName: "CustomerUpdated",
             lastName: "User");
 
