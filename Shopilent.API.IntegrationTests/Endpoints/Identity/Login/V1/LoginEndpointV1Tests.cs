@@ -16,7 +16,7 @@ public class LoginEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First ensure admin user exists
         await EnsureAdminUserExistsAsync();
-        
+
         var request = LoginTestDataV1.CreateValidRequest(
             email: "admin@shopilent.com",
             password: "Admin123!");
@@ -42,7 +42,7 @@ public class LoginEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First ensure customer user exists
         await EnsureCustomerUserExistsAsync();
-        
+
         var request = LoginTestDataV1.CreateValidRequest(
             email: "customer@shopilent.com",
             password: "Customer123!");
@@ -63,7 +63,7 @@ public class LoginEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First ensure admin user exists
         await EnsureAdminUserExistsAsync();
-        
+
         var request = new { Email = "admin@shopilent.com", Password = "Admin123!", RememberMe = true };
 
         // Act
@@ -421,7 +421,7 @@ public class LoginEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First ensure admin user exists
         await EnsureAdminUserExistsAsync();
-        
+
         var tasks = Enumerable.Range(0, 5)
             .Select(_ => LoginTestDataV1.CreateValidRequest(
                 email: "admin@shopilent.com",
@@ -442,7 +442,7 @@ public class LoginEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First ensure admin user exists
         await EnsureAdminUserExistsAsync();
-        
+
         var request = LoginTestDataV1.CreateValidRequest(
             email: "admin@shopilent.com",
             password: "Admin123!");

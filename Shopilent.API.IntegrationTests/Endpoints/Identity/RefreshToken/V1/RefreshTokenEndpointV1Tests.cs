@@ -16,11 +16,8 @@ public class RefreshTokenEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First login to get a valid refresh token
         await EnsureAdminUserExistsAsync();
-        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login", new
-        {
-            Email = "admin@shopilent.com",
-            Password = "Admin123!"
-        });
+        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login",
+            new { Email = "admin@shopilent.com", Password = "Admin123!" });
 
         AssertApiSuccess(loginResponse);
         var validRefreshToken = loginResponse!.Data.RefreshToken;
@@ -46,18 +43,16 @@ public class RefreshTokenEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - Login to get a valid refresh token
         await EnsureAdminUserExistsAsync();
-        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login", new
-        {
-            Email = "admin@shopilent.com",
-            Password = "Admin123!"
-        });
+        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login",
+            new { Email = "admin@shopilent.com", Password = "Admin123!" });
 
         AssertApiSuccess(loginResponse);
         var validRefreshToken = loginResponse!.Data.RefreshToken;
         var request = RefreshTokenTestDataV1.CreateValidRequest(validRefreshToken);
 
         // Act - Use the refresh token first time
-        var firstRefreshResponse = await PostApiResponseAsync<object, RefreshTokenResponseV1>("v1/auth/refresh-token", request);
+        var firstRefreshResponse =
+            await PostApiResponseAsync<object, RefreshTokenResponseV1>("v1/auth/refresh-token", request);
         AssertApiSuccess(firstRefreshResponse);
 
         // Act - Try to use the same refresh token again
@@ -161,11 +156,8 @@ public class RefreshTokenEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First login to get a valid refresh token
         await EnsureAdminUserExistsAsync();
-        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login", new
-        {
-            Email = "admin@shopilent.com",
-            Password = "Admin123!"
-        });
+        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login",
+            new { Email = "admin@shopilent.com", Password = "Admin123!" });
 
         AssertApiSuccess(loginResponse);
         var validRefreshToken = loginResponse!.Data.RefreshToken;
@@ -195,11 +187,8 @@ public class RefreshTokenEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - Login as customer to get a valid refresh token
         await EnsureCustomerUserExistsAsync();
-        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login", new
-        {
-            Email = "customer@shopilent.com",
-            Password = "Customer123!"
-        });
+        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login",
+            new { Email = "customer@shopilent.com", Password = "Customer123!" });
 
         AssertApiSuccess(loginResponse);
         var validRefreshToken = loginResponse!.Data.RefreshToken;
@@ -241,13 +230,13 @@ public class RefreshTokenEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - First ensure we have a user in the database
         await EnsureAdminUserExistsAsync();
-        
+
         // Get initial user count to verify database integrity later
         var initialUserCount = await ExecuteDbContextAsync(async context =>
         {
             return await context.Users.CountAsync();
         });
-        
+
         var request = RefreshTokenTestDataV1.SecurityTests.CreateSqlInjectionAttempt();
 
         // Act
@@ -276,7 +265,7 @@ public class RefreshTokenEndpointV1Tests : ApiIntegrationTestBase
 
         // Assert - Should reject with either BadRequest or Unauthorized
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.Unauthorized);
-        
+
         var content = await response.Content.ReadAsStringAsync();
         content.Should().NotContain("<script>"); // Should not echo back the XSS payload
     }
@@ -384,11 +373,8 @@ public class RefreshTokenEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange - Login to get a valid refresh token
         await EnsureAdminUserExistsAsync();
-        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login", new
-        {
-            Email = "admin@shopilent.com",
-            Password = "Admin123!"
-        });
+        var loginResponse = await PostApiResponseAsync<object, LoginResponse>("v1/auth/login",
+            new { Email = "admin@shopilent.com", Password = "Admin123!" });
 
         AssertApiSuccess(loginResponse);
         var validRefreshToken = loginResponse!.Data.RefreshToken;

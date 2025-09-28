@@ -14,7 +14,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithValidDataAsAdmin_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CreateValidRequest();
@@ -36,7 +35,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithDefaultRequest_ShouldInitializeAndIndexProducts()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CommonScenarios.CreateDefaultRequest();
@@ -56,7 +54,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithInitializeOnlyRequest_ShouldInitializeButNotIndexProducts()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CommonScenarios.CreateInitializeOnlyRequest();
@@ -76,7 +73,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithIndexProductsOnlyRequest_ShouldIndexProductsWithoutInitializing()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CommonScenarios.CreateIndexProductsOnlyRequest();
@@ -96,7 +92,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithForceReindexRequest_ShouldForceReindexing()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CommonScenarios.CreateForceReindexRequest();
@@ -116,7 +111,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithMinimalRequest_ShouldReturnSuccessWithMinimalAction()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CommonScenarios.CreateMinimalRequest();
@@ -150,7 +144,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CreateValidRequest();
@@ -172,7 +165,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
         bool initializeIndexes, bool indexProducts, bool forceReindex)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CreateValidRequest(
@@ -203,7 +195,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithAllFalseParameters_ShouldStillReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.EdgeCases.CreateAllFalseRequest();
@@ -224,7 +215,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_WithOnlyForceReindex_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.EdgeCases.CreateOnlyForceReindexRequest();
@@ -244,7 +234,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var tasks = Enumerable.Range(0, 3) // Reduced concurrent requests for search operations
@@ -266,7 +255,6 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
     public async Task RebuildSearchIndex_ValidRequest_ShouldHaveReasonableResponseTime()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = RebuildSearchIndexTestDataV1.CreateValidRequest();

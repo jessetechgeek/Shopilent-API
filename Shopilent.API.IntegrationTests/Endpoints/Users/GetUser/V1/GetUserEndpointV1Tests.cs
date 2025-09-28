@@ -22,7 +22,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithValidIdAsAdmin_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -48,7 +47,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithValidIdAsAdmin_ShouldIncludeUserDetails()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -72,7 +70,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithNonExistentId_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var nonExistentId = UserTestDataV1.EdgeCases.CreateNonExistentUserId();
@@ -92,7 +89,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithInvalidGuid_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var invalidId = UserTestDataV1.EdgeCases.CreateMalformedUserId();
@@ -108,7 +104,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithEmptyGuid_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var emptyGuid = Guid.Empty;
@@ -138,7 +133,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var validUserId = UserTestDataV1.Creation.CreateValidUserId();
@@ -154,7 +149,7 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithManagerRole_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         var managerId = await CreateTestUserWithRoleAsync("manager@example.com", "Manager", "User", UserRole.Manager);
         var accessToken = await AuthenticateAsync("manager@example.com", "Password123!");
         SetAuthenticationHeader(accessToken);
@@ -175,7 +170,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_RetrievingOwnProfileAsAdmin_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -201,7 +195,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithInactiveUser_ShouldReturnUserWithInactiveStatus()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -229,7 +222,8 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
             await CreateTestUserWithRoleAsync(adminEmail, "Manager", "Test", UserRole.Manager);
         }
 
-        var accessToken = await AuthenticateAsync(adminEmail, adminEmail == "admin@shopilent.com" ? "Admin123!" : "Password123!");
+        var accessToken = await AuthenticateAsync(adminEmail,
+            adminEmail == "admin@shopilent.com" ? "Admin123!" : "Password123!");
         SetAuthenticationHeader(accessToken);
 
         var testUserId = await CreateTestUserAsync("target@example.com", "Target", "User");
@@ -275,7 +269,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -302,7 +295,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithDatabaseConnectionFailure_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var validUserId = UserTestDataV1.Creation.CreateValidUserId();
@@ -319,7 +311,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithSqlInjectionAttempt_ShouldHandleSafely()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var sqlInjectionId = UserTestDataV1.EdgeCases.CreateMalformedUserId();
@@ -340,7 +331,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithXssAttempt_ShouldHandleSafely()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var xssId = UserTestDataV1.EdgeCases.CreateMalformedUserId();
@@ -361,7 +351,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_WithUnicodeInNames_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -384,7 +373,6 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetUser_ValidRequest_ShouldHaveReasonableResponseTime()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -447,15 +435,10 @@ public class GetUserEndpointV1Tests : ApiIntegrationTestBase
         using var scope = Factory.Services.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-        var changeRoleCommand = new ChangeUserRoleCommandV1
-        {
-            UserId = userId,
-            NewRole = role
-        };
+        var changeRoleCommand = new ChangeUserRoleCommandV1 { UserId = userId, NewRole = role };
 
         await mediator.Send(changeRoleCommand);
 
         return userId;
     }
-
 }

@@ -20,7 +20,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithValidRequest_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.CreateValidRequest();
@@ -42,7 +41,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithTestAttributes_ShouldReturnCorrectData()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
 
         // Create test attributes
         await CreateTestAttributeAsync("color", "Color", AttributeType.Text, true, true, false);
@@ -77,7 +76,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithPagination_ShouldReturnCorrectPage()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateMultipleTestAttributesAsync(8);
 
         var accessToken = await AuthenticateAsAdminAsync();
@@ -111,7 +110,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithSearch_ShouldReturnFilteredResults()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestAttributeAsync("searchable_color", "Searchable Color", AttributeType.Text, true, true, false);
         await CreateTestAttributeAsync("another_size", "Another Size", AttributeType.Text, true, true, true);
 
@@ -134,7 +133,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithSorting_ShouldReturnSortedResults()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestAttributeAsync("alpha_attr", "Alpha Attribute", AttributeType.Text, true, true, false);
         await CreateTestAttributeAsync("beta_attr", "Beta Attribute", AttributeType.Text, true, true, false);
         await CreateTestAttributeAsync("gamma_attr", "Gamma Attribute", AttributeType.Text, true, true, false);
@@ -159,7 +158,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithDescendingSortByCreatedAt_ShouldReturnNewestFirst()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         var oldAttributeId = await CreateTestAttributeAsync("old_attr", "Old Attribute", AttributeType.Text, true, true, false);
         await Task.Delay(1000); // Ensure different timestamps
         var newAttributeId = await CreateTestAttributeAsync("new_attr", "New Attribute", AttributeType.Text, true, true, false);
@@ -197,7 +196,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.CreateValidRequest();
@@ -213,7 +211,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithManagerRole_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestUserAsync("manager@test.com", "Manager", "User", UserRole.Manager);
         var accessToken = await AuthenticateAsync("manager@test.com", "Password123!");
         SetAuthenticationHeader(accessToken);
@@ -231,7 +229,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithZeroLength_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.Pagination.CreateZeroLengthRequest();
@@ -251,7 +248,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithNegativeValues_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.ValidationTests.CreateNegativeStartRequest();
@@ -271,7 +267,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithExcessiveLength_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.ValidationTests.CreateExcessiveLengthRequest();
@@ -291,7 +286,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithNoResultsSearch_ShouldReturnEmptyData()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.SearchScenarios.CreateNoResultsSearchRequest();
@@ -311,7 +305,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithUnicodeSearch_ShouldReturnCorrectResults()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestAttributeAsync("groesse", "Größe", AttributeType.Text, true, true, false);
 
         var accessToken = await AuthenticateAsAdminAsync();
@@ -332,7 +326,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithComplexRequest_ShouldHandleAllParameters()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestAttributeAsync("complex1", "Complex Attribute 1", AttributeType.Text, true, true, false);
         await CreateTestAttributeAsync("complex2", "Complex Attribute 2", AttributeType.Number, false, true, true);
 
@@ -354,7 +348,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithInvalidColumnSort_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.SortingScenarios.CreateInvalidColumnSortRequest();
@@ -370,7 +363,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_ConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -400,7 +392,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithEmptySearch_ShouldReturnAllAttributes()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestAttributeAsync("empty_test", "Empty Test", AttributeType.Text, true, true, false);
 
         var accessToken = await AuthenticateAsAdminAsync();
@@ -421,7 +413,6 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithHighPageNumber_ShouldReturnEmptyOrLastPage()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var request = GetAttributesDatatableTestDataV1.Pagination.CreateHighStartRequest();
@@ -441,7 +432,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_DatabaseConsistency_ShouldMatchDatabaseCounts()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         var testAttribute1Id = await CreateTestAttributeAsync("db_test1", "Database Test 1", AttributeType.Text, true, true, false);
         var testAttribute2Id = await CreateTestAttributeAsync("db_test2", "Database Test 2", AttributeType.Number, false, true, true);
 
@@ -477,7 +468,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithDifferentPageSizes_ShouldReturnCorrectCount(int pageSize)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateMultipleTestAttributesAsync(15); // Create enough attributes to test pagination
 
         var accessToken = await AuthenticateAsAdminAsync();
@@ -500,7 +491,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_ResponseTime_ShouldBeReasonable()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateMultipleTestAttributesAsync(50); // Create a decent amount of data
 
         var accessToken = await AuthenticateAsAdminAsync();
@@ -521,7 +512,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithFilterableAttributes_ShouldShowCorrectFlags()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestAttributeAsync("filterable_attr", "Filterable Attribute", AttributeType.Text, true, false, false);
         await CreateTestAttributeAsync("non_filterable_attr", "Non-Filterable Attribute", AttributeType.Text, false, true, false);
 
@@ -550,7 +541,7 @@ public class GetAttributesDatatableEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAttributesDatatable_WithVariantAttributes_ShouldShowCorrectFlags()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
+
         await CreateTestAttributeAsync("variant_attr", "Variant Attribute", AttributeType.Text, true, true, true);
         await CreateTestAttributeAsync("product_attr", "Product Attribute", AttributeType.Text, true, true, false);
 

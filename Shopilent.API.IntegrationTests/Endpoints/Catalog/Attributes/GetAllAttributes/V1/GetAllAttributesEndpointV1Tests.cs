@@ -47,7 +47,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithCreatedAttribute_ShouldIncludeCreatedAttribute()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -92,7 +91,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithMultipleAttributes_ShouldReturnAllCreatedAttributes()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -144,7 +142,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithAllAttributeTypes_ShouldIncludeAllCreatedTypes()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -195,7 +192,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_ShouldReturnAttributesWithCorrectStructure()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -264,7 +260,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithCustomerAuthentication_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -280,7 +275,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithAdminAuthentication_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -300,7 +294,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_ShouldReturnDataConsistentWithDatabase()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -376,7 +369,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_ShouldReturnAttributesInConsistentOrder()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -421,7 +413,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithUnicodeCharacters_ShouldReturnCorrectly()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -452,7 +443,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithComplexConfiguration_ShouldReturnCorrectly()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -487,7 +477,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_WithManyAttributes_ShouldPerformWell()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -519,7 +508,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_ConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -556,7 +544,6 @@ public class GetAllAttributesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetAllAttributes_ShouldBeCached()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 

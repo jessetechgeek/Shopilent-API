@@ -24,7 +24,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithValidDataAsAdmin_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -49,7 +48,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithValidDataAsAdmin_ShouldUpdateUserInDatabase()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -79,7 +77,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithValidDataAsManager_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureManagerUserExistsAsync();
         var accessToken = await AuthenticateAsManagerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -100,7 +97,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithOnlyRequiredFields_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -123,7 +119,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithAllFields_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -152,7 +147,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithInvalidFirstName_ShouldReturnValidationError(string? invalidFirstName)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -174,7 +168,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithInvalidLastName_ShouldReturnValidationError(string? invalidLastName)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -194,7 +187,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithTooLongFirstName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -214,7 +206,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithTooLongLastName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -234,7 +225,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithTooLongMiddleName_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -259,7 +249,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithInvalidPhoneFormat_ShouldReturnValidationError(string invalidPhone)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -284,7 +273,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithMaximumLengthNames_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -303,7 +291,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithMinimumValidPhone_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -322,7 +309,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithMaximumValidPhone_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -360,7 +346,7 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -382,7 +368,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithNonExistentUserId_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -402,7 +387,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithInvalidGuidFormat_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -424,7 +408,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithUnicodeCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -446,7 +429,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithSpecialCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -467,7 +449,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithInternationalPhoneNumber_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -487,7 +468,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_WithPhoneNumberWithoutPlus_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -507,7 +487,6 @@ public class UpdateUserEndpointV1Tests : ApiIntegrationTestBase
     public async Task UpdateUser_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 

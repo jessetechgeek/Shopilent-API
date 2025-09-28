@@ -17,7 +17,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithValidAdminRequest_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -46,7 +45,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithValidCustomerRequest_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -75,7 +73,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithValidAdminRoleRequest_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -104,7 +101,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithNonExistentUser_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -126,7 +122,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithInvalidUserId_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -144,8 +139,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithInvalidRole_ShouldReturnValidationError()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -168,7 +162,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        await EnsureCustomerUserExistsAsync();
+
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
         var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
@@ -184,7 +178,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithCustomerAuthentication_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
+
         var customerToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(customerToken);
 
@@ -202,7 +196,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_AdminChangingOwnRole_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -232,7 +225,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithAllValidRoles_ShouldReturnSuccess(UserRole targetRole)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -260,7 +252,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithEmptyGuid_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -279,8 +270,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithStringRole_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -298,8 +288,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithNegativeRole_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -321,8 +310,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithLargeRole_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -345,8 +333,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithSqlInjectionAttempt_ShouldReturnBadRequestSafely()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -370,8 +357,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithXssAttempt_ShouldReturnBadRequestSafely()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -394,8 +380,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_WithCommandInjectionAttempt_ShouldReturnBadRequestSafely()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
-        await EnsureCustomerUserExistsAsync();
+
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
 
@@ -419,7 +404,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange - Test concurrent role changes (optimistic concurrency control)
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);
@@ -466,7 +450,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        await EnsureCustomerUserExistsAsync();
+
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
         var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
@@ -483,7 +467,7 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         SetAuthenticationHeader("malformed-token");
-        await EnsureCustomerUserExistsAsync();
+
 
         var customerUserId = await GetUserIdByEmailAsync("customer@shopilent.com");
         var request = UserTestDataV1.RoleScenarios.CreateManagerRoleRequest();
@@ -499,7 +483,6 @@ public class ChangeUserRoleEndpointV1Tests : ApiIntegrationTestBase
     public async Task ChangeUserRole_ShouldNotExposeUserDetailsInResponse()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         await EnsureCustomerUserExistsAsync();
         var adminToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(adminToken);

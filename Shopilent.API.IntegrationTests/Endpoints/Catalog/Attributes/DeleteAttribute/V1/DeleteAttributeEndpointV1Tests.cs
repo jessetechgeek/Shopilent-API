@@ -21,7 +21,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithValidId_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -47,7 +46,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithValidId_ShouldRemoveAttributeFromDatabase()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -98,7 +96,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithAllAttributeTypes_ShouldReturnSuccess(string attributeType)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -129,7 +126,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_TextType_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -153,7 +149,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_SelectType_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -177,7 +172,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_ColorType_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -201,7 +195,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_NumberType_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -229,7 +222,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithEmptyGuid_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -248,7 +240,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithInvalidGuidFormat_ShouldReturnBadRequest()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -263,7 +254,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithNonExistentId_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var nonExistentId = Guid.NewGuid();
@@ -301,7 +291,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithCustomerRole_ShouldReturnForbidden()
     {
         // Arrange
-        await EnsureCustomerUserExistsAsync();
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
         var attributeId = Guid.NewGuid();
@@ -317,7 +306,7 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithAdminRole_ShouldReturnNotFoundForNonExistentAttribute()
     {
         // Arrange - Test that admin has permission, but attribute doesn't exist
-        await EnsureAdminUserExistsAsync();
+
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var nonExistentId = Guid.NewGuid();
@@ -337,7 +326,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_UsedByProducts_ShouldReturnConflict()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -371,7 +359,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_AlreadyDeleted_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -404,7 +391,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithUnicodeCharacters_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -428,7 +414,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithComplexConfiguration_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -452,7 +437,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_WithMaximumNameLength_ShouldReturnSuccess()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -486,7 +470,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
         bool filterable, bool searchable, bool isVariant)
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -517,7 +500,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_MultipleConcurrentRequests_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -545,7 +527,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_SequentialDeletes_ShouldHandleGracefully()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -580,7 +561,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_ThenAttemptToGetIt_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -631,7 +611,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_ThenAttemptToUpdateIt_ShouldReturnNotFound()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -669,7 +648,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_SuccessResponse_ShouldHaveCorrectFormat()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
@@ -699,7 +677,6 @@ public class DeleteAttributeEndpointV1Tests : ApiIntegrationTestBase
     public async Task DeleteAttribute_ErrorResponse_ShouldHaveCorrectFormat()
     {
         // Arrange
-        await EnsureAdminUserExistsAsync();
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var nonExistentId = Guid.NewGuid();
