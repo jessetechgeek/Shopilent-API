@@ -34,6 +34,7 @@ internal sealed class
         // Since hierarchy change affects many categories and their paths, clear all category caches
         await _cacheService.RemoveByPatternAsync("category-*", cancellationToken);
         await _cacheService.RemoveByPatternAsync("categories-*", cancellationToken);
+        await _cacheService.RemoveByPatternAsync("all-categories", cancellationToken);
         await _cacheService.RemoveByPatternAsync("root-categories", cancellationToken);
         await _cacheService.RemoveByPatternAsync("child-categories-*", cancellationToken);
     }

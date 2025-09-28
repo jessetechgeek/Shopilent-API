@@ -32,11 +32,11 @@ public static class CategoryErrors
         code: "Category.MaxDepthReached",
         message: "Cannot add more levels to the category hierarchy. Maximum depth reached.");
         
-    public static Error CannotDeleteWithProducts => Error.Validation(
+    public static Error CannotDeleteWithProducts => Error.Conflict(
         code: "Category.CannotDeleteWithProducts",
         message: "Cannot delete a category that has associated products.");
-        
-    public static Error CannotDeleteWithChildren => Error.Validation(
+
+    public static Error CannotDeleteWithChildren => Error.Conflict(
         code: "Category.CannotDeleteWithChildren",
         message: "Cannot delete a category that has child categories.");
 }

@@ -33,6 +33,7 @@ internal sealed  class CategoryCreatedEventHandler : INotificationHandler<Domain
         // Invalidate categories cache
         await _cacheService.RemoveByPatternAsync("category-*", cancellationToken);
         await _cacheService.RemoveByPatternAsync("categories-*", cancellationToken);
+        await _cacheService.RemoveByPatternAsync("all-categories", cancellationToken);
         await _cacheService.RemoveByPatternAsync("root-categories", cancellationToken);
         await _cacheService.RemoveByPatternAsync("child-categories-*", cancellationToken);
     }
