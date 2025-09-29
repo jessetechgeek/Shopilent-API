@@ -762,6 +762,85 @@ public static class CategoryTestDataV1
     }
 
     /// <summary>
+    /// Pagination-specific test scenarios for GetPaginatedCategories endpoint
+    /// </summary>
+    public static class Pagination
+    {
+        /// <summary>
+        /// Creates categories with predictable alphabetical names for sorting tests
+        /// </summary>
+        public static List<object> CreateAlphabeticalCategories()
+        {
+            return new List<object>
+            {
+                Creation.CreateCategoryForSeeding("Alpha Category", "alpha-category", "First alphabetical category"),
+                Creation.CreateCategoryForSeeding("Beta Category", "beta-category", "Second alphabetical category"),
+                Creation.CreateCategoryForSeeding("Gamma Category", "gamma-category", "Third alphabetical category"),
+                Creation.CreateCategoryForSeeding("Delta Category", "delta-category", "Fourth alphabetical category"),
+                Creation.CreateCategoryForSeeding("Epsilon Category", "epsilon-category", "Fifth alphabetical category")
+            };
+        }
+
+        /// <summary>
+        /// Creates a specific number of categories for pagination testing
+        /// </summary>
+        public static List<object> CreatePageableCategories(int count = 25)
+        {
+            var categories = new List<object>();
+
+            for (int i = 1; i <= count; i++)
+            {
+                categories.Add(Creation.CreateCategoryForSeeding(
+                    name: $"Page Test Category {i:D3}",
+                    slug: $"page-test-category-{i:D3}-{_faker.Random.AlphaNumeric(4).ToLower()}",
+                    description: $"Category {i} for pagination testing",
+                    parentId: null
+                ));
+            }
+
+            return categories;
+        }
+
+        /// <summary>
+        /// Creates categories with timestamps spread out for CreatedAt sorting tests
+        /// </summary>
+        public static List<object> CreateTimestampedCategories()
+        {
+            return new List<object>
+            {
+                Creation.CreateCategoryForSeeding("Oldest Category", "oldest-category", "Category created first"),
+                Creation.CreateCategoryForSeeding("Middle Category", "middle-category", "Category created second"),
+                Creation.CreateCategoryForSeeding("Newest Category", "newest-category", "Category created last")
+            };
+        }
+
+        /// <summary>
+        /// Creates categories with mixed hierarchy levels for complex pagination testing
+        /// </summary>
+        public static List<object> CreateHierarchicalCategories()
+        {
+            var rootCategory = Creation.CreateCategoryForSeeding("Root Level", "root-level", "Root level category");
+            var level1Category = Creation.CreateCategoryForSeeding("Level 1", "level-1", "First level category");
+            var level2Category = Creation.CreateCategoryForSeeding("Level 2", "level-2", "Second level category");
+
+            return new List<object> { rootCategory, level1Category, level2Category };
+        }
+
+        /// <summary>
+        /// Creates the minimum number of categories needed for basic pagination testing
+        /// </summary>
+        public static List<object> CreateMinimalPaginationSet()
+        {
+            return new List<object>
+            {
+                Creation.CreateCategoryForSeeding("First", "first", "First category"),
+                Creation.CreateCategoryForSeeding("Second", "second", "Second category"),
+                Creation.CreateCategoryForSeeding("Third", "third", "Third category")
+            };
+        }
+    }
+
+    /// <summary>
     /// DataTable-specific test scenarios (simple cases only - complex ones use DataTableTestDataFactory)
     /// </summary>
     public static class DataTable
