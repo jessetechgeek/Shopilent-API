@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 using Shopilent.Domain.Catalog.DTOs;
 
@@ -22,7 +23,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category
-        var parentRequest = GetChildCategoriesTestDataV1.CreateValidParentCategoryRequest(
+        var parentRequest = CategoryTestDataV1.ChildCategories.CreateValidParentCategoryRequest(
             name: "Electronics Parent",
             slug: "electronics-parent");
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
@@ -30,7 +31,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         var parentId = parentResponse!.Data.Id;
 
         // Create multiple child categories
-        var childRequests = GetChildCategoriesTestDataV1.MultipleChildren.CreateMultipleChildCategoryRequests(parentId, 3);
+        var childRequests = CategoryTestDataV1.ChildCategories.MultipleChildren.CreateMultipleChildCategoryRequests(parentId, 3);
         var childIds = new List<Guid>();
 
         foreach (var childRequest in childRequests)
@@ -67,7 +68,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category with no children
-        var parentRequest = GetChildCategoriesTestDataV1.TestScenarios.CreateParentWithNoChildren();
+        var parentRequest = CategoryTestDataV1.ChildCategories.TestScenarios.CreateParentWithNoChildren();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
@@ -92,12 +93,12 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent and child categories
-        var parentRequest = GetChildCategoriesTestDataV1.CreateValidParentCategoryRequest();
+        var parentRequest = CategoryTestDataV1.ChildCategories.CreateValidParentCategoryRequest();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
-        var childRequest = GetChildCategoriesTestDataV1.CreateValidChildCategoryRequest(parentId);
+        var childRequest = CategoryTestDataV1.ChildCategories.CreateValidChildCategoryRequest(parentId);
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
 
@@ -121,13 +122,13 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category
-        var parentRequest = GetChildCategoriesTestDataV1.CreateValidParentCategoryRequest();
+        var parentRequest = CategoryTestDataV1.ChildCategories.CreateValidParentCategoryRequest();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
         // Create ordered child categories
-        var orderedChildRequests = GetChildCategoriesTestDataV1.TestScenarios.CreateOrderedChildren(parentId);
+        var orderedChildRequests = CategoryTestDataV1.ChildCategories.TestScenarios.CreateOrderedChildren(parentId);
         foreach (var childRequest in orderedChildRequests)
         {
             var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
@@ -159,7 +160,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetChildCategories_WithNonExistentParentId_ShouldReturnNotFound()
     {
         // Arrange
-        var nonExistentId = GetChildCategoriesTestDataV1.EdgeCases.NonExistentParentId;
+        var nonExistentId = CategoryTestDataV1.EdgeCases.NonExistentParentId;
 
         // Act
         var response = await Client.GetAsync($"v1/categories/{nonExistentId}/children");
@@ -177,7 +178,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetChildCategories_WithEmptyGuid_ShouldReturnNotFound()
     {
         // Arrange
-        var emptyGuid = GetChildCategoriesTestDataV1.EdgeCases.EmptyGuid;
+        var emptyGuid = CategoryTestDataV1.EdgeCases.EmptyGuid;
 
         // Act
         var response = await Client.GetAsync($"v1/categories/{emptyGuid}/children");
@@ -194,7 +195,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
     public async Task GetChildCategories_WithInvalidGuidFormat_ShouldReturnBadRequest()
     {
         // Arrange
-        var invalidGuid = GetChildCategoriesTestDataV1.EdgeCases.InvalidGuidString;
+        var invalidGuid = CategoryTestDataV1.EdgeCases.InvalidGuidString;
 
         // Act
         var response = await Client.GetAsync($"v1/categories/{invalidGuid}/children");
@@ -215,7 +216,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category
-        var parentRequest = GetChildCategoriesTestDataV1.CreateValidParentCategoryRequest(
+        var parentRequest = CategoryTestDataV1.ChildCategories.CreateValidParentCategoryRequest(
             name: "Database Test Parent",
             slug: "database-test-parent");
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
@@ -223,7 +224,7 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         var parentId = parentResponse!.Data.Id;
 
         // Create child category
-        var childRequest = GetChildCategoriesTestDataV1.CreateValidChildCategoryRequest(
+        var childRequest = CategoryTestDataV1.ChildCategories.CreateValidChildCategoryRequest(
             parentId,
             name: "Database Test Child",
             slug: "database-test-child");
@@ -272,13 +273,13 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent with unicode characters
-        var parentRequest = GetChildCategoriesTestDataV1.EdgeCases.CreateParentWithUnicodeCharacters();
+        var parentRequest = CategoryTestDataV1.EdgeCases.CreateParentWithUnicodeCharacters();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
         // Create child with unicode characters
-        var childRequest = GetChildCategoriesTestDataV1.EdgeCases.CreateChildWithUnicodeCharacters(parentId);
+        var childRequest = CategoryTestDataV1.EdgeCases.CreateChildWithUnicodeCharacters(parentId);
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
 
@@ -303,19 +304,19 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category
-        var parentRequest = GetChildCategoriesTestDataV1.CreateValidParentCategoryRequest();
+        var parentRequest = CategoryTestDataV1.ChildCategories.CreateValidParentCategoryRequest();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
         // Create child category
-        var childRequest = GetChildCategoriesTestDataV1.CreateValidChildCategoryRequest(parentId);
+        var childRequest = CategoryTestDataV1.ChildCategories.CreateValidChildCategoryRequest(parentId);
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
         var childId = childResponse!.Data.Id;
 
         // Create grandchild category
-        var grandchildRequest = GetChildCategoriesTestDataV1.EdgeCases.CreateGrandchildCategoryRequest(childId);
+        var grandchildRequest = CategoryTestDataV1.EdgeCases.CreateGrandchildCategoryRequest(childId);
         var grandchildResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", grandchildRequest);
         AssertApiSuccess(grandchildResponse);
 
@@ -340,13 +341,13 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent with minimal data
-        var parentRequest = GetChildCategoriesTestDataV1.BoundaryTests.CreateParentWithMinimalData();
+        var parentRequest = CategoryTestDataV1.ChildCategories.BoundaryTestsCh.CreateParentWithMinimalData();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
         // Create child with minimal data
-        var childRequest = GetChildCategoriesTestDataV1.BoundaryTests.CreateChildWithMinimalData(parentId);
+        var childRequest = CategoryTestDataV1.ChildCategories.BoundaryTestsCh.CreateChildWithMinimalData(parentId);
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
 
@@ -375,13 +376,13 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category
-        var parentRequest = GetChildCategoriesTestDataV1.CreateValidParentCategoryRequest();
+        var parentRequest = CategoryTestDataV1.ChildCategories.CreateValidParentCategoryRequest();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
         // Create many children (but keep it reasonable for test performance)
-        var childRequests = GetChildCategoriesTestDataV1.BoundaryTests.CreateMaximumChildren(parentId, 20);
+        var childRequests = CategoryTestDataV1.ChildCategories.BoundaryTestsCh.CreateMaximumChildren(parentId, 20);
         foreach (var childRequest in childRequests)
         {
             var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
@@ -409,13 +410,13 @@ public class GetChildCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category
-        var parentRequest = GetChildCategoriesTestDataV1.CreateValidParentCategoryRequest();
+        var parentRequest = CategoryTestDataV1.ChildCategories.CreateValidParentCategoryRequest();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
         // Create a few children
-        var childRequests = GetChildCategoriesTestDataV1.MultipleChildren.CreateMultipleChildCategoryRequests(parentId, 5);
+        var childRequests = CategoryTestDataV1.ChildCategories.MultipleChildren.CreateMultipleChildCategoryRequests(parentId, 5);
         foreach (var childRequest in childRequests)
         {
             var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);

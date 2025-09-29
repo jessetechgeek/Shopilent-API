@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 using Shopilent.Domain.Catalog.DTOs;
 
@@ -50,7 +51,7 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
 
         // Create a unique category to test with
         var uniqueName = $"Single Test Category {Guid.NewGuid():N}";
-        var categoryRequest = GetAllCategoriesTestDataV1.CreateCategoryForSeeding(
+        var categoryRequest = CategoryTestDataV1.Creation.CreateCategoryForSeeding(
             name: uniqueName,
             description: "Single test category description"
         );
@@ -95,8 +96,8 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
 
         // Create multiple categories with unique names
         var testId = Guid.NewGuid().ToString("N")[..8];
-        var categoryRequests = GetAllCategoriesTestDataV1.CreateMultipleCategoriesForSeeding(5)
-            .Select((req, index) => GetAllCategoriesTestDataV1.CreateCategoryForSeeding(
+        var categoryRequests = CategoryTestDataV1.Creation.CreateMultipleCategoriesForSeeding(5)
+            .Select((req, index) => CategoryTestDataV1.Creation.CreateCategoryForSeeding(
                 name: $"Multi Test Category {testId} {index + 1}",
                 description: $"Multi test category description {index + 1}"
             )).ToList();
@@ -145,8 +146,8 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
 
         // Create categories with mixed statuses
         var testId = Guid.NewGuid().ToString("N")[..8];
-        var statusRequests = GetAllCategoriesTestDataV1.StatusSpecific.CreateMixedStatusCategories()
-            .Select((req, index) => GetAllCategoriesTestDataV1.CreateCategoryForSeeding(
+        var statusRequests = CategoryTestDataV1.StatusTests.CreateMixedStatusCategories()
+            .Select((req, index) => CategoryTestDataV1.Creation.CreateCategoryForSeeding(
                 name: $"Status Test {testId} {index + 1}",
                 slug: $"status-test-{testId}-{index + 1}",
                 description: $"Status test category {index + 1}"
@@ -192,7 +193,7 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
 
         // Create a comprehensive category with unique identifiers
         var uniqueId = Guid.NewGuid().ToString("N")[..8];
-        var categoryRequest = GetAllCategoriesTestDataV1.CreateCategoryForSeeding(
+        var categoryRequest = CategoryTestDataV1.Creation.CreateCategoryForSeeding(
             name: $"Structure Test Category {uniqueId}",
             slug: $"structure-test-category-{uniqueId}",
             description: "Category for testing complete structure"
@@ -291,7 +292,7 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
         // Create test categories with unique identifiers
         var testId = Guid.NewGuid().ToString("N")[..8];
         var categoryRequests = Enumerable.Range(0, 3)
-            .Select(i => GetAllCategoriesTestDataV1.CreateCategoryForSeeding(
+            .Select(i => CategoryTestDataV1.Creation.CreateCategoryForSeeding(
                 name: $"DB Test Category {testId} {i + 1}",
                 description: $"DB test category description {i + 1}"
             )).ToList();
@@ -367,9 +368,9 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
         // Create categories with specific creation order
         var categoryRequests = new[]
         {
-            GetAllCategoriesTestDataV1.CreateCategoryForSeeding(name: "Z Last Category", description: "Last category"),
-            GetAllCategoriesTestDataV1.CreateCategoryForSeeding(name: "A First Category", description: "First category"),
-            GetAllCategoriesTestDataV1.CreateCategoryForSeeding(name: "M Middle Category", description: "Middle category")
+            CategoryTestDataV1.Creation.CreateCategoryForSeeding(name: "Z Last Category", description: "Last category"),
+            CategoryTestDataV1.Creation.CreateCategoryForSeeding(name: "A First Category", description: "First category"),
+            CategoryTestDataV1.Creation.CreateCategoryForSeeding(name: "M Middle Category", description: "Middle category")
         };
 
         foreach (var request in categoryRequests)
@@ -412,7 +413,7 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create category with unicode characters
-        var categoryRequest = GetAllCategoriesTestDataV1.EdgeCases.CreateCategoryWithUnicodeCharacters();
+        var categoryRequest = CategoryTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", categoryRequest);
         AssertApiSuccess(createResponse);
 
@@ -444,12 +445,12 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create root category
-        var rootRequest = GetAllCategoriesTestDataV1.Hierarchical.CreateRootCategory("Hierarchical Root");
+        var rootRequest = CategoryTestDataV1.Hierarchical.CreateRootCategory("Hierarchical Root");
         var rootResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", rootRequest);
         AssertApiSuccess(rootResponse);
 
         // Create child category
-        var childRequest = GetAllCategoriesTestDataV1.Hierarchical.CreateChildCategory(rootResponse!.Data.Id, "Hierarchical Child");
+        var childRequest = CategoryTestDataV1.Hierarchical.CreateChildCategory(rootResponse!.Data.Id, "Hierarchical Child");
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
 
@@ -495,7 +496,7 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create many categories
-        var categoryRequests = GetAllCategoriesTestDataV1.Performance.CreateManyCategories(20);
+        var categoryRequests = CategoryTestDataV1.Performance.CreateManyCategories(20);
         foreach (var request in categoryRequests)
         {
             var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -526,7 +527,7 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create some test data
-        var categoryRequest = GetAllCategoriesTestDataV1.CreateCategoryForSeeding();
+        var categoryRequest = CategoryTestDataV1.Creation.CreateCategoryForSeeding();
         await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", categoryRequest);
 
         // Process outbox messages to ensure domain events are handled and cache is invalidated
@@ -562,7 +563,7 @@ public class GetAllCategoriesEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create category
-        var categoryRequest = GetAllCategoriesTestDataV1.CreateCategoryForSeeding();
+        var categoryRequest = CategoryTestDataV1.Creation.CreateCategoryForSeeding();
         await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", categoryRequest);
 
         // Process outbox messages to ensure domain events are handled and cache is invalidated
