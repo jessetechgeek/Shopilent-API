@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Catalog.Categories.DeleteCategory.V1;
@@ -22,7 +23,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a category first
-        var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -47,7 +48,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a category first
-        var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion(
+        var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion(
             name: "delete_test_db",
             description: "Delete Test DB Category");
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
@@ -92,7 +93,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
 
         // Create a category with specified name
         var categoryName = $"delete-{(isActive ? "active" : "inactive")}-{Guid.NewGuid():N}";
-        var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion(
+        var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion(
             name: categoryName.Length > 50 ? categoryName[..50] : categoryName);
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
@@ -116,7 +117,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.StatusTests.CreateActiveCategoryForDeletion();
+        var createRequest = CategoryTestDataV1.StatusTests.CreateActiveCategoryForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -139,7 +140,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.StatusTests.CreateInactiveCategoryForDeletion();
+        var createRequest = CategoryTestDataV1.StatusTests.CreateInactiveCategoryForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -271,13 +272,13 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category
-        var parentRequest = DeleteCategoryTestDataV1.CreateCategoryWithChildren();
+        var parentRequest = CategoryTestDataV1.Creation.CreateCategoryWithChildren();
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
         var parentId = parentResponse!.Data.Id;
 
         // Create child category
-        var childRequest = DeleteCategoryTestDataV1.RelatedEntities.CreateChildCategory(parentId);
+        var childRequest = CategoryTestDataV1.Hierarchical.CreateChildCategory(parentId);
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
 
@@ -300,7 +301,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create category
-        var categoryRequest = DeleteCategoryTestDataV1.CreateCategoryWithProducts();
+        var categoryRequest = CategoryTestDataV1.Creation.CreateCategoryWithProducts();
         var categoryResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", categoryRequest);
         AssertApiSuccess(categoryResponse);
         var categoryId = categoryResponse!.Data.Id;
@@ -328,7 +329,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a category
-        var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -362,7 +363,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.EdgeCases.CreateCategoryWithUnicodeCharacters();
+        var createRequest = CategoryTestDataV1.EdgeCases.CreateCategoryWithUnicodeCharacters();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -385,7 +386,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.EdgeCases.CreateCategoryWithComplexMetadata();
+        var createRequest = CategoryTestDataV1.EdgeCases.CreateCategoryWithComplexMetadata();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -408,7 +409,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.EdgeCases.CreateCategoryWithLongName();
+        var createRequest = CategoryTestDataV1.EdgeCases.CreateCategoryWithLongName();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -435,7 +436,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.BoundaryTests.CreateCategoryWithMinimumValidData();
+        var createRequest = CategoryTestDataV1.BoundaryTests.CreateRequestWithMinimumValidData();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -458,7 +459,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.BoundaryTests.CreateCategoryWithMaximumValidData();
+        var createRequest = CategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumValidData();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -487,7 +488,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
 
         // Create multiple categories first
         var createTasks = Enumerable.Range(0, 5)
-            .Select(i => DeleteCategoryTestDataV1.CreateValidCategoryForDeletion(name: $"concurrent_delete_{i}_{Guid.NewGuid():N}"))
+            .Select(i => CategoryTestDataV1.Creation.CreateValidCategoryForDeletion(name: $"concurrent_delete_{i}_{Guid.NewGuid():N}"))
             .Select(request => PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request))
             .ToList();
 
@@ -516,7 +517,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var categoryIds = new List<Guid>();
         for (int i = 0; i < 3; i++)
         {
-            var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion(
+            var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion(
                 name: $"sequential_delete_{i}_{Guid.NewGuid():N}");
             var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
             AssertApiSuccess(createResponse);
@@ -547,7 +548,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a category
-        var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -597,7 +598,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a category
-        var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -639,7 +640,7 @@ public class DeleteCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = DeleteCategoryTestDataV1.CreateValidCategoryForDeletion();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidCategoryForDeletion();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;

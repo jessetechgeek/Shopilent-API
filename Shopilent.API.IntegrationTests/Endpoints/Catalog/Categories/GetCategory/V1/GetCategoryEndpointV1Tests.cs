@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 using Shopilent.Domain.Catalog.DTOs;
 
@@ -22,7 +23,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a test category first
-        var createRequest = GetCategoryTestDataV1.CreateValidCategoryRequest(
+        var createRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "test_get_category",
             slug: "test-get-category",
             description: "Test Get Category");
@@ -55,13 +56,13 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a root category first
-        var rootRequest = GetCategoryTestDataV1.HierarchyTests.CreateRootCategoryRequest();
+        var rootRequest = CategoryTestDataV1.Hierarchical.CreateRootCategory();
         var rootResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", rootRequest);
         AssertApiSuccess(rootResponse);
         var rootCategoryId = rootResponse!.Data.Id;
 
         // Create a child category
-        var childRequest = GetCategoryTestDataV1.HierarchyTests.CreateChildCategoryRequest(rootCategoryId);
+        var childRequest = CategoryTestDataV1.Hierarchical.CreateChildCategory(rootCategoryId);
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
         var childCategoryId = childResponse!.Data.Id;
@@ -89,7 +90,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.CreateValidCategoryRequest(
+        var createRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "test_active_category",
             slug: "test-active-category");
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
@@ -160,7 +161,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create a test category
-        var createRequest = GetCategoryTestDataV1.CreateValidCategoryRequest();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -186,7 +187,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(adminToken);
 
         // Create a test category as admin
-        var createRequest = GetCategoryTestDataV1.CreateValidCategoryRequest();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -215,7 +216,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.EdgeCases.CreateCategoryWithUnicodeChars();
+        var createRequest = CategoryTestDataV1.EdgeCases.CreateRequestWithUnicodeCharactersForGetCategory();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -239,7 +240,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.EdgeCases.CreateCategoryWithSpecialChars();
+        var createRequest = CategoryTestDataV1.EdgeCases.CreateRequestWithSpecialCharacters();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -267,7 +268,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.CreateValidCategoryRequest(
+        var createRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "db_persistence_test",
             slug: "db-persistence-test",
             description: "Database Persistence Test Category");
@@ -314,7 +315,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.HierarchyTests.CreateRootCategoryRequest();
+        var createRequest = CategoryTestDataV1.Hierarchical.CreateRootCategory();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -341,13 +342,13 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create root category
-        var rootRequest = GetCategoryTestDataV1.HierarchyTests.CreateRootCategoryRequest();
+        var rootRequest = CategoryTestDataV1.Hierarchical.CreateRootCategory();
         var rootResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", rootRequest);
         AssertApiSuccess(rootResponse);
         var rootCategoryId = rootResponse!.Data.Id;
 
         // Create child category
-        var childRequest = GetCategoryTestDataV1.HierarchyTests.CreateChildCategoryRequest(rootCategoryId);
+        var childRequest = CategoryTestDataV1.Hierarchical.CreateChildCategory(rootCategoryId);
         var childResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", childRequest);
         AssertApiSuccess(childResponse);
         var childCategoryId = childResponse!.Data.Id;
@@ -378,7 +379,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.CreateValidCategoryRequest(
+        var createRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "cache_consistency_test",
             slug: "cache-consistency-test");
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
@@ -419,7 +420,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.CreateValidCategoryRequest();
+        var createRequest = CategoryTestDataV1.Creation.CreateValidRequest();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -449,7 +450,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.EdgeCases.CreateCategoryWithLongName();
+        var createRequest = CategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumNameLength();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -473,7 +474,7 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
 
-        var createRequest = GetCategoryTestDataV1.EdgeCases.CreateCategoryWithLongDescription();
+        var createRequest = CategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumDescriptionLength();
         var createResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", createRequest);
         AssertApiSuccess(createResponse);
         var categoryId = createResponse!.Data.Id;
@@ -503,9 +504,9 @@ public class GetCategoryEndpointV1Tests : ApiIntegrationTestBase
 
         var testCases = new[]
         {
-            ("Electronics", GetCategoryTestDataV1.CommerceCategories.CreateElectronicsCategoryRequest()),
-            ("Clothing", GetCategoryTestDataV1.CommerceCategories.CreateClothingCategoryRequest()),
-            ("Books", GetCategoryTestDataV1.CommerceCategories.CreateBooksCategoryRequest())
+            ("Electronics", CategoryTestDataV1.CommerceCategories.CreateElectronicsCategoryRequest()),
+            ("Clothing", CategoryTestDataV1.CommerceCategories.CreateClothingCategoryRequest()),
+            ("Books", CategoryTestDataV1.CommerceCategories.CreateBooksCategoryRequest())
         };
 
         var categoryIds = new List<Guid>();

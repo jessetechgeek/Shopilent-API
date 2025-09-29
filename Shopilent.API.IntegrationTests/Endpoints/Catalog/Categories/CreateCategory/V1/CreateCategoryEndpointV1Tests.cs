@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Shopilent.API.IntegrationTests.Common;
+using Shopilent.API.IntegrationTests.Common.TestData;
 using Shopilent.API.Common.Models;
 
 namespace Shopilent.API.IntegrationTests.Endpoints.Catalog.Categories.CreateCategory.V1;
@@ -17,7 +18,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateValidRequest(
+        var request = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "Electronics",
             slug: "electronics",
             description: "Electronic devices and gadgets");
@@ -45,7 +46,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateValidRequest(
+        var request = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "Test Category",
             slug: "test-category",
             description: "Test category description");
@@ -80,14 +81,14 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         SetAuthenticationHeader(accessToken);
 
         // Create parent category first
-        var parentRequest = CreateCategoryTestDataV1.CreateValidRequest(
+        var parentRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "Parent Category",
             slug: "parent-category");
         var parentResponse = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", parentRequest);
         AssertApiSuccess(parentResponse);
 
         // Create child category
-        var childRequest = CreateCategoryTestDataV1.CreateValidRequest(
+        var childRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "Child Category",
             slug: "child-category",
             parentId: parentResponse!.Data.Id);
@@ -108,7 +109,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateRequestWithEmptyName();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithEmptyName();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -127,7 +128,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateRequestWithNullName();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithNullName();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -146,7 +147,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateRequestWithEmptySlug();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithEmptySlug();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -165,7 +166,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateRequestWithInvalidSlug();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithInvalidSlug();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -184,7 +185,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateRequestWithUppercaseSlug();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithUppercaseSlug();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -204,10 +205,10 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var slug = "duplicate-category";
-        var firstRequest = CreateCategoryTestDataV1.CreateValidRequest(
+        var firstRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "First Category",
             slug: slug);
-        var secondRequest = CreateCategoryTestDataV1.CreateValidRequest(
+        var secondRequest = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "Second Category",
             slug: slug);
 
@@ -232,7 +233,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.EdgeCases.CreateRequestWithInvalidParentId();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithInvalidParentId();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -250,7 +251,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
     {
         // Arrange
         ClearAuthenticationHeader();
-        var request = CreateCategoryTestDataV1.CreateValidRequest();
+        var request = CategoryTestDataV1.Creation.CreateValidRequest();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -265,7 +266,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsCustomerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateValidRequest();
+        var request = CategoryTestDataV1.Creation.CreateValidRequest();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -280,7 +281,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsManagerAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateValidRequest(
+        var request = CategoryTestDataV1.Creation.CreateValidRequest(
             name: "Manager Category",
             slug: "manager-category");
 
@@ -299,7 +300,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumNameLength();
+        var request = CategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumNameLength();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -315,7 +316,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.BoundaryTests.CreateRequestWithExcessiveNameLength();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithLongName();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -335,7 +336,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumSlugLength();
+        var request = CategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumSlugLength();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -351,7 +352,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.BoundaryTests.CreateRequestWithExcessiveSlugLength();
+        var request = CategoryTestDataV1.Creation.CreateValidRequest(slug: new string('a', 151));
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -371,7 +372,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumDescriptionLength();
+        var request = CategoryTestDataV1.BoundaryTests.CreateRequestWithMaximumDescriptionLength();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -387,7 +388,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.BoundaryTests.CreateRequestWithExcessiveDescriptionLength();
+        var request = CategoryTestDataV1.Validation.CreateRequestWithLongDescription();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -408,7 +409,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.EdgeCases.CreateRequestWithUnicodeCharacters();
+        var request = CategoryTestDataV1.EdgeCases.CreateRequestWithUnicodeCharactersForCreate();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -425,7 +426,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.EdgeCases.CreateRequestWithSpecialCharactersInName();
+        var request = CategoryTestDataV1.EdgeCases.CreateRequestWithSpecialCharactersForCreate();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -441,7 +442,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.EdgeCases.CreateRequestWithMinimalData();
+        var request = CategoryTestDataV1.BoundaryTests.CreateRequestWithMinimumValidData();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -459,7 +460,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.EdgeCases.CreateRequestWithEmptyDescription();
+        var request = CategoryTestDataV1.EdgeCases.CreateRequestWithEmptyDescription();
 
         // Act
         var response = await PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request);
@@ -475,7 +476,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateValidRequest(name: "   ");
+        var request = CategoryTestDataV1.Validation.CreateRequestWithWhitespaceName();
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -498,7 +499,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         // Arrange
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
-        var request = CreateCategoryTestDataV1.CreateValidRequest(slug: invalidSlug);
+        var request = CategoryTestDataV1.Creation.CreateValidRequest(slug: invalidSlug);
 
         // Act
         var response = await PostAsync("v1/categories", request);
@@ -518,7 +519,7 @@ public class CreateCategoryEndpointV1Tests : ApiIntegrationTestBase
         var accessToken = await AuthenticateAsAdminAsync();
         SetAuthenticationHeader(accessToken);
         var tasks = Enumerable.Range(0, 10)
-            .Select(i => CreateCategoryTestDataV1.CreateValidRequest(
+            .Select(i => CategoryTestDataV1.Creation.CreateValidRequest(
                 name: $"Concurrent Category {i}",
                 slug: $"concurrent-category-{i}"))
             .Select(request => PostApiResponseAsync<object, CreateCategoryResponseV1>("v1/categories", request))
