@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -9,6 +10,7 @@ using MediatR;
 using Shopilent.Application.Features.Identity.Commands.Register.V1;
 using Shopilent.Application.Features.Identity.Commands.ChangeUserRole.V1;
 using Shopilent.Domain.Identity.Enums;
+using Shopilent.Application.Abstractions.Search;
 
 namespace Shopilent.API.IntegrationTests.Common;
 
@@ -362,6 +364,119 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         var outboxService = scope.ServiceProvider
             .GetRequiredService<Shopilent.Application.Abstractions.Outbox.IOutboxService>();
         await outboxService.ProcessMessagesAsync(cancellationToken);
+    }
+
+    // Tracks if search indexes have been initialized to avoid redundant setup
+    private static bool _searchIndexesInitialized = false;
+    private static readonly object _searchInitLock = new object();
+
+    /// <summary>
+    /// Initializes Meilisearch indexes with test data. Call this explicitly in tests that require search functionality.
+    /// This is NOT called automatically to avoid ~2s overhead on tests that don't use search.
+    /// </summary>
+    protected async Task InitializeSearchIndexesAsync()
+    {
+        // Skip if already initialized (one-time setup)
+        lock (_searchInitLock)
+        {
+            if (_searchIndexesInitialized)
+            {
+                return;
+            }
+
+            _searchIndexesInitialized = true;
+        }
+
+        try
+        {
+            using var scope = Factory.Services.CreateScope();
+            var searchService = scope.ServiceProvider.GetRequiredService<ISearchService>();
+
+            // Initialize basic index structure
+            await searchService.InitializeIndexesAsync();
+
+            // Index some basic test products with attributes to configure filterable attributes
+            await IndexBasicTestProductsAsync(searchService);
+        }
+        catch (Exception)
+        {
+            // Reset flag on failure so next test can retry
+            lock (_searchInitLock)
+            {
+                _searchIndexesInitialized = false;
+            }
+
+            // Ignore search initialization errors in tests - tests should still work
+            // even if search service is not available
+        }
+    }
+
+    // Helper to create and index basic test products with attributes
+    private async Task IndexBasicTestProductsAsync(ISearchService searchService)
+    {
+        try
+        {
+            // Create comprehensive test products with all attribute types used in tests
+            var testProducts = new List<ProductSearchDocument>
+            {
+                new ProductSearchDocument
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Test Product 1",
+                    Description = "Test product for search",
+                    SKU = "TEST-001",
+                    Slug = "test-product-1",
+                    BasePrice = 99.99m,
+                    IsActive = true,
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    HasStock = true,
+                    TotalStock = 10,
+                    Categories = [],
+                    CategorySlugs = [],
+                    VariantSKUs = [],
+                    PriceRange = new ProductSearchPriceRange { Min = 99.99m, Max = 99.99m },
+                    FlatAttributes = CreateComprehensiveTestAttributes()
+                }
+            };
+
+            await searchService.IndexProductsAsync(testProducts);
+        }
+        catch (Exception)
+        {
+            // Ignore if test product indexing fails
+        }
+    }
+
+    // Helper to create comprehensive test attributes covering all test scenarios
+    private static Dictionary<string, string[]> CreateComprehensiveTestAttributes()
+    {
+        var attributes = new Dictionary<string, string[]>
+        {
+            // Basic attributes from test data
+            ["attr-color"] = new[] { "red", "blue", "silver", "black", "green" },
+            ["attr-size"] = new[] { "small", "medium", "large" },
+            ["attr-brand"] = new[] { "apple", "samsung", "google", "dell" },
+            ["attr-material"] = new[] { "metal", "plastic", "glass" },
+
+            // Computer-specific attributes
+            ["attr-screen_size"] = new[] { "13", "15" }
+        };
+
+        // Add maximum test attributes (attribute_1 to attribute_10)
+        for (int i = 1; i <= 10; i++)
+        {
+            attributes[$"attr-attribute_{i}"] = new[] { $"value_{i}_1", $"value_{i}_2" };
+        }
+
+        // Add complex filter attributes (attr_1 to attr_5)
+        for (int i = 1; i <= 5; i++)
+        {
+            attributes[$"attr-attr_{i}"] = Enumerable.Range(1, 3).Select(j => $"value_{i}_{j}").ToArray();
+        }
+
+        return attributes;
     }
 
     // Helper classes for common responses
