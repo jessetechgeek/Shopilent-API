@@ -301,16 +301,11 @@ public class GetRootCategoriesEndpointV1Tests : ApiIntegrationTestBase
         // Process outbox messages to ensure domain events are handled and cache is invalidated
         await ProcessOutboxMessagesAsync();
 
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
         // Act - First request (should hit database)
         var firstResponse = await GetApiResponseAsync<IReadOnlyList<CategoryDto>>("v1/categories/root");
-        var firstRequestTime = stopwatch.ElapsedMilliseconds;
-        stopwatch.Restart();
 
         // Act - Second request (should hit cache)
         var secondResponse = await GetApiResponseAsync<IReadOnlyList<CategoryDto>>("v1/categories/root");
-        var secondRequestTime = stopwatch.ElapsedMilliseconds;
 
         // Assert
         AssertApiSuccess(firstResponse);
@@ -324,9 +319,18 @@ public class GetRootCategoriesEndpointV1Tests : ApiIntegrationTestBase
         var secondResponseIds = secondResponse.Data.Select(c => c.Id).OrderBy(id => id).ToList();
         firstResponseIds.Should().Equal(secondResponseIds);
 
-        // Both requests should complete successfully (cache timing can be unreliable in tests)
-        firstRequestTime.Should().BeGreaterThan(0);
-        secondRequestTime.Should().BeGreaterThan(0);
+        // Verify data consistency between cached and non-cached responses
+        for (int i = 0; i < firstResponse.Data.Count; i++)
+        {
+            var first = firstResponse.Data[i];
+            var second = secondResponse.Data.First(c => c.Id == first.Id);
+
+            second.Name.Should().Be(first.Name);
+            second.Slug.Should().Be(first.Slug);
+            second.Description.Should().Be(first.Description);
+            second.Level.Should().Be(first.Level);
+            second.ParentId.Should().Be(first.ParentId);
+        }
     }
 
     [Fact]
