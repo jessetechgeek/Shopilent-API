@@ -79,8 +79,8 @@ internal sealed class
                 attributesInfo.Add(attributeEntry.AttributeId, attribute.Name);
             }
 
-            // Create money value object if price is provided
-            Money? price = null;
+            // Create money value object - use product's base price if variant price not provided
+            Money price;
             if (request.Price.HasValue)
             {
                 var moneyResult = Money.Create(request.Price.Value, "USD"); // Currency hardcoded for simplicity
@@ -90,6 +90,10 @@ internal sealed class
                 }
 
                 price = moneyResult.Value;
+            }
+            else
+            {
+                price = product.BasePrice;
             }
 
             // Create the product variant using the correct method signature
@@ -199,9 +203,7 @@ internal sealed class
             // Create response
             var attributeDtos = attributeValues.Select(a => new VariantAttributeDto
             {
-                AttributeId = a.Key,
-                Name = attributesInfo[a.Key],
-                Value = a.Value
+                AttributeId = a.Key, Name = attributesInfo[a.Key], Value = a.Value
             }).ToList();
 
             // Map images for response
