@@ -326,7 +326,7 @@ public class AddProductVariantCommandV1Tests : TestBase
     }
 
     [Fact]
-    public async Task Handle_WithoutPrice_UsesNullPrice()
+    public async Task Handle_WithoutPrice_InheritsProductBasePrice()
     {
         // Arrange
         var productId = Guid.NewGuid();
@@ -364,13 +364,14 @@ public class AddProductVariantCommandV1Tests : TestBase
         // Assert
         result.IsSuccess.Should().BeTrue();
 
-        // Verify the variant was created with null price
+        // Verify the variant was created with inherited price from product
         capturedVariant.Should().NotBeNull();
-        capturedVariant.Price.Should().BeNull();
+        capturedVariant.Price.Should().NotBeNull();
+        capturedVariant.Price.Amount.Should().Be(29.99m); // Inherited from product base price
 
-        // Verify response has null price
+        // Verify response has inherited price
         var response = result.Value;
-        response.Price.Should().BeNull();
+        response.Price.Should().Be(29.99m);
     }
 
     [Fact]
