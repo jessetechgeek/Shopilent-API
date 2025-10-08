@@ -276,6 +276,87 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
         return await Client.PostAsync(endpoint, formContent);
     }
 
+    protected async Task<ApiResponse<T>?> PutMultipartApiResponseAsync<T>(string endpoint, object data, List<(string name, Stream content, string fileName)>? files = null)
+        where T : class
+    {
+        var response = await PutMultipartAsync(endpoint, data, files);
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ApiResponse<T>>(json, JsonOptions);
+    }
+
+    protected async Task<HttpResponseMessage> PutMultipartAsync(string endpoint, object data, List<(string name, Stream content, string fileName)>? files = null)
+    {
+        using var formContent = new MultipartFormDataContent();
+
+        // Serialize the object to a dictionary of key-value pairs
+        var json = JsonSerializer.Serialize(data, JsonOptions);
+        var dictionary = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, JsonOptions);
+
+        if (dictionary != null)
+        {
+            foreach (var kvp in dictionary)
+            {
+                var value = kvp.Value;
+
+                // Handle arrays/lists - serialize as JSON string (matches React app behavior)
+                if (value.ValueKind == JsonValueKind.Array)
+                {
+                    var array = value.EnumerateArray().ToList();
+
+                    // If empty array, skip
+                    if (!array.Any())
+                    {
+                        continue;
+                    }
+
+                    // Serialize all arrays as JSON strings to match React app behavior
+                    var arrayJson = JsonSerializer.Serialize(value, JsonOptions);
+                    formContent.Add(new StringContent(arrayJson), kvp.Key);
+                    continue;
+                }
+
+                // Handle objects (serialize as JSON string)
+                if (value.ValueKind == JsonValueKind.Object)
+                {
+                    var objectJson = JsonSerializer.Serialize(value, JsonOptions);
+                    formContent.Add(new StringContent(objectJson), kvp.Key);
+                    continue;
+                }
+
+                // Handle null
+                if (value.ValueKind == JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                // Handle primitives
+                var stringValue = value.ValueKind switch
+                {
+                    JsonValueKind.String => value.GetString() ?? string.Empty,
+                    JsonValueKind.Number => value.ToString(),
+                    JsonValueKind.True => "true",
+                    JsonValueKind.False => "false",
+                    _ => value.ToString()
+                };
+
+                formContent.Add(new StringContent(stringValue), kvp.Key);
+            }
+        }
+
+        // Add files if provided
+        if (files != null)
+        {
+            foreach (var file in files)
+            {
+                var streamContent = new StreamContent(file.content);
+                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+                formContent.Add(streamContent, file.name, file.fileName);
+            }
+        }
+
+        return await Client.PutAsync(endpoint, formContent);
+    }
+
     // Assertion helpers
     protected static void AssertApiSuccess<T>(ApiResponse<T>? response) where T : class
     {
