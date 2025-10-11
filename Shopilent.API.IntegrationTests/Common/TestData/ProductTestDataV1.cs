@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Bogus;
 
 namespace Shopilent.API.IntegrationTests.Common.TestData;
