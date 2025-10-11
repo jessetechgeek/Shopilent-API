@@ -42,6 +42,7 @@ public class GetVariantBySkuEndpointV1 : EndpointWithoutRequest<ApiResponse<Prod
         {
             var statusCode = result.Error.Type switch
             {
+                ErrorType.Validation => StatusCodes.Status400BadRequest,
                 ErrorType.NotFound => StatusCodes.Status404NotFound,
                 _ => StatusCodes.Status500InternalServerError
             };

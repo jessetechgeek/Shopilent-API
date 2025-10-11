@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Bogus;
 
 namespace Shopilent.API.IntegrationTests.Common.TestData;
@@ -164,13 +165,17 @@ public static class ProductTestDataV1
 
         private static string GenerateSlugFromName(string name)
         {
-            return name.ToLowerInvariant()
-                      .Replace(" ", "-")
-                      .Replace("&", "and")
-                      .Replace("'", "")
-                      .Replace(".", "")
-                      .Replace(",", "")
-                      + "-" + _faker.Random.AlphaNumeric(4).ToLower();
+            var slug = name.ToLowerInvariant()
+                .Replace(" ", "-")
+                .Replace("&", "and");
+            slug = Regex.Replace(slug, @"[^a-z0-9-]", "");
+            slug = Regex.Replace(slug, @"-+", "-");
+            slug = slug.Trim('-');
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                slug = "product";
+            }
+            return slug + "-" + _faker.Random.AlphaNumeric(4).ToLower();
         }
     }
 
