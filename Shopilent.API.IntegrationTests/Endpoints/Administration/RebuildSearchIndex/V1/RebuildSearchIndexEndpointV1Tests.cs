@@ -278,6 +278,7 @@ public class RebuildSearchIndexEndpointV1Tests : ApiIntegrationTestBase
         public string Message { get; set; } = "";
         public bool IndexesInitialized { get; set; }
         public int ProductsIndexed { get; set; }
+        public int ProductsDeleted { get; set; }
         public DateTime CompletedAt { get; set; }
         public TimeSpan Duration { get; set; }
     }
