@@ -49,6 +49,7 @@ internal sealed class RebuildSearchIndexCommandHandlerV1 : ICommandHandler<Rebui
 
                 var productDtos = await _unitOfWork.ProductReader.ListAllAsync(cancellationToken);
                 var productDtoList = productDtos.ToList();
+                var indexedIds = new HashSet<Guid>();
 
                 if (!productDtoList.Any())
                 {
@@ -82,7 +83,41 @@ internal sealed class RebuildSearchIndexCommandHandlerV1 : ICommandHandler<Rebui
                     }
 
                     response.ProductsIndexed = searchDocuments.Count;
+                    indexedIds = searchDocuments.Select(d => d.Id).ToHashSet();
                     _logger.LogInformation("Successfully indexed {Count} products", searchDocuments.Count);
+                }
+
+                _logger.LogInformation("Checking for orphaned products in search index...");
+
+                var allMeilisearchIdsResult = await _searchService.GetAllProductIdsAsync(cancellationToken);
+                if (allMeilisearchIdsResult.IsSuccess)
+                {
+                    var orphanedIds = allMeilisearchIdsResult.Value.Where(id => !indexedIds.Contains(id)).ToList();
+
+                    if (orphanedIds.Any())
+                    {
+                        _logger.LogInformation("Found {Count} orphaned products to delete", orphanedIds.Count);
+                        var deleteResult = await _searchService.DeleteProductsByIdsAsync(orphanedIds, cancellationToken);
+
+                        if (deleteResult.IsSuccess)
+                        {
+                            response.ProductsDeleted = orphanedIds.Count;
+                            _logger.LogInformation("Successfully deleted {Count} orphaned products", orphanedIds.Count);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Failed to delete orphaned products: {Error}", deleteResult.Error.Message);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation("No orphaned products found");
+                        response.ProductsDeleted = 0;
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to fetch product IDs from search index for cleanup: {Error}", allMeilisearchIdsResult.Error.Message);
                 }
             }
 
@@ -93,13 +128,15 @@ internal sealed class RebuildSearchIndexCommandHandlerV1 : ICommandHandler<Rebui
                 messageParts.Add("indexes initialized");
             if (request.IndexProducts)
                 messageParts.Add($"{response.ProductsIndexed} products indexed");
+            if (response.ProductsDeleted > 0)
+                messageParts.Add($"{response.ProductsDeleted} orphaned products deleted");
 
             response.IsSuccess = true;
             response.Message = $"Search index rebuild completed successfully: {string.Join(", ", messageParts)}";
             response.Duration = stopwatch.Elapsed;
 
-            _logger.LogInformation("Search index rebuild completed successfully in {Duration}ms - Indexes: {Indexes}, Products: {Products}",
-                stopwatch.ElapsedMilliseconds, response.IndexesInitialized, response.ProductsIndexed);
+            _logger.LogInformation("Search index rebuild completed successfully in {Duration}ms - Indexes: {Indexes}, Products: {Products}, Deleted: {Deleted}",
+                stopwatch.ElapsedMilliseconds, response.IndexesInitialized, response.ProductsIndexed, response.ProductsDeleted);
 
             return Result.Success(response);
         }

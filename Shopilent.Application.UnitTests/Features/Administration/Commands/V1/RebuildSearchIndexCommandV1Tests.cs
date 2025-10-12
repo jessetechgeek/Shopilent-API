@@ -51,13 +51,14 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
             new() { Id = Guid.NewGuid(), Name = "Product 2", Slug = "product-2" }
         };
 
-        var productDetailDto = new ProductDetailDto
+        // Create detail DTOs for both products
+        var productDetailDtos = productDtos.Select(p => new ProductDetailDto
         {
-            Id = productDtos[0].Id,
-            Name = productDtos[0].Name,
-            Slug = productDtos[0].Slug,
-            Description = "Test Product 1"
-        };
+            Id = p.Id,
+            Name = p.Name,
+            Slug = p.Slug,
+            Description = $"Test {p.Name}"
+        }).ToDictionary(p => p.Id);
 
         // Setup authenticated admin user
         Fixture.SetAuthenticatedUser(adminUserId, isAdmin: true);
@@ -71,12 +72,17 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
             .Setup(service => service.IndexProductsAsync(It.IsAny<IEnumerable<ProductSearchDocument>>(), CancellationToken))
             .ReturnsAsync(Result.Success());
 
+        Fixture.MockSearchService
+            .Setup(service => service.GetAllProductIdsAsync(CancellationToken))
+            .ReturnsAsync(Result.Success<IEnumerable<Guid>>(productDtos.Select(p => p.Id)));
+
         // Mock product repository
         Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.ListAllAsync(CancellationToken))
             .ReturnsAsync(productDtos);
 
-        Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.GetDetailByIdAsync(It.IsAny<Guid>(), CancellationToken))
-            .ReturnsAsync(productDetailDto);
+        Fixture.MockUnitOfWork
+            .Setup(uow => uow.ProductReader.GetDetailByIdAsync(It.IsAny<Guid>(), CancellationToken))
+            .ReturnsAsync((Guid id, CancellationToken ct) => productDetailDtos.GetValueOrDefault(id));
 
         // Act
         var result = await _mediator.Send(command, CancellationToken);
@@ -86,6 +92,7 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
         result.Value.IsSuccess.Should().BeTrue();
         result.Value.IndexesInitialized.Should().BeTrue();
         result.Value.ProductsIndexed.Should().Be(2);
+        result.Value.ProductsDeleted.Should().Be(0);
         result.Value.Message.Should().Contain("indexes initialized");
         result.Value.Message.Should().Contain("products indexed");
 
@@ -173,6 +180,10 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
             .Setup(service => service.IndexProductsAsync(It.IsAny<IEnumerable<ProductSearchDocument>>(), CancellationToken))
             .ReturnsAsync(Result.Success());
 
+        Fixture.MockSearchService
+            .Setup(service => service.GetAllProductIdsAsync(CancellationToken))
+            .ReturnsAsync(Result.Success<IEnumerable<Guid>>(productDtos.Select(p => p.Id)));
+
         // Mock product repository
         Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.ListAllAsync(CancellationToken))
             .ReturnsAsync(productDtos);
@@ -188,6 +199,7 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
         result.Value.IsSuccess.Should().BeTrue();
         result.Value.IndexesInitialized.Should().BeFalse();
         result.Value.ProductsIndexed.Should().Be(1);
+        result.Value.ProductsDeleted.Should().Be(0);
         result.Value.Message.Should().NotContain("indexes initialized");
         result.Value.Message.Should().Contain("products indexed");
 
@@ -220,6 +232,11 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
         Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.ListAllAsync(CancellationToken))
             .ReturnsAsync(new List<ProductDto>());
 
+        // Mock GetAllProductIdsAsync to return empty list (for orphan cleanup)
+        Fixture.MockSearchService
+            .Setup(service => service.GetAllProductIdsAsync(CancellationToken))
+            .ReturnsAsync(Result.Success<IEnumerable<Guid>>(Enumerable.Empty<Guid>()));
+
         // Act
         var result = await _mediator.Send(command, CancellationToken);
 
@@ -228,11 +245,22 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
         result.Value.IsSuccess.Should().BeTrue();
         result.Value.IndexesInitialized.Should().BeFalse();
         result.Value.ProductsIndexed.Should().Be(0);
+        result.Value.ProductsDeleted.Should().Be(0);
         result.Value.Message.Should().Contain("0 products indexed");
 
         // Verify service calls
         Fixture.MockSearchService.Verify(
             service => service.IndexProductsAsync(It.IsAny<IEnumerable<ProductSearchDocument>>(), CancellationToken),
+            Times.Never);
+
+        // Verify orphan cleanup was attempted even with no products
+        Fixture.MockSearchService.Verify(
+            service => service.GetAllProductIdsAsync(CancellationToken),
+            Times.Once);
+
+        // Verify no deletion was needed since there were no orphans
+        Fixture.MockSearchService.Verify(
+            service => service.DeleteProductsByIdsAsync(It.IsAny<IEnumerable<Guid>>(), CancellationToken),
             Times.Never);
     }
 
@@ -401,6 +429,10 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
             .Setup(service => service.IndexProductsAsync(It.IsAny<IEnumerable<ProductSearchDocument>>(), CancellationToken))
             .ReturnsAsync(Result.Success());
 
+        Fixture.MockSearchService
+            .Setup(service => service.GetAllProductIdsAsync(CancellationToken))
+            .ReturnsAsync(Result.Success<IEnumerable<Guid>>(productDtos.Select(p => p.Id)));
+
         // Mock product repository
         Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.ListAllAsync(CancellationToken))
             .ReturnsAsync(productDtos);
@@ -420,5 +452,149 @@ public class RebuildSearchIndexCommandV1Tests : TestBase
         result.Value.Duration.Should().BeGreaterThan(TimeSpan.Zero);
         result.Value.Message.Should().NotBeNull();
         result.Value.Message.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_OrphanedProductsInIndex_DeletesOrphanedProducts()
+    {
+        // Arrange
+        var adminUserId = Guid.NewGuid();
+        var command = new RebuildSearchIndexCommandV1
+        {
+            InitializeIndexes = false,
+            IndexProducts = true,
+            ForceReindex = false
+        };
+
+        var productDtos = new List<ProductDto>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Product 1", Slug = "product-1" },
+            new() { Id = Guid.NewGuid(), Name = "Product 2", Slug = "product-2" }
+        };
+
+        // Create detail DTOs for both products
+        var productDetailDtos = productDtos.Select(p => new ProductDetailDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Slug = p.Slug,
+            Description = $"Test {p.Name}"
+        }).ToDictionary(p => p.Id);
+
+        // IDs in Meilisearch include orphaned products
+        var orphanedId1 = Guid.NewGuid();
+        var orphanedId2 = Guid.NewGuid();
+        var meilisearchIds = productDtos.Select(p => p.Id).Concat(new[] { orphanedId1, orphanedId2 });
+
+        // Setup authenticated admin user
+        Fixture.SetAuthenticatedUser(adminUserId, isAdmin: true);
+
+        // Mock search service
+        Fixture.MockSearchService
+            .Setup(service => service.IndexProductsAsync(It.IsAny<IEnumerable<ProductSearchDocument>>(), CancellationToken))
+            .ReturnsAsync(Result.Success());
+
+        Fixture.MockSearchService
+            .Setup(service => service.GetAllProductIdsAsync(CancellationToken))
+            .ReturnsAsync(Result.Success<IEnumerable<Guid>>(meilisearchIds));
+
+        Fixture.MockSearchService
+            .Setup(service => service.DeleteProductsByIdsAsync(It.IsAny<IEnumerable<Guid>>(), CancellationToken))
+            .ReturnsAsync(Result.Success());
+
+        // Mock product repository
+        Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.ListAllAsync(CancellationToken))
+            .ReturnsAsync(productDtos);
+
+        Fixture.MockUnitOfWork
+            .Setup(uow => uow.ProductReader.GetDetailByIdAsync(It.IsAny<Guid>(), CancellationToken))
+            .ReturnsAsync((Guid id, CancellationToken ct) => productDetailDtos.GetValueOrDefault(id));
+
+        // Act
+        var result = await _mediator.Send(command, CancellationToken);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.IsSuccess.Should().BeTrue();
+        result.Value.ProductsIndexed.Should().Be(2);
+        result.Value.ProductsDeleted.Should().Be(2);
+        result.Value.Message.Should().Contain("products indexed");
+        result.Value.Message.Should().Contain("orphaned products deleted");
+
+        // Verify service calls
+        Fixture.MockSearchService.Verify(
+            service => service.IndexProductsAsync(It.IsAny<IEnumerable<ProductSearchDocument>>(), CancellationToken),
+            Times.Once);
+
+        Fixture.MockSearchService.Verify(
+            service => service.GetAllProductIdsAsync(CancellationToken),
+            Times.Once);
+
+        Fixture.MockSearchService.Verify(
+            service => service.DeleteProductsByIdsAsync(
+                It.Is<IEnumerable<Guid>>(ids => ids.Count() == 2 && ids.Contains(orphanedId1) && ids.Contains(orphanedId2)),
+                CancellationToken),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_GetAllProductIdsFails_ContinuesWithoutDeletion()
+    {
+        // Arrange
+        var adminUserId = Guid.NewGuid();
+        var command = new RebuildSearchIndexCommandV1
+        {
+            InitializeIndexes = false,
+            IndexProducts = true,
+            ForceReindex = false
+        };
+
+        var productDtos = new List<ProductDto>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Product 1", Slug = "product-1" }
+        };
+
+        var productDetailDto = new ProductDetailDto
+        {
+            Id = productDtos[0].Id,
+            Name = productDtos[0].Name,
+            Slug = productDtos[0].Slug,
+            Description = "Test Product 1"
+        };
+
+        var getIdsError = Domain.Common.Errors.Error.Failure("Search.GetIdsFailed", "Failed to fetch IDs");
+
+        // Setup authenticated admin user
+        Fixture.SetAuthenticatedUser(adminUserId, isAdmin: true);
+
+        // Mock search service
+        Fixture.MockSearchService
+            .Setup(service => service.IndexProductsAsync(It.IsAny<IEnumerable<ProductSearchDocument>>(), CancellationToken))
+            .ReturnsAsync(Result.Success());
+
+        Fixture.MockSearchService
+            .Setup(service => service.GetAllProductIdsAsync(CancellationToken))
+            .ReturnsAsync(Result.Failure<IEnumerable<Guid>>(getIdsError));
+
+        // Mock product repository
+        Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.ListAllAsync(CancellationToken))
+            .ReturnsAsync(productDtos);
+
+        Fixture.MockUnitOfWork.Setup(uow => uow.ProductReader.GetDetailByIdAsync(It.IsAny<Guid>(), CancellationToken))
+            .ReturnsAsync(productDetailDto);
+
+        // Act
+        var result = await _mediator.Send(command, CancellationToken);
+
+        // Assert - should still succeed even though cleanup failed
+        result.IsSuccess.Should().BeTrue();
+        result.Value.IsSuccess.Should().BeTrue();
+        result.Value.ProductsIndexed.Should().Be(1);
+        result.Value.ProductsDeleted.Should().Be(0);
+
+        // Verify DeleteProductsByIdsAsync was never called
+        Fixture.MockSearchService.Verify(
+            service => service.DeleteProductsByIdsAsync(It.IsAny<IEnumerable<Guid>>(), CancellationToken),
+            Times.Never);
     }
 }

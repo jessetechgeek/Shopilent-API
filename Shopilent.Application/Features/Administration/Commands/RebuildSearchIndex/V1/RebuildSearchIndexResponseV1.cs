@@ -6,6 +6,7 @@ public class RebuildSearchIndexResponseV1
     public string Message { get; set; } = "";
     public bool IndexesInitialized { get; set; }
     public int ProductsIndexed { get; set; }
+    public int ProductsDeleted { get; set; }
     public DateTime CompletedAt { get; set; }
     public TimeSpan Duration { get; set; }
 }
