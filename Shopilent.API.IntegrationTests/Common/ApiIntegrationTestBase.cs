@@ -537,7 +537,7 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
     /// Initializes Meilisearch indexes with test data. Call this explicitly in tests that require search functionality.
     /// This is NOT called automatically to avoid ~2s overhead on tests that don't use search.
     /// </summary>
-    protected async Task InitializeSearchIndexesAsync()
+    protected async Task InitializeSearchIndexesAsync(bool initializeSearchService = true)
     {
         // Skip if already initialized (one-time setup)
         lock (_searchInitLock)
@@ -559,7 +559,8 @@ public abstract class ApiIntegrationTestBase : IAsyncLifetime
             await searchService.InitializeIndexesAsync();
 
             // Index some basic test products with attributes to configure filterable attributes
-            await IndexBasicTestProductsAsync(searchService);
+            if (initializeSearchService)
+                await IndexBasicTestProductsAsync(searchService);
         }
         catch (Exception)
         {

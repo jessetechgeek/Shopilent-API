@@ -6,7 +6,7 @@ using Shopilent.Domain.Common.Results;
 
 namespace Shopilent.Application.Features.Catalog.Queries.GetPaginatedProducts.V1;
 
-internal sealed class GetPaginatedProductsQueryHandlerV1 : 
+internal sealed class GetPaginatedProductsQueryHandlerV1 :
     IQueryHandler<GetPaginatedProductsQueryV1, SearchResponse<ProductSearchResultDto>>
 {
     private readonly ISearchService _searchService;
@@ -21,7 +21,7 @@ internal sealed class GetPaginatedProductsQueryHandlerV1 :
     }
 
     public async Task<Result<SearchResponse<ProductSearchResultDto>>> Handle(
-        GetPaginatedProductsQueryV1 request, 
+        GetPaginatedProductsQueryV1 request,
         CancellationToken cancellationToken)
     {
         try
@@ -42,7 +42,7 @@ internal sealed class GetPaginatedProductsQueryHandlerV1 :
             };
 
             var searchResult = await _searchService.SearchProductsAsync(searchRequest, cancellationToken);
-            
+
             if (searchResult.IsFailure)
             {
                 _logger.LogError("Product search failed: {Error}", searchResult.Error.Message);
@@ -50,7 +50,7 @@ internal sealed class GetPaginatedProductsQueryHandlerV1 :
             }
 
             _logger.LogInformation(
-                "Retrieved products via search: Page {PageNumber}, Size {PageSize}, Total {TotalCount}", 
+                "Retrieved products via search: Page {PageNumber}, Size {PageSize}, Total {TotalCount}",
                 request.PageNumber, request.PageSize, searchResult.Value.TotalCount);
 
             return searchResult;
@@ -58,7 +58,7 @@ internal sealed class GetPaginatedProductsQueryHandlerV1 :
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving paginated products");
-            
+
             return Result.Failure<SearchResponse<ProductSearchResultDto>>(
                 Error.Failure(
                     code: "Products.GetPaginatedFailed",
@@ -69,13 +69,13 @@ internal sealed class GetPaginatedProductsQueryHandlerV1 :
 
     private static string MapSortColumn(string userFriendlyColumn)
     {
-        return userFriendlyColumn.ToLower() switch
+        return userFriendlyColumn switch
         {
-            "name" => "Name",
-            "price" => "BasePrice",
-            "created" => "CreatedAt",
-            "updated" => "UpdatedAt",
-            _ => "Name"
+            "Name" => "name",
+            "BasePrice" => "price",
+            "CreatedAt" => "created",
+            "UpdatedAt" => "updated",
+            _ => "name"
         };
     }
 }

@@ -31,7 +31,7 @@ public class GetPaginatedProductsQueryV1Tests : TestBase
             PageSize = 10,
             SearchQuery = "test",
             IsActiveOnly = true,
-            SortColumn = "name",
+            SortColumn = "Name",
             SortDescending = false
         };
 
@@ -82,12 +82,12 @@ public class GetPaginatedProductsQueryV1Tests : TestBase
         result.Value.Items.First().Name.Should().Be("Test Product 1");
         
         _mockSearchService.Verify(
-            service => service.SearchProductsAsync(It.Is<SearchRequest>(r => 
+            service => service.SearchProductsAsync(It.Is<SearchRequest>(r =>
                 r.Query == "test" &&
                 r.ActiveOnly == true &&
                 r.PageNumber == 1 &&
                 r.PageSize == 10 &&
-                r.SortBy == "Name" &&
+                r.SortBy == "name" &&
                 r.SortDescending == false
             ), CancellationToken),
             Times.Once);
@@ -153,7 +153,7 @@ public class GetPaginatedProductsQueryV1Tests : TestBase
             PriceMax = 1000,
             InStockOnly = true,
             IsActiveOnly = true,
-            SortColumn = "price",
+            SortColumn = "BasePrice",
             SortDescending = true
         };
 
@@ -177,7 +177,7 @@ public class GetPaginatedProductsQueryV1Tests : TestBase
         result.IsSuccess.Should().BeTrue();
 
         _mockSearchService.Verify(
-            service => service.SearchProductsAsync(It.Is<SearchRequest>(r => 
+            service => service.SearchProductsAsync(It.Is<SearchRequest>(r =>
                 r.Query == "electronics" &&
                 r.CategorySlugs.SequenceEqual(new[] { "smartphones", "laptops" }) &&
                 r.AttributeFilters["brand"].SequenceEqual(new[] { "apple", "samsung" }) &&
@@ -188,7 +188,7 @@ public class GetPaginatedProductsQueryV1Tests : TestBase
                 r.ActiveOnly == true &&
                 r.PageNumber == 2 &&
                 r.PageSize == 5 &&
-                r.SortBy == "BasePrice" &&
+                r.SortBy == "price" &&
                 r.SortDescending == true
             ), CancellationToken),
             Times.Once);
@@ -240,12 +240,12 @@ public class GetPaginatedProductsQueryV1Tests : TestBase
     }
 
     [Theory]
-    [InlineData("name", "Name")]
-    [InlineData("price", "BasePrice")]
-    [InlineData("created", "CreatedAt")]
-    [InlineData("updated", "UpdatedAt")]
-    [InlineData("unknown", "Name")]
-    [InlineData("", "Name")]
+    [InlineData("Name", "name")]
+    [InlineData("BasePrice", "price")]
+    [InlineData("CreatedAt", "created")]
+    [InlineData("UpdatedAt", "updated")]
+    [InlineData("unknown", "name")]
+    [InlineData("", "name")]
     public async Task Handle_VerifiesSortColumnMapping(string inputColumn, string expectedColumn)
     {
         // Arrange
