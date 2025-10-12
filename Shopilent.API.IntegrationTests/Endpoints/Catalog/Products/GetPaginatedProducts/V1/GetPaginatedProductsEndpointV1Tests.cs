@@ -224,6 +224,8 @@ public class GetPaginatedProductsEndpointV1Tests : ApiIntegrationTestBase
         await CreateTestProductAsync("High Price", 300m);
         await ProcessOutboxAndRebuildSearchAsync();
 
+        Thread.Sleep(1000);
+
         var filters = CreateBasicFilters(priceMax: 200m, pageSize: 20);
         var filtersBase64 = EncodeFilters(filters);
 
