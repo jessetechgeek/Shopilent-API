@@ -1481,7 +1481,7 @@ public class GetPaginatedProductsEndpointV1Tests : ApiIntegrationTestBase
         await PostAsync("v1/administration/search/rebuild", request);
         ClearAuthenticationHeader();
 
-        await Task.Delay(200);
+        await Task.Delay(300);
     }
 
     private async Task ProcessOutboxAndRebuildSearchAsync()
