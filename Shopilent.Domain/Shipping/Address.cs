@@ -102,11 +102,11 @@ public class Address : AggregateRoot
         return Result.Success(address);
     }
 
-    public static Result<Address> CreateDefaultAddress(
+    public static Result<Address> CreateBoth(
         User user,
         PostalAddress postalAddress,
-        AddressType addressType = AddressType.Both,
-        PhoneNumber phone = null)
+        PhoneNumber phone = null,
+        bool isDefault = false)
     {
         if (user == null)
             return Result.Failure<Address>(UserErrors.NotFound(Guid.Empty));
@@ -114,7 +114,7 @@ public class Address : AggregateRoot
         if (postalAddress == null)
             return Result.Failure<Address>(AddressErrors.AddressLine1Required);
 
-        var address = Create(user, postalAddress, addressType, phone, true);
+        var address = Create(user, postalAddress, AddressType.Both, phone, isDefault);
         return Result.Success(address);
     }
 

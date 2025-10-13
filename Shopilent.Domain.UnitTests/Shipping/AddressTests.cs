@@ -197,7 +197,7 @@ public class AddressTests
     }
 
     [Fact]
-    public void CreateDefaultAddress_ShouldCreateDefaultAddress()
+    public void CreateBoth_WithIsDefaultTrue_ShouldCreateDefaultBothAddress()
     {
         // Arrange
         var user = CreateTestUser();
@@ -213,18 +213,18 @@ public class AddressTests
         postalAddressResult.IsSuccess.Should().BeTrue();
         var postalAddress = postalAddressResult.Value;
 
-        var addressType = AddressType.Both;
-
         var phoneResult = PhoneNumber.Create("555-123-4567");
         phoneResult.IsSuccess.Should().BeTrue();
         var phone = phoneResult.Value;
 
+        var isDefault = true;
+
         // Act
-        var result = Address.CreateDefaultAddress(
+        var result = Address.CreateBoth(
             user,
             postalAddress,
-            addressType,
-            phone);
+            phone,
+            isDefault);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -232,8 +232,49 @@ public class AddressTests
         address.UserId.Should().Be(user.Id);
         address.PostalAddress.Should().Be(postalAddress);
         address.Phone.Should().Be(phone);
-        address.AddressType.Should().Be(addressType);
+        address.AddressType.Should().Be(AddressType.Both);
         address.IsDefault.Should().BeTrue();
+        address.DomainEvents.Should().Contain(e => e is AddressCreatedEvent);
+    }
+
+    [Fact]
+    public void CreateBoth_WithIsDefaultFalse_ShouldCreateNonDefaultBothAddress()
+    {
+        // Arrange
+        var user = CreateTestUser();
+
+        var postalAddressResult = PostalAddress.Create(
+            "123 Main St",
+            "Anytown",
+            "State",
+            "Country",
+            "12345",
+            "Suite 100");
+
+        postalAddressResult.IsSuccess.Should().BeTrue();
+        var postalAddress = postalAddressResult.Value;
+
+        var phoneResult = PhoneNumber.Create("555-123-4567");
+        phoneResult.IsSuccess.Should().BeTrue();
+        var phone = phoneResult.Value;
+
+        var isDefault = false;
+
+        // Act
+        var result = Address.CreateBoth(
+            user,
+            postalAddress,
+            phone,
+            isDefault);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        var address = result.Value;
+        address.UserId.Should().Be(user.Id);
+        address.PostalAddress.Should().Be(postalAddress);
+        address.Phone.Should().Be(phone);
+        address.AddressType.Should().Be(AddressType.Both);
+        address.IsDefault.Should().BeFalse();
         address.DomainEvents.Should().Contain(e => e is AddressCreatedEvent);
     }
 
