@@ -102,8 +102,8 @@ internal sealed class CreateAddressCommandHandlerV1 : ICommandHandler<CreateAddr
                     user, postalAddressResult.Value, phoneNumber, request.IsDefault),
                 Domain.Shipping.Enums.AddressType.Billing => Address.CreateBilling(
                     user, postalAddressResult.Value, phoneNumber, request.IsDefault),
-                Domain.Shipping.Enums.AddressType.Both => Address.CreateDefaultAddress(
-                    user, postalAddressResult.Value, request.AddressType, phoneNumber),
+                Domain.Shipping.Enums.AddressType.Both => Address.CreateBoth(
+                    user, postalAddressResult.Value, phoneNumber, request.IsDefault),
                 _ => Result.Failure<Address>(
                     Error.Validation("CreateAddress.InvalidAddressType", "Invalid address type specified."))
             };
