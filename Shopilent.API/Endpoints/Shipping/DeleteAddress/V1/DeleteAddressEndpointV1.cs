@@ -62,6 +62,7 @@ public class DeleteAddressEndpointV1 : EndpointWithoutRequest
 
         // Success response
         var successResponse = ApiResponse<string>.Success(
+            "Address deleted successfully",
             "Address deleted successfully");
 
         await SendAsync(successResponse, successResponse.StatusCode, ct);
