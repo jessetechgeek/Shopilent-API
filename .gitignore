@@ -1,11 +1,289 @@
-bin/
-obj/
-/packages/
+################################################################################
+# .NET / C# / ASP.NET Core
+################################################################################
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+.nuget/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+.vsconfig
+
+# ReSharper / Rider
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+.idea/
+*.sln.iml
 riderModule.iml
-/_ReSharper.Caches/
-.idea
-.vs
-.vscode
+_ReSharperCaches/
+*.rider.user
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+TestResults/
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# Benchmark results
+BenchmarkDotNet.Artifacts/
+
+################################################################################
+# Frontend / Node.js / JavaScript
+################################################################################
+
+# Dependencies
+node_modules/
+bower_components/
+jspm_packages/
+
+# Production builds
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+
+# Environment variables
 .env
-*.DotSettings*
-logs
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Package manager files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+
+# Webpack
+.webpack/
+
+# Vite
+*.local
+
+# Parcel
+.parcel-cache/
+
+################################################################################
+# Databases
+################################################################################
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# SQL Server
+*.mdf
+*.ldf
+
+# MongoDB
+*.mongo
+
+################################################################################
+# Secrets & Configuration
+################################################################################
+
+# Sensitive files
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+*.pfx
+*.p12
+*.key
+*.pem
+*.crt
+*.cer
+id_rsa
+id_rsa.pub
+*.credentials
+*.secrets
+
+# Azure
+local.settings.json
+.azure/
+
+# AWS
+.aws/
+
+################################################################################
+# Logs & Temporary Files
+################################################################################
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+################################################################################
+# Docker
+################################################################################
+
+# Docker files (optional - uncomment if you want to ignore)
+# Dockerfile
+# docker-compose*.yml
+# .dockerignore
+
+################################################################################
+# CI/CD & Publishing
+################################################################################
+
+# Publish profiles
+*.pubxml
+*.PublishSettings
+PublishProfiles/
+
+# Azure
+*.azurePubxml
+
+# Web Deploy Package
+*.Publish.xml
+*.pubxml.user
+
+################################################################################
+# OS-specific
+################################################################################
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+################################################################################
+# Miscellaneous
+################################################################################
+
+# User-specific files
+*.suo
+*.user
+*.sln.docstates
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Generated documentation
+docs/_build/
+site/
+
+# JetBrains
+.idea/
+
+# Static analysis
+.sonarqube/
+.scannerwork/
+
+# Code coverage
+coverage/
+*.lcov
+htmlcov/
+
+# Migration files (uncomment if needed)
+# **/Migrations/
+
+# Entity Framework
+*.edmx.diagram
+*.edmx.sql
+
+# Sass
+.sass-cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Webpack
+webpack-stats.json
+
+# Storybook
+storybook-static/
