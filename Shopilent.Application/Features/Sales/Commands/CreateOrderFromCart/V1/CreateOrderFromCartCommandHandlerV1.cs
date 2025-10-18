@@ -107,9 +107,10 @@ internal sealed class
             // Calculate order totals (this would typically involve tax and shipping calculation services)
             var subtotal = CalculateSubtotal(cart);
             var tax = CalculateTax(cart, shippingAddress); // You'd implement tax calculation logic
+
+            var shippingMethod = request.ShippingMethod ?? "Standard";
             var shippingCost =
-                CalculateShippingCost(cart, shippingAddress,
-                    request.ShippingMethod); // You'd implement shipping calculation logic
+                CalculateShippingCost(cart, shippingAddress, shippingMethod);
 
             // Create order
             var orderResult = Order.Create(
@@ -119,7 +120,7 @@ internal sealed class
                 subtotal,
                 tax,
                 shippingCost,
-                request.ShippingMethod);
+                shippingMethod);
 
             if (orderResult.IsFailure)
                 return Result.Failure<CreateOrderFromCartResponseV1>(orderResult.Error);
