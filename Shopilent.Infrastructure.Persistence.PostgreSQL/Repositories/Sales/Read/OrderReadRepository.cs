@@ -372,7 +372,7 @@ public class OrderReadRepository : AggregateReadRepositoryBase<Order, OrderDto>,
         CancellationToken cancellationToken = default)
     {
         const string sql = @"
-            SELECT 
+            SELECT
                 id AS Id,
                 user_id AS UserId,
                 billing_address_id AS BillingAddressId,
@@ -389,6 +389,7 @@ public class OrderReadRepository : AggregateReadRepositoryBase<Order, OrderDto>,
                 refunded_amount AS RefundedAmount,
                 refunded_at AS RefundedAt,
                 refund_reason AS RefundReason,
+                metadata AS Metadata,
                 created_at AS CreatedAt,
                 updated_at AS UpdatedAt
             FROM orders
@@ -396,7 +397,18 @@ public class OrderReadRepository : AggregateReadRepositoryBase<Order, OrderDto>,
             ORDER BY created_at DESC";
 
         var orderDtos = await Connection.QueryAsync<OrderDto>(sql, new { UserId = userId });
-        return orderDtos.ToList();
+        var orderList = orderDtos.ToList();
+
+        // Extract tracking number from metadata if available for each order
+        foreach (var order in orderList)
+        {
+            if (order.Metadata != null && order.Metadata.TryGetValue("trackingNumber", out var trackingNumber))
+            {
+                order.TrackingNumber = trackingNumber.ToString();
+            }
+        }
+
+        return orderList;
     }
 
     public async Task<IReadOnlyList<OrderDto>> GetByStatusAsync(OrderStatus status,
