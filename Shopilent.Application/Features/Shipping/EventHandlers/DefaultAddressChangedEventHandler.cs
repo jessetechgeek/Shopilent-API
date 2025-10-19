@@ -10,7 +10,8 @@ using Shopilent.Domain.Shipping.Events;
 
 namespace Shopilent.Application.Features.Shipping.EventHandlers;
 
-internal sealed  class DefaultAddressChangedEventHandler : INotificationHandler<DomainEventNotification<DefaultAddressChangedEvent>>
+internal sealed class
+    DefaultAddressChangedEventHandler : INotificationHandler<DomainEventNotification<DefaultAddressChangedEvent>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DefaultAddressChangedEventHandler> _logger;
@@ -37,7 +38,8 @@ internal sealed  class DefaultAddressChangedEventHandler : INotificationHandler<
     {
         var domainEvent = notification.DomainEvent;
 
-        _logger.LogInformation("Default address changed. AddressId: {AddressId}, UserId: {UserId}, AddressType: {AddressType}",
+        _logger.LogInformation(
+            "Default address changed. AddressId: {AddressId}, UserId: {UserId}, AddressType: {AddressType}",
             domainEvent.AddressId,
             domainEvent.UserId,
             domainEvent.AddressType);
@@ -91,7 +93,8 @@ internal sealed  class DefaultAddressChangedEventHandler : INotificationHandler<
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing DefaultAddressChangedEvent for AddressId: {AddressId}, UserId: {UserId}",
+            _logger.LogError(ex,
+                "Error processing DefaultAddressChangedEvent for AddressId: {AddressId}, UserId: {UserId}",
                 domainEvent.AddressId, domainEvent.UserId);
         }
     }
