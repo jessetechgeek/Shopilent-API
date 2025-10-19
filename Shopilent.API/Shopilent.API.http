@@ -1,8 +1,8 @@
 @Shopilent = http://localhost:9801
 @Shopilent_Admin_Email = "admin@shopilent.com"
 @Shopilent_Admin_Password = "Pa$$word123"
-@AccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMmU4NGM5OC1kODMyLTRkODYtODBiMy0zNzE4ZTNhNDBkMDEiLCJlbWFpbCI6ImFkbWluQHNob3BpbGVudC5jb20iLCJqdGkiOiI0ODdkMzU4Ny1mNjdkLTRhMjctODBlMS1mZjhlYjZjNThmMDUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWRtaW4gVXNlciIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwiSXNTdGFmZiI6InRydWUiLCJleHAiOjE3NTEwMzUzNjMsImlzcyI6IlNob3BpbGVudCIsImF1ZCI6IlNob3BpbGVudENsaWVudCJ9.l6_jeDlEd0zZGX9rMz6UIouxtwKKWOIOnE6U5_2W0ts
-@RefreshToken = "VNSvbX1sFEYbKVrTe4u/mSnFxZLaDuUN5q5MFzxzwOTYiJIp4a4dAPEF0XXXHnosNQxjyriEYugmrcPIiJ8ykQ=="
+@AccessToken =
+@RefreshToken = ""
 
 ###Register User
 POST {{Shopilent}}/api/v1/auth/register
