@@ -57,7 +57,7 @@ internal sealed class UpdateOrderStatusCommandHandlerV1 : ICommandHandler<Update
                 var metadataResult = order.UpdateMetadata(metadataKey, request.Reason);
                 if (metadataResult.IsFailure)
                 {
-                    _logger.LogWarning("Failed to update order metadata with reason. Order ID: {OrderId}, Error: {Error}", 
+                    _logger.LogWarning("Failed to update order metadata with reason. Order ID: {OrderId}, Error: {Error}",
                         request.Id, metadataResult.Error.Message);
                 }
             }
@@ -68,10 +68,12 @@ internal sealed class UpdateOrderStatusCommandHandlerV1 : ICommandHandler<Update
                 order.SetAuditInfo(_currentUserContext.UserId);
             }
 
+            await _unitOfWork.OrderWriter.UpdateAsync(order, cancellationToken);
+
             // Save changes
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Order status updated successfully. Order ID: {OrderId}, New Status: {Status}", 
+            _logger.LogInformation("Order status updated successfully. Order ID: {OrderId}, New Status: {Status}",
                 order.Id, request.Status);
 
             // Create response
@@ -87,7 +89,7 @@ internal sealed class UpdateOrderStatusCommandHandlerV1 : ICommandHandler<Update
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating order status. Order ID: {OrderId}, Status: {Status}", 
+            _logger.LogError(ex, "Error updating order status. Order ID: {OrderId}, Status: {Status}",
                 request.Id, request.Status);
 
             return Result.Failure<UpdateOrderStatusResponseV1>(
@@ -114,7 +116,7 @@ internal sealed class UpdateOrderStatusCommandHandlerV1 : ICommandHandler<Update
             return Result.Failure(OrderErrors.InvalidOrderStatus($"Order is already {currentStatus}"));
         }
 
-        if (!validTransitions.ContainsKey(currentStatus) || 
+        if (!validTransitions.ContainsKey(currentStatus) ||
             !validTransitions[currentStatus].Contains(newStatus))
         {
             return Result.Failure(OrderErrors.InvalidOrderStatus(
