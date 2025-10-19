@@ -201,6 +201,12 @@ public class Order : AggregateRoot
         if (Status == OrderStatus.Shipped)
             return Result.Success();
 
+        if (Status == OrderStatus.Cancelled)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("ship - cancelled orders cannot be shipped"));
+
+        if (Status == OrderStatus.Delivered)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("ship - order already delivered"));
+
         if (PaymentStatus != PaymentStatus.Succeeded)
             return Result.Failure(OrderErrors.PaymentRequired);
 
@@ -282,6 +288,10 @@ public class Order : AggregateRoot
     // Method to process a full refund
     public Result ProcessRefund(string reason = null)
     {
+        // Can't refund if already fully refunded (check this first for more specific error)
+        if (RefundedAmount != null && RefundedAmount.Amount == Total.Amount)
+            return Result.Failure(OrderErrors.OrderAlreadyRefunded);
+
         // Only paid orders can be refunded
         if (PaymentStatus != PaymentStatus.Succeeded)
             return Result.Failure(OrderErrors.InvalidOrderStatus("refund"));
@@ -290,9 +300,9 @@ public class Order : AggregateRoot
         if (Status == OrderStatus.Delivered)
             return Result.Failure(OrderErrors.InvalidOrderStatus("refund a delivered order"));
 
-        // Can't refund if already fully refunded
-        if (RefundedAmount != null && RefundedAmount.Amount == Total.Amount)
-            return Result.Failure(OrderErrors.OrderAlreadyRefunded);
+        // Can't refund cancelled orders (they should be cancelled via the Cancel method)
+        if (Status == OrderStatus.Cancelled)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("refund a cancelled order"));
 
         // Update order properties
         RefundedAmount = Total;
@@ -325,6 +335,10 @@ public class Order : AggregateRoot
         // Only paid orders can be refunded
         if (PaymentStatus != PaymentStatus.Succeeded)
             return Result.Failure(OrderErrors.InvalidOrderStatus("refund"));
+
+        // Can't refund cancelled orders
+        if (Status == OrderStatus.Cancelled)
+            return Result.Failure(OrderErrors.InvalidOrderStatus("refund a cancelled order"));
 
         // Validate refund amount
         if (amount == null || amount.Amount <= 0)
@@ -376,9 +390,28 @@ public class Order : AggregateRoot
         else
         {
             // For partial refunds, just add to metadata
+            List<Dictionary<string, object>> refunds;
+
             if (Metadata.ContainsKey("partialRefunds"))
             {
-                var refunds = (List<Dictionary<string, object>>)Metadata["partialRefunds"];
+                // Handle deserialization from database (JsonElement) or in-memory list
+                var existingRefunds = Metadata["partialRefunds"];
+                if (existingRefunds is List<Dictionary<string, object>> list)
+                {
+                    refunds = list;
+                }
+                else if (existingRefunds is System.Text.Json.JsonElement jsonElement)
+                {
+                    // Deserialize from JsonElement
+                    refunds = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(
+                        jsonElement.GetRawText()) ?? new List<Dictionary<string, object>>();
+                }
+                else
+                {
+                    // Fallback: create new list
+                    refunds = new List<Dictionary<string, object>>();
+                }
+
                 refunds.Add(new Dictionary<string, object>
                 {
                     { "amount", amount.Amount },
@@ -386,10 +419,12 @@ public class Order : AggregateRoot
                     { "date", DateTime.UtcNow },
                     { "reason", reason ?? "Partial refund" }
                 });
+
+                Metadata["partialRefunds"] = refunds;
             }
             else
             {
-                var refunds = new List<Dictionary<string, object>>
+                refunds = new List<Dictionary<string, object>>
                 {
                     new Dictionary<string, object>
                     {
@@ -475,16 +510,16 @@ public class Order : AggregateRoot
         Subtotal = newSubtotal;
         Total = Subtotal.Add(Tax).Add(ShippingCost);
     }
-    
+
     public Result CancelOrderItem(Guid itemId, string reason = null)
     {
         if (Status != OrderStatus.Pending && Status != OrderStatus.Processing)
             return Result.Failure(OrderErrors.InvalidOrderStatus("cancel item"));
-    
+
         var item = _items.Find(i => i.Id == itemId);
         if (item == null)
             return Result.Failure(OrderErrors.ItemNotFound(itemId));
-    
+
         AddDomainEvent(new OrderItemCancelledEvent(Id, itemId));
         return Result.Success();
     }
