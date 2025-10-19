@@ -23,52 +23,52 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9752E1C1-67E6-4F5E-896F-676AF1FDF425}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Domain", "Shopilent.Domain\Shopilent.Domain.csproj", "{11108A59-AF3B-48F1-87A6-015229D93024}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Domain", "src\Core\Shopilent.Domain\Shopilent.Domain.csproj", "{11108A59-AF3B-48F1-87A6-015229D93024}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Application", "Shopilent.Application\Shopilent.Application.csproj", "{740057DC-0042-405B-A679-69703134DF6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Application", "src\Core\Shopilent.Application\Shopilent.Application.csproj", "{740057DC-0042-405B-A679-69703134DF6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Domain.UnitTests", "Shopilent.Domain.UnitTests\Shopilent.Domain.UnitTests.csproj", "{EAF3A4B1-9F62-43D6-8415-6BC179456638}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Domain.UnitTests", "tests\Shopilent.Domain.UnitTests\Shopilent.Domain.UnitTests.csproj", "{EAF3A4B1-9F62-43D6-8415-6BC179456638}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure", "Shopilent.Infrastructure\Shopilent.Infrastructure.csproj", "{E8554658-1675-4E86-A772-4F7EE0BF46A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure", "src\Infrastructure\Shopilent.Infrastructure\Shopilent.Infrastructure.csproj", "{E8554658-1675-4E86-A772-4F7EE0BF46A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.API", "Shopilent.API\Shopilent.API.csproj", "{ACC63028-F1F6-4C04-9E2C-318AADE07AB9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.API", "src\API\Shopilent.API\Shopilent.API.csproj", "{ACC63028-F1F6-4C04-9E2C-318AADE07AB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Identity", "Shopilent.Infrastructure.Identity\Shopilent.Infrastructure.Identity.csproj", "{C82398F3-246D-49F2-BC1F-EF62283EA24F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Identity", "src\Infrastructure\Shopilent.Infrastructure.Identity\Shopilent.Infrastructure.Identity.csproj", "{C82398F3-246D-49F2-BC1F-EF62283EA24F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Logging", "Shopilent.Infrastructure.Logging\Shopilent.Infrastructure.Logging.csproj", "{90A2F7C2-CFDF-4C78-9D5C-DA983D91206B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Logging", "src\Infrastructure\Shopilent.Infrastructure.Logging\Shopilent.Infrastructure.Logging.csproj", "{90A2F7C2-CFDF-4C78-9D5C-DA983D91206B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.S3ObjectStorage", "Shopilent.Infrastructure.S3ObjectStorage\Shopilent.Infrastructure.S3ObjectStorage.csproj", "{C46E7AEC-FADB-4B57-84B0-70DBF3DDC31D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.S3ObjectStorage", "src\Infrastructure\Shopilent.Infrastructure.S3ObjectStorage\Shopilent.Infrastructure.S3ObjectStorage.csproj", "{C46E7AEC-FADB-4B57-84B0-70DBF3DDC31D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Search.Meilisearch", "Shopilent.Infrastructure.Search.Meilisearch\Shopilent.Infrastructure.Search.Meilisearch.csproj", "{052E247E-35BF-49D1-B3B7-E2C3D60D43E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Search.Meilisearch", "src\Infrastructure\Shopilent.Infrastructure.Search.Meilisearch\Shopilent.Infrastructure.Search.Meilisearch.csproj", "{052E247E-35BF-49D1-B3B7-E2C3D60D43E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Realtime.SignalR", "Shopilent.Infrastructure.Realtime.SignalR\Shopilent.Infrastructure.Realtime.SignalR.csproj", "{60435A6F-23FD-4135-A640-3D9E166D4DF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Realtime.SignalR", "src\Infrastructure\Shopilent.Infrastructure.Realtime.SignalR\Shopilent.Infrastructure.Realtime.SignalR.csproj", "{60435A6F-23FD-4135-A640-3D9E166D4DF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Persistence.PostgreSQL", "Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj", "{0368FCF2-3563-4A1F-9E22-ADA61ACCD3F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Persistence.PostgreSQL", "src\Infrastructure\Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj", "{0368FCF2-3563-4A1F-9E22-ADA61ACCD3F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Cache.Redis", "Shopilent.Infrastructure.Cache.Redis\Shopilent.Infrastructure.Cache.Redis.csproj", "{863F1A8A-2694-4BFA-9093-166A8B18C7F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Cache.Redis", "src\Infrastructure\Shopilent.Infrastructure.Cache.Redis\Shopilent.Infrastructure.Cache.Redis.csproj", "{863F1A8A-2694-4BFA-9093-166A8B18C7F1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{9CF72851-172A-482E-81B4-5113748D4758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Application.UnitTests", "Shopilent.Application.UnitTests\Shopilent.Application.UnitTests.csproj", "{2E1D9AB4-C199-41B8-B5DB-C7A286B79690}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Application.UnitTests", "tests\Shopilent.Application.UnitTests\Shopilent.Application.UnitTests.csproj", "{2E1D9AB4-C199-41B8-B5DB-C7A286B79690}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "shopilent.admin", "Shopilent.Admin\shopilent.admin.esproj", "{2486DD0A-0D5D-2935-825B-9087B050AECC}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "shopilent.client", "Shopilent.Client\shopilent.client.esproj", "{4F4C987E-2EB1-B5D0-1FDE-6E4950B8BA35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Payments", "Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj", "{544175F3-59A1-4FF8-A41F-4261EC654187}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Payments", "src\Infrastructure\Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj", "{544175F3-59A1-4FF8-A41F-4261EC654187}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{5E1874A2-0FE3-463A-9EFF-5115F27C7AF9}"
 	ProjectSection(SolutionItems) = preProject
 		scripts\postgres-primary-init.sh = scripts\postgres-primary-init.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.IntegrationTests", "Shopilent.Infrastructure.IntegrationTests\Shopilent.Infrastructure.IntegrationTests.csproj", "{79630144-DE1A-4331-AD58-069BF28AE897}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.IntegrationTests", "tests\Shopilent.Infrastructure.IntegrationTests\Shopilent.Infrastructure.IntegrationTests.csproj", "{79630144-DE1A-4331-AD58-069BF28AE897}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.API.IntegrationTests", "Shopilent.API.IntegrationTests\Shopilent.API.IntegrationTests.csproj", "{94EB8329-947B-4C76-ADC9-EEE6C4AEAD4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.API.IntegrationTests", "tests\Shopilent.API.IntegrationTests\Shopilent.API.IntegrationTests.csproj", "{94EB8329-947B-4C76-ADC9-EEE6C4AEAD4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.FunctionalTests", "Shopilent.FunctionalTests\Shopilent.FunctionalTests.csproj", "{4E4CDA9A-5429-4270-882E-A3EC58BE2AB6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.FunctionalTests", "tests\Shopilent.FunctionalTests\Shopilent.FunctionalTests.csproj", "{4E4CDA9A-5429-4270-882E-A3EC58BE2AB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.ArchitectureTests", "Shopilent.ArchitectureTests\Shopilent.ArchitectureTests.csproj", "{3A4B27C3-F76E-43CB-A0FA-19177401EB37}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.ArchitectureTests", "tests\Shopilent.ArchitectureTests\Shopilent.ArchitectureTests.csproj", "{3A4B27C3-F76E-43CB-A0FA-19177401EB37}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
