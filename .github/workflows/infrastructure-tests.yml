@@ -46,7 +46,7 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Run Infrastructure Integration Tests
-      run: dotnet test Shopilent.Infrastructure.IntegrationTests/Shopilent.Infrastructure.IntegrationTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=infrastructure-tests.trx"
+      run: dotnet test tests/Shopilent.Infrastructure.IntegrationTests/Shopilent.Infrastructure.IntegrationTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=infrastructure-tests.trx"
 
     - name: Test Report
       uses: dorny/test-reporter@v1

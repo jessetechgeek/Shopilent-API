@@ -41,13 +41,13 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Run Domain Unit Tests
-      run: dotnet test Shopilent.Domain.UnitTests/Shopilent.Domain.UnitTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=domain-tests.trx"
+      run: dotnet test tests/Shopilent.Domain.UnitTests/Shopilent.Domain.UnitTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=domain-tests.trx"
 
     - name: Run Application Unit Tests
-      run: dotnet test Shopilent.Application.UnitTests/Shopilent.Application.UnitTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=application-tests.trx"
+      run: dotnet test tests/Shopilent.Application.UnitTests/Shopilent.Application.UnitTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=application-tests.trx"
 
     - name: Run Architecture Tests
-      run: dotnet test Shopilent.ArchitectureTests/Shopilent.ArchitectureTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=architecture-tests.trx"
+      run: dotnet test tests/Shopilent.ArchitectureTests/Shopilent.ArchitectureTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=architecture-tests.trx"
 
     - name: Test Report
       uses: dorny/test-reporter@v1

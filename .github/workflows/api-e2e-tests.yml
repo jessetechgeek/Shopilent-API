@@ -46,10 +46,10 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Run API Integration Tests
-      run: dotnet test Shopilent.API.IntegrationTests/Shopilent.API.IntegrationTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=api-integration-tests.trx"
+      run: dotnet test tests/Shopilent.API.IntegrationTests/Shopilent.API.IntegrationTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=api-integration-tests.trx"
 
     - name: Run Functional E2E Tests
-      run: dotnet test Shopilent.FunctionalTests/Shopilent.FunctionalTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=functional-tests.trx"
+      run: dotnet test tests/Shopilent.FunctionalTests/Shopilent.FunctionalTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=functional-tests.trx"
 
     - name: Test Report
       uses: dorny/test-reporter@v1
