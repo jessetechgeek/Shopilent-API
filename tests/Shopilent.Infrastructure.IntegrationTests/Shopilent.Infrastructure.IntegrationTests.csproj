@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Core Testing -->
+        <PackageReference Include="DotNetEnv" Version="3.1.1" />
+        <PackageReference Include="FluentAssertions" Version="7.2.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
+        <PackageReference Include="xunit" Version="2.9.2"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2"/>
+        <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+
+        <!-- Mocking & Test Data -->
+        <PackageReference Include="Moq" Version="4.20.72"/>
+        <PackageReference Include="AutoFixture" Version="4.18.1"/>
+        <PackageReference Include="Bogus" Version="35.6.3" />
+
+        <!-- Integration Testing -->
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11"/>
+        <PackageReference Include="Testcontainers" Version="4.0.0"/>
+        <PackageReference Include="Testcontainers.PostgreSql" Version="4.0.0"/>
+        <PackageReference Include="Testcontainers.Redis" Version="4.0.0"/>
+        <PackageReference Include="Testcontainers.Minio" Version="4.0.0"/>
+
+        <!-- Database Testing -->
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.3"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
+        <PackageReference Include="Dapper" Version="2.1.66"/>
+        <PackageReference Include="Respawn" Version="6.2.1"/>
+
+        <!-- Logging for Tests -->
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.3"/>
+        <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0"/>
+
+        <!-- Additional Infrastructure Dependencies -->
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit"/>
+        <Using Include="FluentAssertions"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Project References -->
+        <ProjectReference Include="..\..\src\Core\Shopilent.Application\Shopilent.Application.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.Cache.Redis\Shopilent.Infrastructure.Cache.Redis.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.Identity\Shopilent.Infrastructure.Identity.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.Logging\Shopilent.Infrastructure.Logging.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.Persistence.PostgreSQL\Shopilent.Infrastructure.Persistence.PostgreSQL.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.Realtime.SignalR\Shopilent.Infrastructure.Realtime.SignalR.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.S3ObjectStorage\Shopilent.Infrastructure.S3ObjectStorage.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure.Search.Meilisearch\Shopilent.Infrastructure.Search.Meilisearch.csproj" />
+        <ProjectReference Include="..\..\src\Infrastructure\Shopilent.Infrastructure\Shopilent.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>
