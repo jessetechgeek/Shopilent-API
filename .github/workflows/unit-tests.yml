@@ -1,0 +1,57 @@
+name: Unit & Architecture Tests
+
+on:
+  push:
+    branches: [ dev, main, master ]
+  pull_request:
+    branches: [ dev, main, master ]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run Domain Unit Tests
+      run: dotnet test Shopilent.Domain.UnitTests/Shopilent.Domain.UnitTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=domain-tests.trx"
+
+    - name: Run Application Unit Tests
+      run: dotnet test Shopilent.Application.UnitTests/Shopilent.Application.UnitTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=application-tests.trx"
+
+    - name: Run Architecture Tests
+      run: dotnet test Shopilent.ArchitectureTests/Shopilent.ArchitectureTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=architecture-tests.trx"
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Unit & Architecture Test Results
+        path: "**/*.trx"
+        reporter: dotnet-trx
+        fail-on-error: true
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: unit-test-results
+        path: "**/*.trx"

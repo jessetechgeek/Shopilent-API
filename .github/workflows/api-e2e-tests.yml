@@ -1,0 +1,59 @@
+name: API & E2E Tests
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  api-e2e-tests:
+    name: API Integration & E2E Tests
+    runs-on: ubuntu-latest
+
+    env:
+      STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+      STRIPE_TEST_PUBLISHABLE_KEY: ${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
+      STRIPE_TEST_WEBHOOK_SECRET: ${{ secrets.STRIPE_TEST_WEBHOOK_SECRET }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run API Integration Tests
+      run: dotnet test Shopilent.API.IntegrationTests/Shopilent.API.IntegrationTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=api-integration-tests.trx"
+
+    - name: Run Functional E2E Tests
+      run: dotnet test Shopilent.FunctionalTests/Shopilent.FunctionalTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=functional-tests.trx"
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: API & E2E Test Results
+        path: "**/*.trx"
+        reporter: dotnet-trx
+        fail-on-error: true
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-e2e-test-results
+        path: "**/*.trx"
