@@ -51,6 +51,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.MigrateDatabase();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi("/openapi/{documentName}.json");

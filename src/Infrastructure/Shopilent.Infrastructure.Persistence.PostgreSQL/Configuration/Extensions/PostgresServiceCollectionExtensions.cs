@@ -46,6 +46,8 @@ public static class PostgresServiceCollectionExtensions
     public static IServiceCollection AddPostgresPersistence(this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
+
         var connectionConfig = new PostgresConnectionConfig
         {
             WriteConnectionString = configuration.GetConnectionString("PostgreSql") ?? string.Empty,
