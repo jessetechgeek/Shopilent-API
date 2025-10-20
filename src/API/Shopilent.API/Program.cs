@@ -11,6 +11,7 @@ using Shopilent.Infrastructure.Identity.Extensions;
 using Shopilent.Infrastructure.Logging.Configuration;
 using Shopilent.Infrastructure.Payments.Extensions;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Configuration.Extensions;
+using Shopilent.Infrastructure.Persistence.PostgreSQL.Extensions;
 using Shopilent.Infrastructure.S3ObjectStorage.Extensions;
 using Shopilent.Infrastructure.Search.Meilisearch.Extensions;
 
@@ -52,6 +53,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.MigrateDatabase();
+await app.SeedDatabaseAsync();
 
 if (app.Environment.IsDevelopment())
 {

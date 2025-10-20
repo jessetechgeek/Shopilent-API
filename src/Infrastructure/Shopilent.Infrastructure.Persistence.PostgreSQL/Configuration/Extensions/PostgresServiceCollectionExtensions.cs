@@ -22,6 +22,7 @@ using Shopilent.Domain.Shipping.Repositories.Read;
 using Shopilent.Domain.Shipping.Repositories.Write;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Abstractions;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Context;
+using Shopilent.Infrastructure.Persistence.PostgreSQL.Extensions;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Factories;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Interceptors;
 using Shopilent.Infrastructure.Persistence.PostgreSQL.Repositories.Audit.Read;
@@ -87,10 +88,10 @@ public static class PostgresServiceCollectionExtensions
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Register health checks
         services.AddHealthChecks(configuration);
 
-        // Register Unit of Work
+        services.AddSeedingServices(configuration);
+
         return services;
     }
 
