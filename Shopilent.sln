@@ -7,8 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.env = .env
 		compose.yaml = compose.yaml
+		compose.prod.yaml = compose.prod.yaml
 		README.md = README.md
 		.env.example = .env.example
+		.env.production.example = .env.production.example
 		Directory.Build.props = Directory.Build.props
 		.editorconfig = .editorconfig
 	EndProjectSection
@@ -57,11 +59,6 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Shopilent.Client", "src\UI\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.Payments", "src\Infrastructure\Shopilent.Infrastructure.Payments\Shopilent.Infrastructure.Payments.csproj", "{544175F3-59A1-4FF8-A41F-4261EC654187}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{5E1874A2-0FE3-463A-9EFF-5115F27C7AF9}"
-	ProjectSection(SolutionItems) = preProject
-		scripts\postgres-primary-init.sh = scripts\postgres-primary-init.sh
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.Infrastructure.IntegrationTests", "tests\Shopilent.Infrastructure.IntegrationTests\Shopilent.Infrastructure.IntegrationTests.csproj", "{79630144-DE1A-4331-AD58-069BF28AE897}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.API.IntegrationTests", "tests\Shopilent.API.IntegrationTests\Shopilent.API.IntegrationTests.csproj", "{94EB8329-947B-4C76-ADC9-EEE6C4AEAD4E}"
@@ -69,6 +66,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.FunctionalTests", "tests\Shopilent.FunctionalTests\Shopilent.FunctionalTests.csproj", "{4E4CDA9A-5429-4270-882E-A3EC58BE2AB6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shopilent.ArchitectureTests", "tests\Shopilent.ArchitectureTests\Shopilent.ArchitectureTests.csproj", "{3A4B27C3-F76E-43CB-A0FA-19177401EB37}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{03BA1C2A-37D9-40B3-8163-4A338DD48725}"
+	ProjectSection(SolutionItems) = preProject
+		docs\deploy.production.md = docs\deploy.production.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{B7FF7EA8-71B0-4D72-B6F9-79FE395484F0}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\postgres-primary-init.sh = scripts\postgres-primary-init.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -185,7 +192,6 @@ Global
 		{2486DD0A-0D5D-2935-825B-9087B050AECC} = {9CF72851-172A-482E-81B4-5113748D4758}
 		{4F4C987E-2EB1-B5D0-1FDE-6E4950B8BA35} = {9CF72851-172A-482E-81B4-5113748D4758}
 		{544175F3-59A1-4FF8-A41F-4261EC654187} = {463540A1-2D10-4BA8-B838-31CD0C03B9D7}
-		{5E1874A2-0FE3-463A-9EFF-5115F27C7AF9} = {BAD6D0A2-1DE0-4588-877F-2027B0786731}
 		{79630144-DE1A-4331-AD58-069BF28AE897} = {9752E1C1-67E6-4F5E-896F-676AF1FDF425}
 		{94EB8329-947B-4C76-ADC9-EEE6C4AEAD4E} = {9752E1C1-67E6-4F5E-896F-676AF1FDF425}
 		{4E4CDA9A-5429-4270-882E-A3EC58BE2AB6} = {9752E1C1-67E6-4F5E-896F-676AF1FDF425}
