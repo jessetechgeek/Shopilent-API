@@ -247,6 +247,10 @@ partial class ProductSearchDocument
 
         foreach (var attr in attributes)
         {
+            // Skip variant-only attributes as they will be added from variants
+            if (attr.IsVariant)
+                continue;
+
             var attributeName = attr.AttributeName?.ToLowerInvariant();
             if (!string.IsNullOrEmpty(attributeName) && attr.Values?.Any() == true)
             {

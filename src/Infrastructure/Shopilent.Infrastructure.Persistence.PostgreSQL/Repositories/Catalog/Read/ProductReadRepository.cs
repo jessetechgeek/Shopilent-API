@@ -107,6 +107,7 @@ public class ProductReadRepository : AggregateReadRepositoryBase<Product, Produc
                         'attributeId', pa.attribute_id,
                         'attributeName', a.name,
                         'attributeDisplayName', a.display_name,
+                        'isVariant', a.is_variant,
                         'values', pa.values,
                         'createdAt', pa.created_at,
                         'updatedAt', pa.updated_at
