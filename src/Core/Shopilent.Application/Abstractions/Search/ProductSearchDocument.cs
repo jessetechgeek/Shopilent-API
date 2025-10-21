@@ -1,5 +1,6 @@
 using Shopilent.Domain.Catalog.DTOs;
 using Shopilent.Domain.Catalog.Enums;
+using System.Text.Json;
 
 namespace Shopilent.Application.Abstractions.Search;
 
@@ -254,20 +255,11 @@ partial class ProductSearchDocument
             var attributeName = attr.AttributeName?.ToLowerInvariant();
             if (!string.IsNullOrEmpty(attributeName) && attr.Values?.Any() == true)
             {
-                string value = null;
-                
-                if (attr.Values.ContainsKey("value"))
-                    value = attr.Values["value"]?.ToString();
-                else if (attr.Values.ContainsKey("Value"))
-                    value = attr.Values["Value"]?.ToString();
-                else if (attr.Values.ContainsKey(attributeName))
-                    value = attr.Values[attributeName]?.ToString();
-                else
-                    value = attr.Values.FirstOrDefault().Value?.ToString();
-                
-                if (!string.IsNullOrEmpty(value))
+                var values = ExtractAttributeValues(attr.Values, attributeName);
+
+                if (values.Length > 0)
                 {
-                    flatAttributes[$"attr-{attributeName}"] = new[] { value };
+                    flatAttributes[$"attr-{attributeName}"] = values;
                 }
             }
         }
@@ -281,32 +273,26 @@ partial class ProductSearchDocument
                     var attributeName = variantAttr.AttributeName?.ToLowerInvariant();
                     if (!string.IsNullOrEmpty(attributeName) && variantAttr.Value?.Any() == true)
                     {
-                        string value = null;
-                        
-                        if (variantAttr.Value.ContainsKey("value"))
-                            value = variantAttr.Value["value"]?.ToString();
-                        else if (variantAttr.Value.ContainsKey("Value"))
-                            value = variantAttr.Value["Value"]?.ToString();
-                        else if (variantAttr.Value.ContainsKey(attributeName))
-                            value = variantAttr.Value[attributeName]?.ToString();
-                        else
-                            value = variantAttr.Value.FirstOrDefault().Value?.ToString();
-                        
-                        if (!string.IsNullOrEmpty(value))
+                        var values = ExtractAttributeValues(variantAttr.Value, attributeName);
+
+                        if (values.Length > 0)
                         {
                             var prefixedAttributeName = $"attr-{attributeName}";
                             if (!flatAttributes.ContainsKey(prefixedAttributeName))
                             {
-                                flatAttributes[prefixedAttributeName] = new[] { value };
+                                flatAttributes[prefixedAttributeName] = values;
                             }
                             else
                             {
                                 var existingValues = flatAttributes[prefixedAttributeName].ToList();
-                                if (!existingValues.Contains(value))
+                                foreach (var value in values)
                                 {
-                                    existingValues.Add(value);
-                                    flatAttributes[prefixedAttributeName] = existingValues.ToArray();
+                                    if (!existingValues.Contains(value))
+                                    {
+                                        existingValues.Add(value);
+                                    }
                                 }
+                                flatAttributes[prefixedAttributeName] = existingValues.ToArray();
                             }
                         }
                     }
@@ -315,5 +301,88 @@ partial class ProductSearchDocument
         }
 
         return flatAttributes;
+    }
+
+    private static string[] ExtractAttributeValues(Dictionary<string, object> valueDictionary, string attributeName)
+    {
+        object rawValue = null;
+
+        // Try to get the value from the dictionary using different keys
+        if (valueDictionary.ContainsKey("value"))
+            rawValue = valueDictionary["value"];
+        else if (valueDictionary.ContainsKey("Value"))
+            rawValue = valueDictionary["Value"];
+        else if (valueDictionary.ContainsKey(attributeName))
+            rawValue = valueDictionary[attributeName];
+        else
+            rawValue = valueDictionary.FirstOrDefault().Value;
+
+        if (rawValue == null)
+            return Array.Empty<string>();
+
+        // Handle JsonElement (when value comes from deserialized JSON)
+        if (rawValue is JsonElement jsonElement)
+        {
+            if (jsonElement.ValueKind == JsonValueKind.Array)
+            {
+                // It's already an array, extract individual string values
+                var arrayValues = jsonElement.EnumerateArray()
+                    .Select(e => e.GetString())
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .ToArray();
+                return arrayValues!;
+            }
+            else if (jsonElement.ValueKind == JsonValueKind.String)
+            {
+                var stringValue = jsonElement.GetString();
+                if (!string.IsNullOrEmpty(stringValue))
+                {
+                    // Try to parse as JSON array first
+                    if (stringValue.TrimStart().StartsWith("["))
+                    {
+                        try
+                        {
+                            var parsedArray = JsonSerializer.Deserialize<string[]>(stringValue);
+                            if (parsedArray != null && parsedArray.Length > 0)
+                                return parsedArray;
+                        }
+                        catch
+                        {
+                            // If parsing fails, treat as single string value
+                        }
+                    }
+                    return new[] { stringValue };
+                }
+            }
+        }
+        // Handle string values (when value is already a string)
+        else if (rawValue is string stringValue)
+        {
+            if (!string.IsNullOrEmpty(stringValue))
+            {
+                // Try to parse as JSON array first
+                if (stringValue.TrimStart().StartsWith("["))
+                {
+                    try
+                    {
+                        var parsedArray = JsonSerializer.Deserialize<string[]>(stringValue);
+                        if (parsedArray != null && parsedArray.Length > 0)
+                            return parsedArray;
+                    }
+                    catch
+                    {
+                        // If parsing fails, treat as single string value
+                    }
+                }
+                return new[] { stringValue };
+            }
+        }
+        // Handle arrays directly
+        else if (rawValue is string[] stringArray)
+        {
+            return stringArray.Where(s => !string.IsNullOrEmpty(s)).ToArray();
+        }
+
+        return Array.Empty<string>();
     }
 }
